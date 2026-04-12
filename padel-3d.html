@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pizarra Padel 3D</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--panel:#10131a;--border:#1e222c;--accent:#00e5a0;--text:#e6edf3;--muted:#4a5060;}
+html,body{width:100%;height:100%;background:#0a0a0f;overflow:hidden;touch-action:none;font-family:sans-serif;}
+#toolbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--panel);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  gap:5px;padding:0 10px;height:48px;overflow-x:auto;scrollbar-width:none;}
+#toolbar::-webkit-scrollbar{display:none;}
+.tb{display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+  border-radius:8px;border:1.5px solid transparent;background:transparent;
+  color:var(--muted);cursor:pointer;flex-shrink:0;transition:all .12s;}
+.tb:hover{background:rgba(255,255,255,.07);color:var(--text);}
+.tb svg{width:16px;height:16px;pointer-events:none;}
+.sep{width:1px;height:22px;background:var(--border);flex-shrink:0;margin:0 2px;}
+.abtn{padding:5px 9px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;
+  border:1px solid var(--border);border-radius:6px;background:transparent;
+  transition:all .12s;white-space:nowrap;flex-shrink:0;}
+.abtn:hover,.abtn.active{border-color:var(--accent);color:var(--accent);}
+.back-btn{padding:5px 10px;font-size:11px;font-weight:600;
+  background:rgba(0,229,160,.15);color:var(--accent);border:1px solid var(--accent);
+  border-radius:6px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+#cv{position:fixed;top:48px;left:0;width:100%;height:calc(100% - 48px);display:block;}
+#help{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.55);color:rgba(255,255,255,.4);padding:4px 12px;
+  border-radius:14px;font-size:10px;pointer-events:none;z-index:50;white-space:nowrap;}
+#loading{position:fixed;inset:0;background:#0a0a0f;display:flex;align-items:center;
+  justify-content:center;color:var(--accent);font-size:13px;z-index:200;}
+</style>
+</head>
+<body>
+<div id="loading">Cargando...</div>
+<div id="toolbar">
+  <button class="back-btn" onclick="location.href='padel-board.html'">&#8592; 2D</button>
+  <div class="sep"></div>
+  <button class="abtn active" id="btn-iso"  onclick="setCam('iso')">Iso</button>
+  <button class="abtn"        id="btn-top"  onclick="setCam('top')">Cenital</button>
+  <button class="abtn"        id="btn-side" onclick="setCam('side')">Lateral</button>
+  <button class="abtn"        id="btn-end"  onclick="setCam('end')">Fondo</button>
+  <div class="sep"></div>
+  <button class="tb" onclick="setCam('iso')" title="Reset">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+      <path d="M3 3v5h5"/>
+    </svg>
+  </button>
+</div>
+<canvas id="cv"></canvas>
+<div id="help">2 dedos: rotar + pellizcar zoom | Clic derecho: rotar, rueda: zoom</div>
+
+<script>
+var PLAYER_TEX={};
+PLAYER_TEX["male"]={w:346,h:618,src:"data:image/png;base64,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"};
+PLAYER_TEX["female"]={w:471,h:493,src:"data:image/png;base64,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"};
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ============================================================
+// FIP/NIDE 2021 exact dimensions (metres)
+// Court: 20m long (Z) x 10m wide (X), origin at centre floor
+// ============================================================
+var CL=20, CW=10, HL=10, HW=5;
+var BG_H=3, BM_H=1;           // back glass height, mesh on top
+var S1L=2, S1GH=3, S1MH=1;   // side seg1: length, glass h, mesh h
+var S2L=2, S2GH=2, S2MH=1;   // side seg2
+var SC_MH=3;                   // centre section mesh height
+var DOOR_W=2.10, DOOR_H=2.00, DOOR_MH=1.0;
+var NET_HC=0.88, NET_HE=0.92, NET_BAND=0.06, POST_H=1.05;
+var SVC_OFF=3.0, CTR_HALF=7.2;
+var WALL_T=0.05;
+
+// ============================================================
+// THREE.JS SETUP
+// ============================================================
+var cv = document.getElementById('cv');
+var renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true, alpha:false});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+// CRITICAL: sort objects so transparent ones render last
+renderer.sortObjects = true;
+
+var scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0f14);
+scene.fog = new THREE.Fog(0x0d0f14, 50, 90);
+
+var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
+
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+var sun = new THREE.DirectionalLight(0xfff5e0, 1.0);
+sun.position.set(8, 20, 12);
+sun.castShadow = true;
+sun.shadow.mapSize.width  = 2048;
+sun.shadow.mapSize.height = 2048;
+sun.shadow.camera.left   = -22;
+sun.shadow.camera.right  =  22;
+sun.shadow.camera.top    =  22;
+sun.shadow.camera.bottom = -22;
+sun.shadow.camera.near   = 0.5;
+sun.shadow.camera.far    = 60;
+scene.add(sun);
+var fill = new THREE.DirectionalLight(0x6090d0, 0.3);
+fill.position.set(-10, 8, -10);
+scene.add(fill);
+
+// ============================================================
+// MATERIALS
+// Glass: very transparent, no depth write so players show through
+// Fence: only wire lines, no solid panel
+// ============================================================
+var courtMat = new THREE.MeshLambertMaterial({color:0x003264});
+var lineMat  = new THREE.MeshLambertMaterial({color:0xffffff});
+var postMat  = new THREE.MeshLambertMaterial({color:0x999aaa});
+var netMat   = new THREE.MeshLambertMaterial({color:0xcccccc, transparent:true, opacity:0.8});
+var netBandM = new THREE.MeshLambertMaterial({color:0xffffff});
+
+// Glass: transparent panel with edge glow
+function makeGlassMat() {
+  return new THREE.MeshPhongMaterial({
+    color: 0xc8e8ff,
+    transparent: true,
+    opacity: 0.15,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    shininess: 100,
+    specular: new THREE.Color(0x88ccff)
+  });
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function box(w,h,d, mat, x,y,z) {
+  var m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+  m.position.set(x,y,z);
+  m.castShadow = true;
+  m.receiveShadow = true;
+  scene.add(m);
+  return m;
+}
+
+function addGlassPanel(w,h,d, x,y,z) {
+  // Solid but very transparent panel
+  var mat = makeGlassMat();
+  var geo = new THREE.BoxGeometry(w,h,d);
+  var mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x,y,z);
+  mesh.renderOrder = 1; // render after opaque objects
+  scene.add(mesh);
+
+  // Bright frame edges to make glass visible
+  var edgeMat = new THREE.LineBasicMaterial({
+    color: 0x88ccff, transparent: true, opacity: 0.7
+  });
+  var edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMat);
+  edges.position.set(x,y,z);
+  edges.renderOrder = 2;
+  scene.add(edges);
+}
+
+// Fence = ONLY wire lines, completely open (no panel)
+// This way objects behind are 100% visible
+function addFencePanel(length, height, x,y,z, alongZ) {
+  var wireMat = new THREE.LineBasicMaterial({
+    color: 0x445566, transparent: true, opacity: 0.75
+  });
+  var cellH = 0.13, cellL = 0.13;
+  var rows = Math.round(height / cellH);
+  var cols = Math.round(length / cellL);
+
+  for (var r = 0; r <= rows; r++) {
+    var yy = y - height/2 + (height/rows)*r;
+    var pts;
+    if (alongZ) {
+      pts = [new THREE.Vector3(x, yy, z - length/2),
+             new THREE.Vector3(x, yy, z + length/2)];
+    } else {
+      pts = [new THREE.Vector3(x - length/2, yy, z),
+             new THREE.Vector3(x + length/2, yy, z)];
+    }
+    var g = new THREE.BufferGeometry().setFromPoints(pts);
+    scene.add(new THREE.Line(g, wireMat));
+  }
+  for (var c = 0; c <= cols; c++) {
+    var ll = -length/2 + (length/cols)*c;
+    var pts2;
+    if (alongZ) {
+      pts2 = [new THREE.Vector3(x, y - height/2, z + ll),
+              new THREE.Vector3(x, y + height/2, z + ll)];
+    } else {
+      pts2 = [new THREE.Vector3(x + ll, y - height/2, z),
+              new THREE.Vector3(x + ll, y + height/2, z)];
+    }
+    var g2 = new THREE.BufferGeometry().setFromPoints(pts2);
+    scene.add(new THREE.Line(g2, wireMat));
+  }
+}
+
+// ============================================================
+// COURT SURFACE + LINES
+// ============================================================
+function buildCourt() {
+  box(CW, 0.04, CL, courtMat, 0, -0.02, 0);
+
+  var lh = 0.012, ly = 0.022, lw = 0.05;
+  // Perimeter
+  box(CW, lh, lw, lineMat, 0, ly, -HL);
+  box(CW, lh, lw, lineMat, 0, ly,  HL);
+  box(lw, lh, CL, lineMat, -HW, ly, 0);
+  box(lw, lh, CL, lineMat,  HW, ly, 0);
+  // Service lines
+  var sz = HL - SVC_OFF;
+  box(CW, lh, lw, lineMat, 0, ly,  sz);
+  box(CW, lh, lw, lineMat, 0, ly, -sz);
+  // Central service line
+  box(lw, lh, CTR_HALF*2, lineMat, 0, ly, 0);
+}
+
+// ============================================================
+// NET
+// ============================================================
+function buildNet() {
+  // Posts
+  box(0.05, POST_H, 0.05, postMat, -HW, POST_H/2, 0);
+  box(0.05, POST_H, 0.05, postMat,  HW, POST_H/2, 0);
+  // Net body (strips)
+  var segs = 28;
+  for (var i = 0; i < segs; i++) {
+    var x = -HW + (CW/segs)*i + CW/segs/2;
+    var t = Math.abs(x/HW);
+    var h = NET_HC + (NET_HE-NET_HC)*Math.pow(t,1.5);
+    box(CW/segs - 0.003, h, 0.006, netMat, x, h/2, 0);
+  }
+  // Horizontal wires
+  var nwMat = new THREE.LineBasicMaterial({color:0xaaaaaa, transparent:true, opacity:0.5});
+  for (var j = 1; j <= 5; j++) {
+    var yy = (NET_HC/6)*j;
+    var pts = [new THREE.Vector3(-HW,yy,0), new THREE.Vector3(HW,yy,0)];
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), nwMat));
+  }
+  // Top band + cable
+  box(CW, NET_BAND, 0.012, netBandM, 0, NET_HC, 0);
+  box(CW, 0.008, 0.008, new THREE.MeshLambertMaterial({color:0x888888}), 0, NET_HC+NET_BAND/2, 0);
+}
+
+// ============================================================
+// WALLS — exact FIP layout
+// ============================================================
+function buildWalls() {
+  // ── Back walls (fondo) at Z = +/-HL ──
+  [-HL, HL].forEach(function(z) {
+    // Glass 0..BG_H
+    addGlassPanel(CW, BG_H, WALL_T, 0, BG_H/2, z);
+    // Fence BG_H..BG_H+BM_H (along X = not alongZ)
+    addFencePanel(CW, BM_H, 0, BG_H+BM_H/2, z, false);
+  });
+
+  // ── Side walls at X = +/-HW ──
+  [-HW, HW].forEach(function(x) {
+    var xf = x; // wire lines go at exactly x
+    // Seg1 glass from each corner
+    var zA1 = -HL,           zA2 = -HL+S1L;
+    var zD1 =  HL-S1L,       zD2 =  HL;
+    var zB1 = -HL+S1L,       zB2 = -HL+S1L+S2L;
+    var zC1 =  HL-S1L-S2L,   zC2 =  HL-S1L;
+    var zCS = zB2,            zCE = zC1;
+
+    // Seg1 glass (corners)
+    addGlassPanel(WALL_T, S1GH, S1L, xf, S1GH/2, (zA1+zA2)/2);
+    addGlassPanel(WALL_T, S1GH, S1L, xf, S1GH/2, (zD1+zD2)/2);
+    // Seg1 fence on top
+    addFencePanel(S1L, S1MH, xf, S1GH+S1MH/2, (zA1+zA2)/2, true);
+    addFencePanel(S1L, S1MH, xf, S1GH+S1MH/2, (zD1+zD2)/2, true);
+
+    // Seg2 glass
+    addGlassPanel(WALL_T, S2GH, S2L, xf, S2GH/2, (zB1+zB2)/2);
+    addGlassPanel(WALL_T, S2GH, S2L, xf, S2GH/2, (zC1+zC2)/2);
+    // Seg2 fence on top
+    addFencePanel(S2L, S2MH, xf, S2GH+S2MH/2, (zB1+zB2)/2, true);
+    addFencePanel(S2L, S2MH, xf, S2GH+S2MH/2, (zC1+zC2)/2, true);
+
+    // Centre section fence (split by door at z=0)
+    var dzA = -DOOR_W/2, dzB = DOOR_W/2;
+    var leftLen  = dzA - zCS;
+    var rightLen = zCE - dzB;
+    if (leftLen  > 0.05) addFencePanel(leftLen,  SC_MH, xf, SC_MH/2, zCS + leftLen/2,  true);
+    if (rightLen > 0.05) addFencePanel(rightLen, SC_MH, xf, SC_MH/2, dzB + rightLen/2, true);
+    // Fence above door
+    addFencePanel(DOOR_W, DOOR_MH, xf, DOOR_H+DOOR_MH/2, 0, true);
+
+    // Door frame lines
+    var dfMat = new THREE.LineBasicMaterial({color:0x6688aa, transparent:true, opacity:0.8});
+    var doorPts = [
+      new THREE.Vector3(xf,0,dzA), new THREE.Vector3(xf,DOOR_H,dzA),
+      new THREE.Vector3(xf,DOOR_H,dzA), new THREE.Vector3(xf,DOOR_H,dzB),
+      new THREE.Vector3(xf,DOOR_H,dzB), new THREE.Vector3(xf,0,dzB)
+    ];
+    scene.add(new THREE.LineSegments(
+      new THREE.BufferGeometry().setFromPoints(doorPts),
+      dfMat
+    ));
+  });
+}
+
+// ============================================================
+// PLAYERS — real silhouettes from reference photos,
+// tinted with team colour, displayed as 3D billboards
+// ============================================================
+var labelMeshes = [];
+var billboards  = [];
+
+function makeTintedTexture(imgSrc, hexColor, flipX) {
+  // Load silhouette PNG, tint it with team colour
+  var offscreen = document.createElement('canvas');
+  var ctx = offscreen.getContext('2d');
+  var img = new Image();
+  var tex = new THREE.CanvasTexture(offscreen); // will update when image loads
+
+  img.onload = function() {
+    offscreen.width  = img.width;
+    offscreen.height = img.height;
+
+    if (flipX) {
+      ctx.translate(img.width, 0);
+      ctx.scale(-1, 1);
+    }
+
+    // Draw original silhouette (black on transparent)
+    ctx.drawImage(img, 0, 0);
+
+    // Tint: replace black pixels with team colour
+    var imageData = ctx.getImageData(0, 0, offscreen.width, offscreen.height);
+    var data = imageData.data;
+    var r = (hexColor >> 16) & 0xff;
+    var g = (hexColor >>  8) & 0xff;
+    var b =  hexColor        & 0xff;
+    for (var i = 0; i < data.length; i += 4) {
+      if (data[i+3] > 10) { // non-transparent pixel
+        data[i]   = r;
+        data[i+1] = g;
+        data[i+2] = b;
+        // keep alpha
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    tex.needsUpdate = true;
+  };
+  img.src = imgSrc;
+  return tex;
+}
+
+function addLabel(text, x, y, z) {
+  var c2 = document.createElement('canvas');
+  c2.width = 160; c2.height = 48;
+  var ctx = c2.getContext('2d');
+  ctx.fillStyle = 'rgba(0,0,0,0.72)';
+  ctx.beginPath();
+  ctx.moveTo(10,0); ctx.lineTo(150,0);
+  ctx.arcTo(160,0,160,10,10);
+  ctx.lineTo(160,38); ctx.arcTo(160,48,150,48,10);
+  ctx.lineTo(10,48); ctx.arcTo(0,48,0,38,10);
+  ctx.lineTo(0,10); ctx.arcTo(0,0,10,0,10);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 20px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 80, 24);
+
+  var tex = new THREE.CanvasTexture(c2);
+  var mat = new THREE.MeshBasicMaterial({map:tex, transparent:true, depthWrite:false});
+  var plane = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 0.22), mat);
+  plane.position.set(x, y, z);
+  plane.renderOrder = 3;
+  scene.add(plane);
+  labelMeshes.push(plane);
+}
+
+function buildPlayer(x, z, hexColor, isFemale, label) {
+  var texKey   = isFemale ? 'female' : 'male';
+  var texData  = PLAYER_TEX[texKey];
+
+  // Figure proportions: height in metres
+  var figH = isFemale ? 1.65 : 1.75;
+  // Aspect ratio of source image
+  var aspect = texData.w / texData.h;
+  var figW = figH * aspect;
+
+  // Flip: bottom half players (z>0) face the opposite direction,
+  // so mirror the texture horizontally
+  var flipX = (z > 0);
+
+  var tex = makeTintedTexture(texData.src, hexColor, flipX);
+  var mat = new THREE.MeshBasicMaterial({
+    map: tex, transparent: true,
+    depthWrite: false, alphaTest: 0.05,
+    side: THREE.DoubleSide
+  });
+  var plane = new THREE.Mesh(new THREE.PlaneGeometry(figW, figH), mat);
+  plane.position.set(x, figH/2, z);
+  plane.renderOrder = 2;
+  scene.add(plane);
+  billboards.push(plane);
+
+  // Label above figure
+  addLabel(label, x, figH + 0.28, z);
+}
+
+function buildPlayers() {
+  buildPlayer(-2.5, -5, 0x1a4fd8, false, 'D azul');
+  buildPlayer( 2.5, -5, 0x1a4fd8, true,  'R azul');
+  buildPlayer(-2.5,  5, 0xcc1a1a, false, 'D rojo');
+  buildPlayer( 2.5,  5, 0xcc1a1a, true,  'R rojo');
+}
+
+// ============================================================
+// CAMERA
+// ============================================================
+var cam = {theta:0.55, phi:0.58, r:30, tx:0, ty:1.5, tz:0};
+var PRESETS = {
+  iso:  {theta:0.55,         phi:0.58,       r:30},
+  top:  {theta:0.55,         phi:0.04,       r:36},
+  side: {theta:Math.PI*0.5,  phi:0.32,       r:28},
+  end:  {theta:0,            phi:0.28,       r:26}
+};
+
+function applyCam() {
+  camera.position.set(
+    cam.tx + cam.r*Math.sin(cam.phi)*Math.sin(cam.theta),
+    cam.ty + cam.r*Math.cos(cam.phi),
+    cam.tz + cam.r*Math.sin(cam.phi)*Math.cos(cam.theta)
+  );
+  camera.lookAt(cam.tx, cam.ty, cam.tz);
+}
+
+function setCam(name) {
+  var p = PRESETS[name]; if(!p) return;
+  cam.theta=p.theta; cam.phi=p.phi; cam.r=p.r;
+  applyCam();
+  document.querySelectorAll('.abtn').forEach(function(b){
+    b.classList.toggle('active', b.id==='btn-'+name);
+  });
+}
+
+// ============================================================
+// CONTROLS
+// ============================================================
+var drag=null, pinchRef=null;
+
+cv.addEventListener('contextmenu', function(e){e.preventDefault();});
+
+cv.addEventListener('mousedown', function(e){
+  if(e.button===2) drag={x:e.clientX,y:e.clientY,theta:cam.theta,phi:cam.phi};
+});
+window.addEventListener('mousemove', function(e){
+  if(!drag) return;
+  cam.theta = drag.theta - (e.clientX-drag.x)*0.007;
+  cam.phi   = Math.max(0.05, Math.min(Math.PI*0.49, drag.phi-(e.clientY-drag.y)*0.006));
+  applyCam();
+});
+window.addEventListener('mouseup', function(){ drag=null; });
+cv.addEventListener('wheel', function(e){
+  e.preventDefault();
+  cam.r = Math.max(5, Math.min(65, cam.r + e.deltaY*0.04));
+  applyCam();
+}, {passive:false});
+
+cv.addEventListener('touchstart', function(e){
+  e.preventDefault();
+  if(e.touches.length===2){
+    drag=null;
+    var dx=e.touches[0].clientX-e.touches[1].clientX;
+    var dy=e.touches[0].clientY-e.touches[1].clientY;
+    pinchRef={
+      dist:Math.hypot(dx,dy), r:cam.r,
+      mx:(e.touches[0].clientX+e.touches[1].clientX)/2,
+      my:(e.touches[0].clientY+e.touches[1].clientY)/2,
+      theta:cam.theta, phi:cam.phi
+    };
+  }
+},{passive:false});
+
+cv.addEventListener('touchmove', function(e){
+  e.preventDefault();
+  if(e.touches.length===2 && pinchRef){
+    var dx=e.touches[0].clientX-e.touches[1].clientX;
+    var dy=e.touches[0].clientY-e.touches[1].clientY;
+    var dist=Math.hypot(dx,dy);
+    var mx=(e.touches[0].clientX+e.touches[1].clientX)/2;
+    var my=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    cam.r     = Math.max(5,Math.min(65, pinchRef.r*pinchRef.dist/dist));
+    cam.theta = pinchRef.theta - (mx-pinchRef.mx)*0.008;
+    cam.phi   = Math.max(0.05,Math.min(Math.PI*0.49, pinchRef.phi-(my-pinchRef.my)*0.007));
+    applyCam();
+  }
+},{passive:false});
+
+cv.addEventListener('touchend', function(e){
+  if(e.touches.length<2){ pinchRef=null; drag=null; }
+});
+
+// ============================================================
+// RESIZE + LOOP
+// ============================================================
+function resize() {
+  var w=window.innerWidth, h=window.innerHeight-48;
+  renderer.setSize(w,h);
+  camera.aspect=w/h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', function(){ setTimeout(resize,80); });
+
+function animate() {
+  requestAnimationFrame(animate);
+  // Billboard labels face camera
+  labelMeshes.forEach(function(l){ l.lookAt(camera.position); });
+  renderer.render(scene, camera);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('touchmove', function(e){e.preventDefault();},{passive:false});
+resize();
+buildCourt();
+buildNet();
+buildWalls();
+buildPlayers();
+setCam('iso');
+animate();
+document.getElementById('loading').style.display='none';
+</script>
+</body>
+</html>

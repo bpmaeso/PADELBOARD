@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pizarra Pádel</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pizarra Pádel">
+<meta name="theme-color" content="#10131a">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#181818;--panel:#10131a;--border:#1e222c;
+  --accent:#00e5a0;--text:#e6edf3;--muted:#4a5060;
+}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;touch-action:none;font-family:'DM Sans',sans-serif;color:var(--text);}
+
+#toolbar{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;flex-direction:column;
+}
+.trow{display:flex;align-items:center;gap:3px;padding:0 8px;height:44px;overflow:hidden;}
+#row2{border-top:1px solid var(--border);}
+.sep{width:1px;height:22px;background:var(--border);flex-shrink:0;margin:0 2px;}
+.tb{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1.5px solid transparent;background:transparent;color:var(--muted);cursor:pointer;flex-shrink:0;transition:all .12s;}
+.tb:hover{background:rgba(255,255,255,.06);color:var(--text);}
+.tb.active{background:var(--accent);color:#000;border-color:var(--accent);}
+.tb svg{width:16px;height:16px;pointer-events:none;}
+.csw{width:20px;height:20px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;flex-shrink:0;transition:transform .1s,border-color .1s;}
+.csw:hover{transform:scale(1.15);}
+.csw.active{border-color:var(--accent)!important;transform:scale(1.22);}
+.swb{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;border:1.5px solid var(--border);background:transparent;cursor:pointer;flex-shrink:0;transition:all .12s;}
+.swb.active{border-color:var(--accent);background:rgba(0,229,160,.13);}
+.sdot{background:var(--text);border-radius:50%;}
+
+#cv{position:fixed;top:0;left:0;z-index:1;touch-action:none;cursor:crosshair;display:block;}
+
+#toast{position:fixed;left:50%;transform:translateX(-50%) translateY(-6px);
+  background:rgba(0,229,160,.14);border:1px solid var(--accent);color:var(--accent);
+  padding:6px 14px;border-radius:18px;font-size:11px;pointer-events:none;
+  opacity:0;transition:opacity .25s,transform .25s;z-index:400;}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <div class="trow" id="row1">
+    <button class="tb active" id="btn-pen"    onclick="setTool('pen')" title="Rotulador">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    </button>
+    <button class="tb" id="btn-pendash" onclick="setTool('pendash')" title="Discontinuo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2.5"><path d="M4 19 Q9 9 14 14 Q18 18 20 6"/></svg>
+    </button>
+    <button class="tb" id="btn-line"   onclick="setTool('line')" title="Línea">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/></svg>
+    </button>
+    <button class="tb" id="btn-arrow"  onclick="setTool('arrow')" title="Flecha">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9,5 19,5 19,15"/></svg>
+    </button>
+    <button class="tb" id="btn-rect"   onclick="setTool('rect')" title="Rectángulo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
+    </button>
+    <button class="tb" id="btn-dot"    onclick="setTool('dot')" title="Punto">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/></svg>
+    </button>
+    <button class="tb" id="btn-cross"  onclick="setTool('cross')" title="Cruz">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+    </button>
+    <button class="tb" id="btn-eraser" onclick="setTool('eraser')" title="Borrador">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg>
+    </button>
+    <div class="sep"></div>
+    <button class="tb" onclick="clearAll()" title="Vaciar" style="color:#ef4444;margin-left:auto;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </button>
+    <button class="tb" onclick="window.location.href='padel-3d.html'" title="Vista 3D" style="color:#00e5a0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    </button>
+  </div>
+  <div class="trow" id="row2">
+    <div class="csw active" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')"></div>
+    <div class="csw"        style="background:#facc15"                     data-c="#facc15" onclick="setColor('#facc15')"></div>
+    <div class="csw"        style="background:#22c55e"                     data-c="#22c55e" onclick="setColor('#22c55e')"></div>
+    <div class="csw"        style="background:#ef4444"                     data-c="#ef4444" onclick="setColor('#ef4444')"></div>
+    <div class="csw"        style="background:#f97316"                     data-c="#f97316" onclick="setColor('#f97316')"></div>
+    <div class="csw"        style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')"></div>
+    <div class="sep"></div>
+    <button class="swb"        id="sw0" onclick="setStroke(2)"  ><div class="sdot" style="width:3px;height:3px"></div></button>
+    <button class="swb active" id="sw1" onclick="setStroke(3.5)"><div class="sdot" style="width:5px;height:5px"></div></button>
+    <button class="swb"        id="sw2" onclick="setStroke(6)"  ><div class="sdot" style="width:8px;height:8px"></div></button>
+  </div>
+</div>
+<canvas id="cv"></canvas>
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   EVERYTHING lives in "court space": 0..CW × 0..CH
+   CW = 1000 units (10 m), CH = 2000 units (20 m)
+
+   ONE canvas draws: background + court + strokes + player chips.
+   Transform: ctx.translate(ox,oy) ctx.scale(sc,sc)
+   where ox,oy,sc are recomputed on every resize so the court
+   always fills the long axis of the screen.
+
+   Rotating device just triggers resize() → new ox,oy,sc.
+   All stored data (strokes, player positions) stays unchanged.
+   ═══════════════════════════════════════════════════════════════ */
+
+const CW = 1000, CH = 2000;  // court units (10m × 20m)
+
+// Base transform: fits court to screen
+let OX=0, OY=0, BASE_SC=1;
+// User zoom/pan on top of base
+let PX=0, PY=0, ZM=1;
+
+const cv  = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+let strokes = [];
+let liveStroke = null; // stroke being drawn right now
+
+const S = {
+  tool:'pen', color:'#ffffff', stroke:3.5,
+  drawing:false, sx:0, sy:0, path:[],
+  ptrs:{}, pinchD:null, pinchM:null,
+  selPlayer:null,
+};
+
+/* Player chips drawn on canvas.
+   Both teams face the net (horizontal line at CH/2=1000).
+   From each player's perspective facing the net:
+     their RIGHT hand side = D (derecha)
+     their LEFT  hand side = R (reves)
+
+   Bottom team faces UP toward net:
+     their left  = screen-left  → R at cx=250
+     their right = screen-right → D at cx=750
+
+   Top team faces DOWN toward net (opposite direction):
+     their left  = screen-RIGHT → R at cx=750
+     their right = screen-LEFT  → D at cx=250
+
+   Result on screen:
+     Bottom-left  = R (red)    Bottom-right = D (red)
+     Top-left     = D (blue)   Top-right    = R (blue)
+*/
+const PLAYERS = [
+  {id:'p1', label:'D', color:'#2563eb', cx:250, cy:400},
+  {id:'p2', label:'R', color:'#2563eb', cx:750, cy:400},
+  {id:'p3', label:'R', color:'#dc2626', cx:250, cy:1600},
+  {id:'p4', label:'D', color:'#dc2626', cx:750, cy:1600},
+];
+
+const CHIP_R = 64; // chip radius in court units — scales with zoom
+
+/* ───────────── toolbar ───────────── */
+const ROW=44;
+function tbH(){ return window.innerWidth>window.innerHeight ? ROW : ROW*2; }
+
+function applyToolbar(){
+  const land = window.innerWidth>window.innerHeight;
+  const r2   = document.getElementById('row2');
+  if(land){ r2.style.display='none'; ensureLandExtras(); }
+  else    { r2.style.display='flex'; const ex=document.getElementById('land-extras'); if(ex)ex.style.display='none'; }
+  document.getElementById('toolbar').style.height = tbH()+'px';
+  document.getElementById('toast').style.top = (tbH()+8)+'px';
+}
+
+function ensureLandExtras(){
+  let el=document.getElementById('land-extras');
+  if(!el){
+    el=document.createElement('div');el.id='land-extras';
+    el.style.cssText='display:flex;align-items:center;gap:3px;margin-left:4px;';
+    el.innerHTML=`<div class="sep"></div>
+      <div class="csw active" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')"></div>
+      <div class="csw"        style="background:#facc15"                     data-c="#facc15" onclick="setColor('#facc15')"></div>
+      <div class="csw"        style="background:#22c55e"                     data-c="#22c55e" onclick="setColor('#22c55e')"></div>
+      <div class="csw"        style="background:#ef4444"                     data-c="#ef4444" onclick="setColor('#ef4444')"></div>
+      <div class="csw"        style="background:#f97316"                     data-c="#f97316" onclick="setColor('#f97316')"></div>
+      <div class="csw"        style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')"></div>
+      <div class="sep"></div>
+      <button class="swb"        id="sw0l" onclick="setStroke(2)"  ><div class="sdot" style="width:3px;height:3px"></div></button>
+      <button class="swb active" id="sw1l" onclick="setStroke(3.5)"><div class="sdot" style="width:5px;height:5px"></div></button>
+      <button class="swb"        id="sw2l" onclick="setStroke(6)"  ><div class="sdot" style="width:8px;height:8px"></div></button>
+      <div class="sep"></div>
+      <button class="tb" onclick="clearAll()" style="color:#ef4444;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+      </button>`;
+    document.getElementById('row1').appendChild(el);
+  } else { el.style.display='flex'; }
+  document.querySelectorAll('.csw').forEach(s=>s.classList.toggle('active',s.dataset.c===S.color));
+}
+
+/* ───────────── resize ───────────── */
+function resize(){
+  applyToolbar();
+  const th=tbH(), vw=window.innerWidth, vh=window.innerHeight-th;
+  cv.width=vw; cv.height=vh;
+  cv.style.top=th+'px';
+
+  /* The court is CW×CH = 1000×2000 (portrait rectangle, 10m×20m).
+     Rule: the LONG dimension of the court (CH=2000) always goes along
+     the LONG dimension of the available screen area.
+
+     Portrait screen (vh>vw): fit CH into vh, CW into vw → scale = min(vh/CH, vw/CW)
+     Landscape screen (vw>vh): the screen is now wider than tall.
+       We still want 20m along the long axis (now horizontal).
+       So we treat the court as if rotated: fit CH into vw, CW into vh.
+       scale = min(vw/CH, vh/CW)
+       Then OX,OY swap roles.
+  */
+  const land = vw > vh;
+  if(!land){
+    // Portrait: CH vertical, CW horizontal
+    BASE_SC = Math.min(vh/CH, vw/CW);
+    OX = (vw - CW*BASE_SC)/2;
+    OY = (vh - CH*BASE_SC)/2;
+  } else {
+    // Landscape: fit the 2000-unit axis into the width, 1000-unit into height
+    BASE_SC = Math.min(vw/CH, vh/CW);
+    OX = (vw - CH*BASE_SC)/2;
+    OY = (vh - CW*BASE_SC)/2;
+  }
+  PX=0; PY=0; ZM=1;
+  redraw();
+}
+
+/* ───────────── total transform ───────────── */
+// court(cx,cy) → canvas(px,py)  — handles portrait/landscape
+function c2cv(cx,cy){
+  const land = cv.width > cv.height;
+  if(!land){
+    return { x: OX+PX + cx*BASE_SC*ZM, y: OY+PY + cy*BASE_SC*ZM };
+  } else {
+    // In landscape: court is rotated 90° CW on screen
+    // court (cx,cy): cx goes 0..CW (horiz in court), cy goes 0..CH (vert in court)
+    // on screen: cy maps to screen-x (left=0→right=CH), cx maps to screen-y (top=CW→bottom=0)
+    return {
+      x: OX+PX + cy*BASE_SC*ZM,
+      y: OY+PY + (CW-cx)*BASE_SC*ZM,
+    };
+  }
+}
+// canvas(px,py) → court(cx,cy)
+function cv2c(px,py){
+  const land = cv.width > cv.height;
+  const rx=(px-OX-PX)/(BASE_SC*ZM);
+  const ry=(py-OY-PY)/(BASE_SC*ZM);
+  if(!land){
+    return {x:rx, y:ry};
+  } else {
+    // inverse of landscape transform
+    return {x: CW-ry, y: rx};
+  }
+}
+// pointer clientX/Y → court (canvas starts at toolbar bottom)
+function ptr(e){
+  const th=tbH();
+  const r=cv2c(e.clientX, e.clientY-th);
+  return {x:Math.max(0,Math.min(CW,r.x)), y:Math.max(0,Math.min(CH,r.y))};
+}
+
+/* ───────────── full redraw ───────────── */
+function redraw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#181818';
+  ctx.fillRect(0,0,cv.width,cv.height);
+
+  const land = cv.width > cv.height;
+  const sc = BASE_SC*ZM;
+
+  ctx.save();
+  if(!land){
+    ctx.translate(OX+PX, OY+PY);
+    ctx.scale(sc, sc);
+  } else {
+    // Rotate court 90° CW: court (0,0) → screen (OX, OY+CW*sc)
+    // transform: x_screen = OX+PX + cy*sc,  y_screen = OY+PY + (CW-cx)*sc
+    // matrix: [0, sc, -sc, 0] with translation
+    ctx.translate(OX+PX, OY+PY + CW*sc);
+    ctx.rotate(-Math.PI/2);
+    ctx.scale(sc, sc);
+  }
+
+  drawCourt();
+  strokes.forEach(s=>drawStroke(s));
+  if(liveStroke) drawStroke(liveStroke);
+  drawChips();
+
+  ctx.restore();
+}
+
+/* ───────────── court ───────────── */
+function drawCourt(){
+  const W=CW, H=CH, net=H/2, svc=305, lw=6;
+  // Uniform blue surface — no overlays, no shadows
+  ctx.fillStyle='#3042c8'; ctx.fillRect(0,0,W,H);
+  // White lines
+  ctx.strokeStyle='rgba(255,255,255,0.95)'; ctx.lineWidth=lw; ctx.lineCap='square'; ctx.setLineDash([]);
+  // Outer perimeter
+  ctx.strokeRect(lw/2,lw/2,W-lw,H-lw);
+  // Service lines
+  hl(0,svc,W); hl(0,H-svc,W);
+  // Central service line (only between service lines)
+  vl(W/2,svc,H-svc);
+  // Net — thicker
+  ctx.lineWidth=lw*2.5; ctx.strokeStyle='white'; hl(0,net,W);
+}
+function hl(x,y,x2){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y);ctx.stroke();}
+function vl(x,y1,y2){ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2);ctx.stroke();}
+
+/* ───────────── chips ───────────── */
+function drawChips(){
+  const land = cv.width > cv.height;
+  PLAYERS.forEach(p=>{
+    const r=CHIP_R;
+    // circle
+    ctx.beginPath(); ctx.arc(p.cx,p.cy,r,0,Math.PI*2);
+    ctx.fillStyle=p.color; ctx.fill();
+    // border
+    ctx.strokeStyle = S.selPlayer===p.id ? '#00e5a0' : 'rgba(255,255,255,0.7)';
+    ctx.lineWidth   = S.selPlayer===p.id ? 3 : 2;
+    ctx.setLineDash([]); ctx.stroke();
+    // label — counter-rotate so text is always upright on the device
+    ctx.save();
+    ctx.translate(p.cx, p.cy);
+    if(land) ctx.rotate(Math.PI/2); // canvas was rotated -90°, so we +90° the text
+    ctx.fillStyle='#fff';
+    ctx.font=`bold ${Math.round(CHIP_R*1.0)}px "Bebas Neue",sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(p.label, 0, 1);
+    ctx.restore();
+  });
+}
+
+/* ───────────── stroke drawing ───────────── */
+function drawStroke(s){
+  ctx.save();
+  ctx.strokeStyle=s.color; ctx.fillStyle=s.color;
+  ctx.lineWidth=s.width*2; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.setLineDash([]);
+  if(s.type==='pen'){
+    if(s.path.length<2){ctx.restore();return;}
+    ctx.beginPath(); s.path.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)); ctx.stroke();
+  } else if(s.type==='pendash'){
+    if(s.path.length<2){ctx.restore();return;}
+    ctx.setLineDash([s.width*8,s.width*6]);
+    ctx.beginPath(); s.path.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)); ctx.stroke(); ctx.setLineDash([]);
+  } else if(s.type==='line'){
+    ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);ctx.stroke();
+  } else if(s.type==='arrow'){
+    const a=Math.atan2(s.y2-s.y1,s.x2-s.x1),hl=Math.max(40,s.width*10);
+    ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(s.x2,s.y2);
+    ctx.lineTo(s.x2-hl*Math.cos(a-Math.PI/6),s.y2-hl*Math.sin(a-Math.PI/6));
+    ctx.lineTo(s.x2-hl*Math.cos(a+Math.PI/6),s.y2-hl*Math.sin(a+Math.PI/6));
+    ctx.closePath();ctx.fill();
+  } else if(s.type==='rect'){
+    ctx.beginPath();ctx.rect(s.x1,s.y1,s.x2-s.x1,s.y2-s.y1);ctx.stroke();
+  } else if(s.type==='dot'){
+    ctx.beginPath();ctx.arc(s.x1,s.y1,s.width*8,0,Math.PI*2);ctx.fill();
+  } else if(s.type==='cross'){
+    const sz=s.width*8; ctx.lineWidth=s.width*1.5;
+    ctx.beginPath();ctx.moveTo(s.x1-sz,s.y1-sz);ctx.lineTo(s.x1+sz,s.y1+sz);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(s.x1+sz,s.y1-sz);ctx.lineTo(s.x1-sz,s.y1+sz);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ───────────── eraser ───────────── */
+function eraseAt(cx,cy){
+  const r2=(50/ZM)**2; // constant screen-size erase radius
+  const n=strokes.length;
+  strokes=strokes.filter(s=>!strokeHit(s,cx,cy,r2));
+  if(strokes.length!==n) redraw();
+}
+function strokeHit(s,cx,cy,r2){
+  return strokPts(s).some(p=>(p.x-cx)**2+(p.y-cy)**2<=r2);
+}
+function strokPts(s){
+  if(s.type==='dot'||s.type==='cross') return [{x:s.x1,y:s.y1}];
+  if(s.path) return s.path;
+  if(s.x1!==undefined){
+    const pts=[],n=16;
+    for(let i=0;i<=n;i++) pts.push({x:s.x1+(s.x2-s.x1)*i/n,y:s.y1+(s.y2-s.y1)*i/n});
+    return pts;
+  }
+  return[];
+}
+
+/* ───────────── chip hit test ───────────── */
+function chipAt(cx,cy){
+  // returns player if pointer is within chip radius
+  for(const p of PLAYERS){
+    const dx=p.cx-cx, dy=p.cy-cy;
+    if(dx*dx+dy*dy <= CHIP_R*CHIP_R*2.5) return p; // slightly larger hit area
+  }
+  return null;
+}
+
+/* ───────────── pointer events ───────────── */
+cv.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+  const pts=Object.values(S.ptrs);
+
+  if(pts.length===2){
+    S.drawing=false; liveStroke=null;
+    S.pinchD=pDist(pts); S.pinchM=pMid(pts);
+    return;
+  }
+
+  const pos=ptr(e);
+
+  // Check chip hit first — select immediately and start dragging
+  const chip=chipAt(pos.x,pos.y);
+  if(chip){
+    S.selPlayer = chip.id;
+    S.drawing = false;
+    redraw(); cv.setPointerCapture(e.pointerId); return;
+  }
+
+  // No chip hit — deselect any chip and start drawing
+  S.selPlayer = null;
+
+  // Drawing
+  S.drawing=true;
+  S.sx=pos.x; S.sy=pos.y; S.path=[{...pos}];
+  cv.setPointerCapture(e.pointerId);
+  if(S.tool==='eraser') eraseAt(pos.x,pos.y);
+});
+
+cv.addEventListener('pointermove',e=>{
+  e.preventDefault();
+  if(e.pointerId in S.ptrs) S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+  const pts=Object.values(S.ptrs);
+
+  // Pinch zoom+pan
+  if(pts.length===2&&S.pinchD!==null){
+    const nd=pDist(pts),nm=pMid(pts);
+    const nz=Math.max(0.5,Math.min(8,ZM*nd/S.pinchD));
+    const th=tbH();
+    const mx=nm.x, my=nm.y-th;
+    // Zoom around pinch centre
+    PX = mx-OX - (mx-OX-PX)*(nz/ZM);
+    PY = my-OY - (my-OY-PY)*(nz/ZM);
+    // Pan
+    PX += nm.x-S.pinchM.x;
+    PY += nm.y-S.pinchM.y;
+    ZM=nz; S.pinchD=nd; S.pinchM=nm;
+    redraw(); return;
+  }
+
+  // Dragging selected chip
+  if(S.selPlayer && !S.drawing){
+    const p=PLAYERS.find(p=>p.id===S.selPlayer);
+    if(p){
+      const pos=ptr(e);
+      p.cx=Math.max(0,Math.min(CW,pos.x));
+      p.cy=Math.max(0,Math.min(CH,pos.y));
+      redraw(); return;
+    }
+  }
+
+  if(!S.drawing||pts.length!==1) return;
+  const pos=ptr(e);
+
+  if(S.tool==='eraser'){eraseAt(pos.x,pos.y);return;}
+
+  if(S.tool==='pen'||S.tool==='pendash'){
+    S.path.push(pos);
+    liveStroke={type:S.tool,color:S.color,width:S.stroke,path:[...S.path]};
+  } else {
+    liveStroke={type:S.tool,color:S.color,width:S.stroke,x1:S.sx,y1:S.sy,x2:pos.x,y2:pos.y};
+  }
+  redraw();
+});
+
+cv.addEventListener('pointerup',e=>{
+  e.preventDefault();
+  delete S.ptrs[e.pointerId];
+  // Always deselect chip on finger lift
+  if(S.selPlayer){ S.selPlayer=null; redraw(); }
+  if(!S.drawing){S.pinchD=null;S.pinchM=null;return;}
+  S.drawing=false;
+  if(S.tool==='eraser'){liveStroke=null;return;}
+  const pos=ptr(e);
+  if(S.tool==='pen'||S.tool==='pendash'){
+    if(S.path.length>1) strokes.push({type:S.tool,color:S.color,width:S.stroke,path:[...S.path,pos]});
+  } else if(S.tool==='dot'){
+    strokes.push({type:'dot',color:S.color,width:S.stroke,x1:S.sx,y1:S.sy});
+  } else if(S.tool==='cross'){
+    strokes.push({type:'cross',color:S.color,width:S.stroke,x1:S.sx,y1:S.sy});
+  } else {
+    strokes.push({type:S.tool,color:S.color,width:S.stroke,x1:S.sx,y1:S.sy,x2:pos.x,y2:pos.y});
+  }
+  liveStroke=null; redraw();
+});
+
+cv.addEventListener('pointercancel',e=>{
+  delete S.ptrs[e.pointerId]; S.drawing=false; liveStroke=null;
+  S.selPlayer=null; redraw();
+});
+
+function pDist(p){const dx=p[0].x-p[1].x,dy=p[0].y-p[1].y;return Math.sqrt(dx*dx+dy*dy)||1;}
+function pMid(p){return{x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};}
+
+/* ───────────── tools ───────────── */
+const TMAP={pen:'btn-pen',pendash:'btn-pendash',line:'btn-line',arrow:'btn-arrow',
+            rect:'btn-rect',dot:'btn-dot',cross:'btn-cross',eraser:'btn-eraser'};
+function setTool(t){
+  S.tool=t; S.selPlayer=null;
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('active'));
+  document.getElementById(TMAP[t])?.classList.add('active');
+  redraw();
+}
+function setColor(c){
+  S.color=c;
+  document.querySelectorAll('.csw').forEach(s=>s.classList.toggle('active',s.dataset.c===c));
+}
+function setStroke(w){
+  S.stroke=w;
+  ['sw0','sw1','sw2','sw0l','sw1l','sw2l'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.classList.remove('active');
+  });
+  const m={2:['sw0','sw0l'],3.5:['sw1','sw1l'],6:['sw2','sw2l']};
+  (m[w]||[]).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('active');});
+}
+function clearAll(){ strokes=[]; liveStroke=null; redraw(); showToast('Pizarra vaciada'); }
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),1800);
+}
+
+/* ───────────── init ───────────── */
+document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturechange',e=>e.preventDefault());
+
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', resize);
+window.addEventListener('load',()=>{
+  try{screen.orientation.lock('portrait').catch(()=>{});}catch(e){}
+  // Register service worker for PWA offline support
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+  resize();
+});
+</script>
+</body>
+</html>
