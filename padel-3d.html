@@ -36,13 +36,20 @@ html,body{width:100%;height:100%;background:#0a0a0f;overflow:hidden;touch-action
 <body>
 <div id="loading">Cargando...</div>
 <div id="toolbar">
-  <button class="back-btn" onclick="location.href='padel-board.html'">&#8592; 2D</button>
+  <button class="back-btn" onclick="location.href='index.html'">&#8592; Inicio</button>
+  <button class="back-btn" onclick="location.href='padel-board.html'" style="margin-left:4px;">2D</button>
   <div class="sep"></div>
   <button class="abtn active" id="btn-iso"  onclick="setCam('iso')">Iso</button>
   <button class="abtn"        id="btn-top"  onclick="setCam('top')">Cenital</button>
   <button class="abtn"        id="btn-side" onclick="setCam('side')">Lateral</button>
   <button class="abtn"        id="btn-end"  onclick="setCam('end')">Fondo</button>
   <div class="sep"></div>
+  <button class="tb" onclick="takeScreenshot()" title="Captura" style="color:#00e5a0;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </svg>
+  </button>
   <button class="tb" onclick="setCam('iso')" title="Reset">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
@@ -79,7 +86,7 @@ var WALL_T=0.05;
 // THREE.JS SETUP
 // ============================================================
 var cv = document.getElementById('cv');
-var renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true, alpha:false});
+var renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true, preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -523,6 +530,16 @@ function animate() {
   // Billboard labels face camera
   labelMeshes.forEach(function(l){ l.lookAt(camera.position); });
   renderer.render(scene, camera);
+}
+
+// Screenshot
+function takeScreenshot(){
+  renderer.render(scene, camera);
+  var url = cv.toDataURL('image/png');
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'pizarra-padel-3d.png';
+  a.click();
 }
 
 // ============================================================
