@@ -2,11 +2,651 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=padel-board.html">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pizarra Pádel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pizarra Padel</title>
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pizarra Padel">
+<meta name="theme-color" content="#0a0b0e">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0a0b0e; --card:#10131a; --border:#1e222c;
+  --accent:#00e5a0; --gold:#f59e0b;
+  --text:#e6edf3; --muted:#6b7280;
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:'DM Sans',sans-serif;overflow:hidden;touch-action:manipulation;}
+
+/* SCREENS */
+.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* ── HOME ── */
+#home{overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);}
+.home-header{padding:56px 24px 20px;background:linear-gradient(180deg,#0d1220 0%,var(--bg) 100%);}
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.logo-icon{width:44px;height:44px;border-radius:13px;
+  background:linear-gradient(135deg,var(--accent),#0099ff);
+  display:flex;align-items:center;justify-content:center;}
+.logo-icon svg{width:24px;height:24px;}
+.logo-name{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;}
+.home-sub{font-size:13px;color:var(--muted);line-height:1.5;}
+.section-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.5px;
+  text-transform:uppercase;padding:20px 20px 8px;}
+.cards{padding:0 14px 32px;display:flex;flex-direction:column;gap:10px;}
+.feat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;
+  transition:all .15s;position:relative;overflow:hidden;}
+.feat-card:active{transform:scale(0.98);background:#161b24;}
+.feat-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:24px;}
+.feat-icon.green{background:rgba(0,229,160,.13);}
+.feat-icon.blue{background:rgba(59,130,246,.13);}
+.feat-icon.purple{background:rgba(139,92,246,.13);}
+.feat-icon.orange{background:rgba(245,158,11,.13);}
+.feat-info{flex:1;min-width:0;}
+.feat-title{font-size:16px;font-weight:600;margin-bottom:2px;}
+.feat-desc{font-size:12px;color:var(--muted);line-height:1.4;}
+.feat-arrow{color:var(--muted);flex-shrink:0;}
+.feat-arrow svg{width:18px;height:18px;}
+.pro-tag{position:absolute;top:12px;right:12px;
+  background:var(--gold);color:#000;font-size:9px;font-weight:700;
+  padding:2px 7px;border-radius:999px;}
+
+/* PRO MODAL */
+#pro-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;
+  display:none;align-items:flex-end;justify-content:center;}
+#pro-modal.open{display:flex;}
+.pro-sheet{background:#141820;border-radius:24px 24px 0 0;
+  padding:28px 24px 48px;width:100%;max-width:480px;
+  border-top:1px solid var(--border);}
+.pro-sheet h2{font-size:22px;font-weight:700;margin-bottom:6px;}
+.pro-sheet p{font-size:14px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
+.pro-feats{display:flex;flex-direction:column;gap:12px;margin-bottom:26px;}
+.pro-feat{display:flex;align-items:center;gap:10px;font-size:14px;}
+.pro-feat-ic{color:var(--accent);font-size:18px;width:24px;text-align:center;}
+.pro-btn-main{width:100%;padding:16px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),#00b8ff);
+  color:#000;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.pro-btn-cancel{width:100%;padding:12px;border:none;background:transparent;
+  color:var(--muted);font-size:14px;cursor:pointer;margin-top:8px;font-family:'DM Sans',sans-serif;}
+
+/* ── BOARD 2D ── */
+#board-screen{background:#181818;}
+#board-tb{position:absolute;top:0;left:0;right:0;z-index:100;
+  background:#10131a;border-bottom:1px solid #1e222c;display:flex;flex-direction:column;}
+.trow{display:flex;align-items:center;gap:3px;padding:0 8px;height:44px;overflow:hidden;}
+#board-r2{border-top:1px solid #1e222c;}
+.sep{width:1px;height:22px;background:#1e222c;flex-shrink:0;margin:0 2px;}
+.tb{display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+  border-radius:8px;border:1.5px solid transparent;background:transparent;
+  color:#4a5060;cursor:pointer;flex-shrink:0;transition:all .12s;}
+.tb:hover,.tb:active{background:rgba(255,255,255,.06);color:#e6edf3;}
+.tb.active{background:#00e5a0;color:#000;border-color:#00e5a0;}
+.tb svg{width:16px;height:16px;pointer-events:none;}
+.back-btn{display:flex;align-items:center;gap:5px;padding:0 10px;height:34px;
+  border-radius:8px;border:1px solid #1e222c;background:transparent;
+  color:#6b7280;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;flex-shrink:0;}
+.back-btn svg{width:14px;height:14px;}
+.csw{width:20px;height:20px;border-radius:50%;border:2.5px solid transparent;
+  cursor:pointer;flex-shrink:0;transition:transform .1s,border-color .1s;}
+.csw:hover{transform:scale(1.15);}
+.csw.active{border-color:#00e5a0!important;transform:scale(1.22);}
+.swb{display:flex;align-items:center;justify-content:center;width:28px;height:28px;
+  border-radius:7px;border:1.5px solid #1e222c;background:transparent;
+  cursor:pointer;flex-shrink:0;transition:all .12s;}
+.swb.active{border-color:#00e5a0;background:rgba(0,229,160,.13);}
+.sdot{background:#e6edf3;border-radius:50%;}
+#board-cv{position:absolute;top:0;left:0;z-index:1;touch-action:none;cursor:crosshair;display:block;}
+#board-toast{position:absolute;left:50%;transform:translateX(-50%) translateY(-6px);
+  background:rgba(0,229,160,.14);border:1px solid #00e5a0;color:#00e5a0;
+  padding:6px 14px;border-radius:18px;font-size:11px;pointer-events:none;
+  opacity:0;transition:opacity .25s,transform .25s;z-index:200;}
+#board-toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
 </head>
 <body>
-<script>window.location.replace('padel-board.html');</script>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="home-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+          <rect x="2" y="3" width="20" height="18" rx="2"/>
+          <line x1="2" y1="12" x2="22" y2="12" stroke-width="2.5"/>
+          <line x1="12" y1="3" x2="12" y2="21"/>
+        </svg>
+      </div>
+      <span class="logo-name">Pizarra Padel</span>
+    </div>
+    <div class="home-sub">Herramienta tactica para entrenadores y jugadores</div>
+  </div>
+
+  <div class="section-label">Gratis</div>
+  <div class="cards">
+    <div class="feat-card" onclick="openBoard()">
+      <div class="feat-icon green">&#127919;</div>
+      <div class="feat-info">
+        <div class="feat-title">Pizarra 2D</div>
+        <div class="feat-desc">Dibuja jugadas, mueve fichas y anota estrategias sobre la pista</div>
+      </div>
+      <div class="feat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+  </div>
+
+  <div class="section-label">Pro <span style="color:var(--gold)">&#10022;</span></div>
+  <div class="cards">
+    <div class="feat-card" onclick="showPro()">
+      <div class="feat-icon blue">&#128311;</div>
+      <div class="feat-info">
+        <div class="feat-title">Pizarra 3D</div>
+        <div class="feat-desc">Vista tridimensional con rotacion libre y jugadores</div>
+      </div>
+      <div class="pro-tag">&#128274; PRO</div>
+    </div>
+    <div class="feat-card" onclick="showPro()">
+      <div class="feat-icon purple">&#127967;</div>
+      <div class="feat-info">
+        <div class="feat-title">Generador de pista</div>
+        <div class="feat-desc">Disena tu pista personalizada en 2D y 3D con medidas oficiales</div>
+      </div>
+      <div class="pro-tag">&#128274; PRO</div>
+    </div>
+    <div class="feat-card" onclick="showPro()">
+      <div class="feat-icon orange">&#127916;</div>
+      <div class="feat-info">
+        <div class="feat-title">Grabacion de jugadas</div>
+        <div class="feat-desc">Crea secuencias animadas y exporta videos de tus estrategias</div>
+      </div>
+      <div class="pro-tag">&#128274; PRO</div>
+    </div>
+    <div class="feat-card" onclick="showPro()">
+      <div class="feat-icon green">&#128193;</div>
+      <div class="feat-info">
+        <div class="feat-title">Guardar pizarras</div>
+        <div class="feat-desc">Guarda tus jugadas y accede a ellas cuando quieras</div>
+      </div>
+      <div class="pro-tag">&#128274; PRO</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRO MODAL -->
+<div id="pro-modal">
+  <div class="pro-sheet">
+    <h2>Pizarra Padel Pro &#10022;</h2>
+    <p>Lleva tu analisis tactico al siguiente nivel con las herramientas avanzadas.</p>
+    <div class="pro-feats">
+      <div class="pro-feat"><span class="pro-feat-ic">&#128311;</span>Pizarra 3D con rotacion libre y jugadores</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#127967;</span>Generador de pista personalizable 2D + 3D</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#127916;</span>Grabacion y exportacion de jugadas animadas</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#128193;</span>Guardar y cargar pizarras ilimitadas</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#127912;</span>Herramientas 3D avanzadas y parabolas</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#9729;</span>Sincronizacion en la nube</div>
+    </div>
+    <button class="pro-btn-main" onclick="closePro()">Proximamente - Avisame</button>
+    <button class="pro-btn-cancel" onclick="closePro()">Volver</button>
+  </div>
+</div>
+
+<!-- BOARD 2D -->
+<div id="board-screen" class="screen">
+  <div id="board-tb">
+    <div class="trow" id="board-r1">
+      <!-- Home icon -->
+      <button class="tb" onclick="goHome()" title="Inicio" style="flex-shrink:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      <div class="sep"></div>
+      <button class="tb active" id="btn-pen"     onclick="setTool('pen')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </button>
+      <button class="tb" id="btn-pendash" onclick="setTool('pendash')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2.5"><path d="M4 19 Q9 9 14 14 Q18 18 20 6"/></svg>
+      </button>
+      <button class="tb" id="btn-line"    onclick="setTool('line')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/></svg>
+      </button>
+      <button class="tb" id="btn-arrow"   onclick="setTool('arrow')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9,5 19,5 19,15"/></svg>
+      </button>
+      <button class="tb" id="btn-rect"    onclick="setTool('rect')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
+      </button>
+      <button class="tb" id="btn-dot"     onclick="setTool('dot')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/></svg>
+      </button>
+      <button class="tb" id="btn-cross"   onclick="setTool('cross')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+      <button class="tb" id="btn-eraser"  onclick="setTool('eraser')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg>
+      </button>
+      <div class="sep"></div>
+      <!-- Rotate button: only shown on desktop -->
+      <button class="tb" id="btn-rotate" onclick="rotateBoard()" title="Rotar pista" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M21 8A9 9 0 1 1 12 3"/></svg>
+      </button>
+      <button class="tb" onclick="boardClearAll()" style="color:#ef4444;margin-left:auto;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+      <button class="tb" onclick="boardScreenshot()" title="Captura" style="color:#00e5a0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+      </button>
+    </div>
+    <div class="trow" id="board-r2">
+      <div class="csw active" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')"></div>
+      <div class="csw"        style="background:#facc15"                     data-c="#facc15" onclick="setColor('#facc15')"></div>
+      <div class="csw"        style="background:#22c55e"                     data-c="#22c55e" onclick="setColor('#22c55e')"></div>
+      <div class="csw"        style="background:#ef4444"                     data-c="#ef4444" onclick="setColor('#ef4444')"></div>
+      <div class="csw"        style="background:#f97316"                     data-c="#f97316" onclick="setColor('#f97316')"></div>
+      <div class="csw"        style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')"></div>
+      <div class="sep"></div>
+      <button class="swb"        id="sw0" onclick="setStroke(2)"  ><div class="sdot" style="width:3px;height:3px"></div></button>
+      <button class="swb active" id="sw1" onclick="setStroke(3.5)"><div class="sdot" style="width:5px;height:5px"></div></button>
+      <button class="swb"        id="sw2" onclick="setStroke(6)"  ><div class="sdot" style="width:8px;height:8px"></div></button>
+    </div>
+  </div>
+  <canvas id="board-cv"></canvas>
+  <div id="board-toast" style="bottom:20px;"></div>
+</div>
+
+<script>
+// ==================================================
+// NAVIGATION
+// ==================================================
+var currentScreen='home';
+var boardReady=false;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  currentScreen=id;
+}
+function goHome(){ showScreen('home'); }
+function openBoard(){
+  showScreen('board-screen');
+  if(!boardReady){ boardReady=true; initBoard(); }
+}
+function openBoard3D(){ window.location.href='padel-3d.html'; }
+function showPro(){ document.getElementById('pro-modal').classList.add('open'); }
+function closePro(){ document.getElementById('pro-modal').classList.remove('open'); }
+
+// ==================================================
+// BOARD 2D
+// ==================================================
+var CW=1000,CH=2000;
+var OX=0,OY=0,SC=1,PX=0,PY=0,ZM=1;
+var cv,ctx;
+var strokes=[],live=null;
+// desktopRotated: only used on non-touch devices
+var desktopRotated=false;
+var S={tool:'pen',color:'#ffffff',stroke:3.5,drawing:false,sx:0,sy:0,path:[],
+  ptrs:{},pinchD:null,pinchM:null,sel:null};
+var CHIP_R=64;
+var PLAYERS=[
+  {id:'p1',label:'D',color:'#2563eb',cx:250,cy:400},
+  {id:'p2',label:'R',color:'#2563eb',cx:750,cy:400},
+  {id:'p3',label:'R',color:'#dc2626',cx:250,cy:1600},
+  {id:'p4',label:'D',color:'#dc2626',cx:750,cy:1600}
+];
+
+// Is touch device?
+function isTouch(){ return ('ontouchstart' in window || navigator.maxTouchPoints>0); }
+
+// Court orientation: on mobile follows device, on desktop can be toggled
+function courtLand(){
+  if(isTouch()) return window.innerWidth>window.innerHeight;
+  return desktopRotated ? (window.innerWidth<=window.innerHeight) : (window.innerWidth>window.innerHeight);
+}
+
+// Toolbar height: always single row (44px) — action buttons go to row2 in portrait
+function tbH(){ return 88; } // always 2 rows
+
+function initBoard(){
+  cv=document.getElementById('board-cv');
+  ctx=cv.getContext('2d');
+  resizeBoard();
+  boardEvents();
+}
+
+function resizeBoard(){
+  if(!cv)return;
+  var th=tbH(), vw=window.innerWidth, vh=window.innerHeight-th;
+  cv.width=vw; cv.height=vh; cv.style.top=th+'px';
+  document.getElementById('board-tb').style.height=th+'px';
+  document.getElementById('board-toast').style.top=(th+8)+'px';
+
+  // Show/hide rotate button — desktop only
+  var rot=document.getElementById('btn-rotate');
+  if(rot) rot.style.display=isTouch()?'none':'flex';
+
+  var land=courtLand();
+  if(!land){ SC=Math.min(vh/CH,vw/CW); OX=(vw-CW*SC)/2; OY=(vh-CH*SC)/2; }
+  else      { SC=Math.min(vw/CH,vh/CW); OX=(vw-CH*SC)/2; OY=(vh-CW*SC)/2; }
+  // Reset zoom/pan on resize but keep ZM at minimum 1
+  PX=0;PY=0;ZM=1;
+  draw();
+}
+
+function rotateBoard(){
+  desktopRotated=!desktopRotated;
+  PX=0;PY=0;ZM=1;
+  var land=courtLand();
+  var vw=window.innerWidth, vh=window.innerHeight-tbH();
+  if(!land){ SC=Math.min(vh/CH,vw/CW); OX=(vw-CW*SC)/2; OY=(vh-CH*SC)/2; }
+  else      { SC=Math.min(vw/CH,vh/CW); OX=(vw-CH*SC)/2; OY=(vh-CW*SC)/2; }
+  draw();
+}
+
+// Coordinate helpers
+function toScreen(cx,cy){
+  var land=courtLand();
+  var s=SC*ZM;
+  if(!land) return{x:OX+PX+cx*s,y:OY+PY+cy*s};
+  return{x:OX+PX+cy*s,y:OY+PY+(CW-cx)*s};
+}
+function toCourt(px,py){
+  var s=SC*ZM;
+  var rx=(px-OX-PX)/s, ry=(py-OY-PY)/s;
+  var land=courtLand();
+  if(!land) return{x:rx,y:ry};
+  return{x:CW-ry,y:rx};
+}
+function ptr(e){
+  var th=tbH();
+  var r=toCourt(e.clientX, e.clientY-th);
+  return{x:Math.max(0,Math.min(CW,r.x)),y:Math.max(0,Math.min(CH,r.y))};
+}
+
+// Draw everything
+function draw(){
+  if(!ctx)return;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#181818'; ctx.fillRect(0,0,cv.width,cv.height);
+  var land=courtLand(), s=SC*ZM;
+  ctx.save();
+  if(!land){ ctx.translate(OX+PX,OY+PY); ctx.scale(s,s); }
+  else      { ctx.translate(OX+PX,OY+PY+CW*s); ctx.rotate(-Math.PI/2); ctx.scale(s,s); }
+  drawCourt();
+  strokes.forEach(function(st){drawStroke(st);});
+  if(live) drawStroke(live);
+  drawChips(land);
+  ctx.restore();
+}
+
+function drawCourt(){
+  var W=CW,H=CH,net=H/2,svc=305,lw=6;
+  ctx.fillStyle='#3042c8'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(255,255,255,0.04)';
+  ctx.fillRect(0,0,W,300); ctx.fillRect(0,H-300,W,300);
+  ctx.strokeStyle='rgba(255,255,255,0.95)'; ctx.lineWidth=lw;
+  ctx.lineCap='square'; ctx.setLineDash([]);
+  ctx.strokeRect(lw/2,lw/2,W-lw,H-lw);
+  function hl(x,y,w){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();}
+  function vl(x,y1,y2){ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2);ctx.stroke();}
+  hl(0,svc,W); hl(0,H-svc,W); vl(W/2,svc,H-svc);
+  ctx.lineWidth=lw*2.5; ctx.strokeStyle='#fff'; hl(0,net,W);
+}
+
+function drawChips(land){
+  PLAYERS.forEach(function(p){
+    ctx.beginPath(); ctx.arc(p.cx,p.cy,CHIP_R,0,Math.PI*2);
+    ctx.fillStyle=p.color; ctx.fill();
+    ctx.strokeStyle=S.sel===p.id?'#00e5a0':'rgba(255,255,255,0.7)';
+    ctx.lineWidth=S.sel===p.id?3:2; ctx.setLineDash([]); ctx.stroke();
+    ctx.save(); ctx.translate(p.cx,p.cy);
+    if(land) ctx.rotate(Math.PI/2);
+    ctx.fillStyle='#fff';
+    ctx.font='bold '+CHIP_R+'px "Bebas Neue",sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(p.label,0,1); ctx.restore();
+  });
+}
+
+function drawStroke(s){
+  ctx.save();
+  ctx.strokeStyle=s.color; ctx.fillStyle=s.color;
+  ctx.lineWidth=s.w*2; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.setLineDash([]);
+  if(s.type==='pen'||s.type==='pendash'){
+    if(!s.path||s.path.length<2){ctx.restore();return;}
+    if(s.type==='pendash') ctx.setLineDash([s.w*4,s.w*3]);
+    ctx.beginPath();
+    s.path.forEach(function(p,i){i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+    ctx.stroke(); ctx.setLineDash([]);
+  } else if(s.type==='line'){
+    ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);ctx.stroke();
+  } else if(s.type==='arrow'){
+    var a=Math.atan2(s.y2-s.y1,s.x2-s.x1),hl=Math.max(40,s.w*10);
+    ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(s.x2,s.y2);
+    ctx.lineTo(s.x2-hl*Math.cos(a-Math.PI/6),s.y2-hl*Math.sin(a-Math.PI/6));
+    ctx.lineTo(s.x2-hl*Math.cos(a+Math.PI/6),s.y2-hl*Math.sin(a+Math.PI/6));
+    ctx.closePath();ctx.fill();
+  } else if(s.type==='rect'){
+    ctx.beginPath();ctx.rect(s.x1,s.y1,s.x2-s.x1,s.y2-s.y1);ctx.stroke();
+  } else if(s.type==='dot'){
+    ctx.beginPath();ctx.arc(s.x1,s.y1,s.w*8,0,Math.PI*2);ctx.fill();
+  } else if(s.type==='cross'){
+    var sz=s.w*8; ctx.lineWidth=s.w*1.5;
+    ctx.beginPath();ctx.moveTo(s.x1-sz,s.y1-sz);ctx.lineTo(s.x1+sz,s.y1+sz);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(s.x1+sz,s.y1-sz);ctx.lineTo(s.x1-sz,s.y1+sz);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// Eraser
+function eraseAt(cx,cy){
+  var r2=(50/ZM)*(50/ZM),n=strokes.length;
+  strokes=strokes.filter(function(s){return !hitTest(s,cx,cy,r2);});
+  if(strokes.length!==n) draw();
+}
+function hitTest(s,cx,cy,r2){
+  return pts(s).some(function(p){return (p.x-cx)*(p.x-cx)+(p.y-cy)*(p.y-cy)<=r2;});
+}
+function pts(s){
+  if(s.type==='dot'||s.type==='cross') return [{x:s.x1,y:s.y1}];
+  if(s.path) return s.path;
+  if(s.x1!==undefined){
+    var a=[]; for(var i=0;i<=14;i++) a.push({x:s.x1+(s.x2-s.x1)*i/14,y:s.y1+(s.y2-s.y1)*i/14});
+    return a;
+  }
+  return[];
+}
+
+// Chip hit
+function chipHit(cx,cy){
+  for(var i=0;i<PLAYERS.length;i++){
+    var p=PLAYERS[i],dx=p.cx-cx,dy=p.cy-cy;
+    if(dx*dx+dy*dy<=CHIP_R*CHIP_R*2.5) return p;
+  }
+  return null;
+}
+
+// Events
+function boardEvents(){
+  cv.addEventListener('pointerdown',function(e){
+    e.preventDefault();
+    S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+    var plist=Object.values(S.ptrs);
+    if(plist.length===2){S.drawing=false;live=null;S.pinchD=pd(plist);S.pinchM=pm(plist);return;}
+    var pos=ptr(e);
+    var chip=chipHit(pos.x,pos.y);
+    if(chip){S.sel=chip.id;S.drawing=false;draw();cv.setPointerCapture(e.pointerId);return;}
+    S.sel=null; S.drawing=true; S.sx=pos.x; S.sy=pos.y; S.path=[{x:pos.x,y:pos.y}];
+    cv.setPointerCapture(e.pointerId);
+    if(S.tool==='eraser') eraseAt(pos.x,pos.y);
+  });
+
+  cv.addEventListener('pointermove',function(e){
+    e.preventDefault();
+    if(e.pointerId in S.ptrs) S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+    var plist=Object.values(S.ptrs);
+    // Pinch zoom — clamp ZM so court never gets smaller than full view (ZM >= 1)
+    if(plist.length===2&&S.pinchD!==null){
+      var nd=pd(plist),nm=pm(plist);
+      var nz=Math.max(1,Math.min(8,ZM*nd/S.pinchD));
+      var th=tbH(),mx=nm.x,my=nm.y-th;
+      PX=mx-OX-(mx-OX-PX)*(nz/ZM); PY=my-OY-(my-OY-PY)*(nz/ZM);
+      PX+=nm.x-S.pinchM.x; PY+=nm.y-S.pinchM.y;
+      ZM=nz;S.pinchD=nd;S.pinchM=nm;draw();return;
+    }
+    // Drag chip
+    if(S.sel&&!S.drawing){
+      var p=PLAYERS.find(function(p){return p.id===S.sel;});
+      if(p){var pos2=ptr(e);p.cx=Math.max(0,Math.min(CW,pos2.x));p.cy=Math.max(0,Math.min(CH,pos2.y));draw();}
+      return;
+    }
+    if(!S.drawing||plist.length!==1) return;
+    var pos=ptr(e);
+    if(S.tool==='eraser'){eraseAt(pos.x,pos.y);return;}
+    if(S.tool==='pen'||S.tool==='pendash'){
+      S.path.push(pos);
+      live={type:S.tool,color:S.color,w:S.stroke,path:S.path.slice()};
+    } else {
+      live={type:S.tool,color:S.color,w:S.stroke,x1:S.sx,y1:S.sy,x2:pos.x,y2:pos.y};
+    }
+    draw();
+  });
+
+  cv.addEventListener('pointerup',function(e){
+    e.preventDefault();
+    delete S.ptrs[e.pointerId];
+    if(S.sel){S.sel=null;draw();}
+    if(!S.drawing){S.pinchD=null;S.pinchM=null;return;}
+    S.drawing=false;
+    if(S.tool==='eraser'){live=null;return;}
+    var pos=ptr(e);
+    if(S.tool==='pen'||S.tool==='pendash'){
+      if(S.path.length>1) strokes.push({type:S.tool,color:S.color,w:S.stroke,path:S.path.concat([pos])});
+    } else if(S.tool==='dot'){
+      strokes.push({type:'dot',color:S.color,w:S.stroke,x1:S.sx,y1:S.sy});
+    } else if(S.tool==='cross'){
+      strokes.push({type:'cross',color:S.color,w:S.stroke,x1:S.sx,y1:S.sy});
+    } else {
+      strokes.push({type:S.tool,color:S.color,w:S.stroke,x1:S.sx,y1:S.sy,x2:pos.x,y2:pos.y});
+    }
+    live=null; draw();
+  });
+
+  cv.addEventListener('pointercancel',function(e){
+    delete S.ptrs[e.pointerId];S.drawing=false;live=null;S.sel=null;draw();
+  });
+}
+
+function pd(p){var dx=p[0].x-p[1].x,dy=p[0].y-p[1].y;return Math.sqrt(dx*dx+dy*dy)||1;}
+function pm(p){return{x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};}
+
+// Tool controls
+var TMAP={pen:'btn-pen',pendash:'btn-pendash',line:'btn-line',arrow:'btn-arrow',
+  rect:'btn-rect',dot:'btn-dot',cross:'btn-cross',eraser:'btn-eraser'};
+function setTool(t){
+  S.tool=t; S.sel=null;
+  document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('active');});
+  var el=document.getElementById(TMAP[t]); if(el)el.classList.add('active');
+  if(cv) draw();
+}
+function setColor(c){
+  S.color=c;
+  document.querySelectorAll('.csw').forEach(function(s){s.classList.toggle('active',s.dataset.c===c);});
+}
+function setStroke(w){
+  S.stroke=w;
+  ['sw0','sw1','sw2','sw0l','sw1l','sw2l'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.classList.remove('active');
+  });
+  var m={2:['sw0','sw0l'],3.5:['sw1','sw1l'],6:['sw2','sw2l']};
+  (m[w]||[]).forEach(function(id){var el=document.getElementById(id);if(el)el.classList.add('active');});
+}
+function boardClearAll(){strokes=[];live=null;if(cv)draw();showToast('Pizarra vaciada');}
+
+// Screenshot: always renders court at base scale (ZM=1), cropped to court bounds, no black margins
+function boardScreenshot(){
+  if(!cv)return;
+  var land=courtLand();
+  // Court pixel size at SC (base scale, ZM=1)
+  var cw,ch;
+  if(!land){ cw=Math.round(CW*SC); ch=Math.round(CH*SC); }
+  else      { cw=Math.round(CH*SC); ch=Math.round(CW*SC); }
+
+  // Offscreen canvas exactly the size of the court
+  var off=document.createElement('canvas');
+  off.width=cw; off.height=ch;
+  var oc=off.getContext('2d');
+
+  // Transform: same as draw() but with OX=0, OY=0, ZM=1
+  oc.fillStyle='#3042c8'; // court bg (no black margin)
+  if(!land){
+    oc.translate(0,0); oc.scale(SC,SC);
+  } else {
+    oc.translate(0,CW*SC); oc.rotate(-Math.PI/2); oc.scale(SC,SC);
+  }
+
+  // Draw court
+  (function(){
+    var c=oc, W=CW,H=CH,net=H/2,svc=305,lw=6;
+    c.fillStyle='#3042c8'; c.fillRect(0,0,W,H);
+    c.fillStyle='rgba(255,255,255,0.04)';
+    c.fillRect(0,0,W,300); c.fillRect(0,H-300,W,300);
+    c.strokeStyle='rgba(255,255,255,0.95)'; c.lineWidth=lw; c.lineCap='square'; c.setLineDash([]);
+    c.strokeRect(lw/2,lw/2,W-lw,H-lw);
+    function hl(x,y,w){c.beginPath();c.moveTo(x,y);c.lineTo(x+w,y);c.stroke();}
+    function vl(x,y1,y2){c.beginPath();c.moveTo(x,y1);c.lineTo(x,y2);c.stroke();}
+    hl(0,svc,W); hl(0,H-svc,W); vl(W/2,svc,H-svc);
+    c.lineWidth=lw*2.5; c.strokeStyle='#fff'; hl(0,net,W);
+  })();
+
+  // Draw strokes
+  var savedCtx=ctx; ctx=oc;
+  strokes.forEach(function(st){drawStroke(st);});
+  ctx=savedCtx;
+
+  // Draw chips
+  (function(){
+    var c=oc;
+    PLAYERS.forEach(function(p){
+      c.beginPath(); c.arc(p.cx,p.cy,CHIP_R,0,Math.PI*2);
+      c.fillStyle=p.color; c.fill();
+      c.strokeStyle='rgba(255,255,255,0.7)'; c.lineWidth=2; c.setLineDash([]); c.stroke();
+      c.save(); c.translate(p.cx,p.cy);
+      if(land) c.rotate(Math.PI/2);
+      c.fillStyle='#fff'; c.font='bold '+CHIP_R+'px "Bebas Neue",sans-serif';
+      c.textAlign='center'; c.textBaseline='middle'; c.fillText(p.label,0,1);
+      c.restore();
+    });
+  })();
+
+  var url=off.toDataURL('image/png');
+  var a=document.createElement('a');
+  a.href=url; a.download='pizarra-padel-2d.png'; a.click();
+  showToast('Captura guardada');
+}
+
+function showToast(msg){
+  var t=document.getElementById('board-toast');
+  t.textContent=msg;t.classList.add('on');
+  setTimeout(function(){t.classList.remove('on');},1800);
+}
+
+// Resize / orientation
+window.addEventListener('resize',function(){if(currentScreen==='board-screen')resizeBoard();});
+window.addEventListener('orientationchange',function(){
+  setTimeout(function(){if(currentScreen==='board-screen')resizeBoard();},80);
+});
+document.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+
+// Service worker
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
+
+</script>
 </body>
 </html>
