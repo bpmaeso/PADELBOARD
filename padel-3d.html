@@ -2,8 +2,16 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Pizarra Padel 3D</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Pizarra Pádel 3D</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10131a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pizarra Pádel">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--panel:#10131a;--border:#1e222c;--accent:#00e5a0;--text:#e6edf3;--muted:#4a5060;}
@@ -555,6 +563,11 @@ buildPlayers();
 setCam('iso');
 animate();
 document.getElementById('loading').style.display='none';
+
+// Service worker (PWA offline shell)
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
 </script>
 </body>
 </html>
