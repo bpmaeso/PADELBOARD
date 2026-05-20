@@ -356,8 +356,8 @@ var strokes=[],live=null;
 var courtConfig={
   courtColor:'#3042c8',   // superficie
   glassColor:'#dff4ff',   // cristal
-  meshColor :'#1f1f1f',   // reja (mallazo)
-  meshLine  :'#5a5a5a',   // textura reja
+  meshColor :'#3a3f47',   // reja (mallazo) — gris metálico, se distingue del fondo
+  meshLine  :'#737b86',   // textura reja
   lineColor :'#ffffff',   // líneas y red
   wall      :16,          // grosor pared en u (~0.16 m, engrosado para legibilidad)
   glassSide :400,         // cristal lateral desde cada vértice (4 m)
@@ -481,22 +481,46 @@ function drawCourt(){
   ctx.fillStyle='rgba(255,255,255,0.04)';
   ctx.fillRect(0,0,W,svc); ctx.fillRect(0,H-svc,W,svc);
 
-  // ── Paredes: cristal (claro) + reja (oscuro), por fuera del rectángulo ──
+  var PLATE=200; // junta entre placas de cristal cada 2 m (200 u)
+
+  // ── Cristal (fondos + laterales + vértices) ──
   ctx.fillStyle=cc.glassColor;
-  ctx.fillRect(0,-g,W,g); ctx.fillRect(0,H,W,g);              // cristal fondos
-  ctx.fillRect(-g,0,g,gs); ctx.fillRect(-g,H-gs,g,gs);        // cristal lat. izq.
-  ctx.fillRect(W,0,g,gs);  ctx.fillRect(W,H-gs,g,gs);         // cristal lat. der.
-  ctx.fillRect(-g,-g,g,g); ctx.fillRect(W,-g,g,g);            // vértices
+  ctx.fillRect(0,-g,W,g); ctx.fillRect(0,H,W,g);              // fondos
+  ctx.fillRect(-g,0,g,gs); ctx.fillRect(-g,H-gs,g,gs);       // lat. izq.
+  ctx.fillRect(W,0,g,gs);  ctx.fillRect(W,H-gs,g,gs);        // lat. der.
+  ctx.fillRect(-g,-g,g,g); ctx.fillRect(W,-g,g,g);           // vértices
   ctx.fillRect(-g,H,g,g);  ctx.fillRect(W,H,g,g);
 
-  ctx.fillStyle=cc.meshColor;                                  // reja (mallazo)
-  ctx.fillRect(-g,gs,g,ms); ctx.fillRect(-g,H-gs-ms,g,ms);
-  ctx.fillRect(W,gs,g,ms);  ctx.fillRect(W,H-gs-ms,g,ms);
-  ctx.strokeStyle=cc.meshLine; ctx.lineWidth=1.5;             // textura reja
-  [[-g,gs],[-g,H-gs-ms],[W,gs],[W,H-gs-ms]].forEach(function(r){
-    for(var i=0;i*45<=ms;i++){ var y=r[1]+i*45;
-      ctx.beginPath(); ctx.moveTo(r[0],y); ctx.lineTo(r[0]+g,y); ctx.stroke(); }
+  // Juntas de las placas de cristal (sutiles, cada 2 m, perpendiculares a la pared)
+  ctx.strokeStyle='rgba(35,70,90,0.45)'; ctx.lineWidth=2;
+  for(var jx=PLATE; jx<W; jx+=PLATE){                          // fondos: verticales
+    ctx.beginPath(); ctx.moveTo(jx,-g); ctx.lineTo(jx,0);  ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(jx,H);  ctx.lineTo(jx,H+g); ctx.stroke();
+  }
+  for(var jy=PLATE; jy<gs; jy+=PLATE){                         // laterales: horizontales
+    ctx.beginPath(); ctx.moveTo(-g,jy);   ctx.lineTo(0,jy);     ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W,jy);    ctx.lineTo(W+g,jy);   ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-g,H-jy); ctx.lineTo(0,H-jy);   ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W,H-jy);  ctx.lineTo(W+g,H-jy); ctx.stroke();
+  }
+
+  // ── Reja / mallazo (gris con textura y borde, para distinguirla del hueco) ──
+  var meshRects=[[-g,gs],[-g,H-gs-ms],[W,gs],[W,H-gs-ms]];
+  ctx.fillStyle=cc.meshColor;
+  meshRects.forEach(function(r){ ctx.fillRect(r[0],r[1],g,ms); });
+  ctx.strokeStyle=cc.meshLine; ctx.lineWidth=1.2;             // textura mallazo
+  meshRects.forEach(function(r){
+    for(var yy=0; yy<=ms; yy+=16){ ctx.beginPath(); ctx.moveTo(r[0],r[1]+yy); ctx.lineTo(r[0]+g,r[1]+yy); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(r[0]+g/2,r[1]); ctx.lineTo(r[0]+g/2,r[1]+ms); ctx.stroke();
   });
+  ctx.strokeStyle='rgba(255,255,255,0.28)'; ctx.lineWidth=1.5; // borde reja
+  meshRects.forEach(function(r){ ctx.strokeRect(r[0],r[1],g,ms); });
+
+  // ── Puerta: hueco junto a la red, con jambas claras a cada lado ──
+  ctx.fillStyle=cc.glassColor;
+  var jamb=12;
+  ctx.fillRect(-g,gs+ms,g,jamb); ctx.fillRect(-g,H-gs-ms-jamb,g,jamb);
+  ctx.fillRect(W,gs+ms,g,jamb);  ctx.fillRect(W,H-gs-ms-jamb,g,jamb);
 
   // ── Líneas interiores ──
   ctx.strokeStyle=cc.lineColor; ctx.lineWidth=lw; ctx.lineCap='square';
@@ -787,15 +811,26 @@ function buildCourtSVG(){
   var cc=courtConfig, M=courtMargin(), W=CW, H=CH;
   var g=cc.wall, gs=cc.glassSide, ms=cc.meshSide, svc=cc.serviceOff;
   var vbW=W+2*M, vbH=H+2*M, ox=M, oy=M, lw=6;
+  var PLATE=200, jamb=12;
   function R(x,y,w,h,f){return '<rect x="'+(ox+x)+'" y="'+(oy+y)+'" width="'+w+'" height="'+h+'" fill="'+f+'"/>';}
-  function L(x1,y1,x2,y2,w){return '<line x1="'+(ox+x1)+'" y1="'+(oy+y1)+'" x2="'+(ox+x2)+'" y2="'+(oy+y2)+'" stroke="'+cc.lineColor+'" stroke-width="'+w+'"/>';}
+  function RS(x,y,w,h,col,sw){return '<rect x="'+(ox+x)+'" y="'+(oy+y)+'" width="'+w+'" height="'+h+'" fill="none" stroke="'+col+'" stroke-width="'+sw+'"/>';}
+  function L(x1,y1,x2,y2,w,col){return '<line x1="'+(ox+x1)+'" y1="'+(oy+y1)+'" x2="'+(ox+x2)+'" y2="'+(oy+y2)+'" stroke="'+(col||cc.lineColor)+'" stroke-width="'+w+'"/>';}
   var s='<svg xmlns="http://www.w3.org/2000/svg" width="'+vbW+'" height="'+vbH+'" viewBox="0 0 '+vbW+' '+vbH+'">';
   s+=R(-M,-M,vbW,vbH,'#181818');
   s+=R(0,0,W,H,cc.courtColor);
+  // cristal
   [[0,-g,W,g],[0,H,W,g],[-g,0,g,gs],[-g,H-gs,g,gs],[W,0,g,gs],[W,H-gs,g,gs],
    [-g,-g,g,g],[W,-g,g,g],[-g,H,g,g],[W,H,g,g]].forEach(function(r){s+=R(r[0],r[1],r[2],r[3],cc.glassColor);});
-  [[-g,gs,g,ms],[-g,H-gs-ms,g,ms],[W,gs,g,ms],[W,H-gs-ms,g,ms]].forEach(function(r){s+=R(r[0],r[1],r[2],r[3],cc.meshColor);});
-  s+='<rect x="'+(ox+lw/2)+'" y="'+(oy+lw/2)+'" width="'+(W-lw)+'" height="'+(H-lw)+'" fill="none" stroke="'+cc.lineColor+'" stroke-width="'+lw+'"/>';
+  // juntas de placas de cristal (cada 2 m)
+  var jc='rgba(35,70,90,0.45)';
+  for(var jx=PLATE; jx<W; jx+=PLATE){ s+=L(jx,-g,jx,0,2,jc)+L(jx,H,jx,H+g,2,jc); }
+  for(var jy=PLATE; jy<gs; jy+=PLATE){ s+=L(-g,jy,0,jy,2,jc)+L(W,jy,W+g,jy,2,jc)+L(-g,H-jy,0,H-jy,2,jc)+L(W,H-jy,W+g,H-jy,2,jc); }
+  // reja + borde
+  [[-g,gs,g,ms],[-g,H-gs-ms,g,ms],[W,gs,g,ms],[W,H-gs-ms,g,ms]].forEach(function(r){s+=R(r[0],r[1],r[2],r[3],cc.meshColor)+RS(r[0],r[1],r[2],r[3],'rgba(255,255,255,0.28)',1.5);});
+  // jambas de la puerta
+  [[-g,gs+ms],[-g,H-gs-ms-jamb],[W,gs+ms],[W,H-gs-ms-jamb]].forEach(function(r){s+=R(r[0],r[1],g,jamb,cc.glassColor);});
+  // líneas
+  s+=RS(lw/2,lw/2,W-lw,H-lw,cc.lineColor,lw);
   s+=L(0,svc,W,svc,lw)+L(0,H-svc,W,H-svc,lw)+L(W/2,svc,W/2,H-svc,lw)+L(0,H/2,W,H/2,lw*2.5);
   s+='</svg>';
   return s;
