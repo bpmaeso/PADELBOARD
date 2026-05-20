@@ -109,6 +109,33 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   padding:6px 14px;border-radius:18px;font-size:11px;pointer-events:none;
   opacity:0;transition:opacity .25s,transform .25s;z-index:200;}
 #board-toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── GENERADOR DE PISTA ── */
+#gen-screen{background:var(--bg);}
+.gen-tb{display:flex;align-items:center;gap:12px;padding:48px 16px 12px;
+  background:linear-gradient(180deg,#0d1220,var(--bg));}
+.gen-title{font-weight:600;font-size:16px;}
+.gen-body{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.gen-preview{height:34vh;background:#181818;border-bottom:1px solid var(--border);}
+.gen-preview canvas{width:100%;height:100%;display:block;}
+.gen-controls{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 48px;}
+.gen-group{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:12px 14px;margin-bottom:12px;}
+.gen-grp-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:8px;}
+.gen-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;font-size:14px;}
+.gen-row input[type=color]{width:46px;height:30px;border:1px solid var(--border);
+  background:none;padding:0;border-radius:8px;cursor:pointer;}
+.gen-rng{display:block;padding:8px 0;font-size:13px;}
+.gen-rng span{display:flex;justify-content:space-between;color:var(--text);margin-bottom:6px;}
+.gen-rng b{color:var(--accent);font-weight:600;}
+.gen-rng input[type=range]{width:100%;accent-color:var(--accent);}
+.gen-actions{display:flex;gap:10px;margin:2px 0 10px;}
+.gen-btn-main{flex:1;padding:14px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),#00b8ff);color:#000;font-weight:700;
+  font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.gen-btn-ghost{flex:1;padding:13px;border:1px solid var(--border);border-radius:12px;
+  background:transparent;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -151,13 +178,13 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <div class="pro-tag">&#128274; PRO</div>
     </div>
-    <div class="feat-card" onclick="showPro()">
+    <div class="feat-card" onclick="openGenerator()">
       <div class="feat-icon purple">&#127967;</div>
       <div class="feat-info">
         <div class="feat-title">Generador de pista</div>
-        <div class="feat-desc">Diseña tu pista personalizada en 2D y 3D con medidas oficiales</div>
+        <div class="feat-desc">Diseña tu pista 2D con medidas oficiales y úsala en la pizarra</div>
       </div>
-      <div class="pro-tag">&#128274; PRO</div>
+      <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
     <div class="feat-card" onclick="showPro()">
       <div class="feat-icon orange">&#127916;</div>
@@ -261,6 +288,41 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   <div id="board-toast" style="bottom:20px;"></div>
 </div>
 
+<!-- GENERADOR DE PISTA -->
+<div id="gen-screen" class="screen">
+  <div class="gen-tb">
+    <button class="back-btn" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Inicio
+    </button>
+    <span class="gen-title">Generador de pista</span>
+  </div>
+  <div class="gen-body">
+    <div class="gen-preview"><canvas id="gen-cv"></canvas></div>
+    <div class="gen-controls">
+      <div class="gen-group">
+        <div class="gen-grp-title">Colores</div>
+        <label class="gen-row"><span>Superficie</span><input type="color" id="g-courtColor"></label>
+        <label class="gen-row"><span>Cristal</span><input type="color" id="g-glassColor"></label>
+        <label class="gen-row"><span>Reja</span><input type="color" id="g-meshColor"></label>
+        <label class="gen-row"><span>Líneas y red</span><input type="color" id="g-lineColor"></label>
+      </div>
+      <div class="gen-group">
+        <div class="gen-grp-title">Medidas</div>
+        <label class="gen-rng"><span>Grosor de pared <b id="g-wall-v"></b></span><input type="range" id="g-wall" min="6" max="40" step="1"></label>
+        <label class="gen-rng"><span>Cristal lateral <b id="g-glassSide-v"></b></span><input type="range" id="g-glassSide" min="100" max="600" step="5"></label>
+        <label class="gen-rng"><span>Reja lateral <b id="g-meshSide-v"></b></span><input type="range" id="g-meshSide" min="100" max="700" step="5"></label>
+        <label class="gen-rng"><span>Línea de saque <b id="g-serviceOff-v"></b></span><input type="range" id="g-serviceOff" min="200" max="450" step="5"></label>
+      </div>
+      <div class="gen-actions">
+        <button class="gen-btn-ghost" onclick="genReset()">Restablecer</button>
+        <button class="gen-btn-main" onclick="genApply()">Usar en pizarra</button>
+      </div>
+      <button class="gen-btn-ghost" style="width:100%" onclick="genDownloadSVG()">Descargar SVG</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ==================================================
 // NAVIGATION
@@ -284,10 +346,29 @@ function closePro(){ document.getElementById('pro-modal').classList.remove('open
 // ==================================================
 // BOARD 2D
 // ==================================================
-var CW=1000,CH=2000;
+var CW=1000,CH=2000;            // pista 10m × 20m (100 u = 1 m)
 var OX=0,OY=0,SC=1,PX=0,PY=0,ZM=1;
 var cv,ctx;
 var strokes=[],live=null;
+
+// Configuración de la pista (paredes de cristal + reja, líneas y colores).
+// Editable desde el Generador de pista; estos valores son la pista realista de base.
+var courtConfig={
+  courtColor:'#3042c8',   // superficie
+  glassColor:'#dff4ff',   // cristal
+  meshColor :'#1f1f1f',   // reja (mallazo)
+  meshLine  :'#5a5a5a',   // textura reja
+  lineColor :'#ffffff',   // líneas y red
+  wall      :16,          // grosor pared en u (~0.16 m, engrosado para legibilidad)
+  glassSide :400,         // cristal lateral desde cada vértice (4 m)
+  meshSide  :495,         // reja lateral a continuación (4.95 m)
+  serviceOff:300          // línea de saque a 3 m del fondo
+};
+function courtMargin(){ return courtConfig.wall + 10; } // hueco exterior para las paredes
+// Valores de fábrica (para "Restablecer") y persistencia en el dispositivo.
+var COURT_DEFAULTS=JSON.parse(JSON.stringify(courtConfig));
+try{ var _cc=localStorage.getItem('padel.courtConfig'); if(_cc) Object.assign(courtConfig, JSON.parse(_cc)); }catch(e){}
+function saveCourtConfig(){ try{ localStorage.setItem('padel.courtConfig', JSON.stringify(courtConfig)); }catch(e){} }
 // desktopRotated: only used on non-touch devices
 var desktopRotated=false;
 var S={tool:'pen',color:'#ffffff',stroke:3.5,drawing:false,sx:0,sy:0,path:[],
@@ -330,21 +411,26 @@ function resizeBoard(){
   var rot=document.getElementById('btn-rotate');
   if(rot) rot.style.display=isTouch()?'none':'flex';
 
-  var land=courtLand();
-  if(!land){ SC=Math.min(vh/CH,vw/CW); OX=(vw-CW*SC)/2; OY=(vh-CH*SC)/2; }
-  else      { SC=Math.min(vw/CH,vh/CW); OX=(vw-CH*SC)/2; OY=(vh-CW*SC)/2; }
+  fitCourt();
   // Reset zoom/pan on resize but keep ZM at minimum 1
   PX=0;PY=0;ZM=1;
   draw();
 }
 
+// Ajusta SC/OX/OY para que pista + paredes quepan centradas. OX/OY = court(0,0).
+function fitCourt(){
+  var vw=window.innerWidth, vh=window.innerHeight-tbH();
+  var land=courtLand(), M=courtMargin();
+  var dimW=(land?CH:CW)+2*M, dimH=(land?CW:CH)+2*M;
+  SC=Math.min(vw/dimW, vh/dimH);
+  OX=(vw-dimW*SC)/2 + M*SC;
+  OY=(vh-dimH*SC)/2 + M*SC;
+}
+
 function rotateBoard(){
   desktopRotated=!desktopRotated;
   PX=0;PY=0;ZM=1;
-  var land=courtLand();
-  var vw=window.innerWidth, vh=window.innerHeight-tbH();
-  if(!land){ SC=Math.min(vh/CH,vw/CW); OX=(vw-CW*SC)/2; OY=(vh-CH*SC)/2; }
-  else      { SC=Math.min(vw/CH,vh/CW); OX=(vw-CH*SC)/2; OY=(vh-CW*SC)/2; }
+  fitCourt();
   draw();
 }
 
@@ -385,17 +471,41 @@ function draw(){
 }
 
 function drawCourt(){
-  var W=CW,H=CH,net=H/2,svc=305,lw=6;
-  ctx.fillStyle='#3042c8'; ctx.fillRect(0,0,W,H);
+  var cc=courtConfig;
+  var W=CW,H=CH,net=H/2,svc=cc.serviceOff,lw=6;
+  var g=cc.wall, gs=cc.glassSide, ms=cc.meshSide;
+  ctx.setLineDash([]);
+
+  // Superficie de la pista + sombreado sutil de zonas de fondo
+  ctx.fillStyle=cc.courtColor; ctx.fillRect(0,0,W,H);
   ctx.fillStyle='rgba(255,255,255,0.04)';
-  ctx.fillRect(0,0,W,300); ctx.fillRect(0,H-300,W,300);
-  ctx.strokeStyle='rgba(255,255,255,0.95)'; ctx.lineWidth=lw;
-  ctx.lineCap='square'; ctx.setLineDash([]);
-  ctx.strokeRect(lw/2,lw/2,W-lw,H-lw);
+  ctx.fillRect(0,0,W,svc); ctx.fillRect(0,H-svc,W,svc);
+
+  // ── Paredes: cristal (claro) + reja (oscuro), por fuera del rectángulo ──
+  ctx.fillStyle=cc.glassColor;
+  ctx.fillRect(0,-g,W,g); ctx.fillRect(0,H,W,g);              // cristal fondos
+  ctx.fillRect(-g,0,g,gs); ctx.fillRect(-g,H-gs,g,gs);        // cristal lat. izq.
+  ctx.fillRect(W,0,g,gs);  ctx.fillRect(W,H-gs,g,gs);         // cristal lat. der.
+  ctx.fillRect(-g,-g,g,g); ctx.fillRect(W,-g,g,g);            // vértices
+  ctx.fillRect(-g,H,g,g);  ctx.fillRect(W,H,g,g);
+
+  ctx.fillStyle=cc.meshColor;                                  // reja (mallazo)
+  ctx.fillRect(-g,gs,g,ms); ctx.fillRect(-g,H-gs-ms,g,ms);
+  ctx.fillRect(W,gs,g,ms);  ctx.fillRect(W,H-gs-ms,g,ms);
+  ctx.strokeStyle=cc.meshLine; ctx.lineWidth=1.5;             // textura reja
+  [[-g,gs],[-g,H-gs-ms],[W,gs],[W,H-gs-ms]].forEach(function(r){
+    for(var i=0;i*45<=ms;i++){ var y=r[1]+i*45;
+      ctx.beginPath(); ctx.moveTo(r[0],y); ctx.lineTo(r[0]+g,y); ctx.stroke(); }
+  });
+
+  // ── Líneas interiores ──
+  ctx.strokeStyle=cc.lineColor; ctx.lineWidth=lw; ctx.lineCap='square';
   function hl(x,y,w){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();}
   function vl(x,y1,y2){ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2);ctx.stroke();}
-  hl(0,svc,W); hl(0,H-svc,W); vl(W/2,svc,H-svc);
-  ctx.lineWidth=lw*2.5; ctx.strokeStyle='#fff'; hl(0,net,W);
+  ctx.strokeRect(lw/2,lw/2,W-lw,H-lw);          // perímetro
+  hl(0,svc,W); hl(0,H-svc,W);                    // líneas de saque
+  vl(W/2,svc,H-svc);                             // línea central de saque
+  ctx.lineWidth=lw*2.5; hl(0,net,W);             // red
 }
 
 function drawChips(land){
@@ -569,65 +679,29 @@ function setStroke(w){
 }
 function boardClearAll(){strokes=[];live=null;if(cv)draw();showToast('Pizarra vaciada');}
 
-// Screenshot: always renders court at base scale (ZM=1), cropped to court bounds, no black margins
+// Screenshot: pista + paredes a escala base (ZM=1), sin márgenes negros.
+// Reutiliza drawCourt()/drawChips() intercambiando el ctx para no duplicar geometría.
 function boardScreenshot(){
   if(!cv)return;
-  var land=courtLand();
-  // Court pixel size at SC (base scale, ZM=1)
-  var cw,ch;
-  if(!land){ cw=Math.round(CW*SC); ch=Math.round(CH*SC); }
-  else      { cw=Math.round(CH*SC); ch=Math.round(CW*SC); }
-
-  // Offscreen canvas exactly the size of the court
+  var land=courtLand(), M=courtMargin();
+  var totW=((land?CH:CW)+2*M)*SC, totH=((land?CW:CH)+2*M)*SC;
   var off=document.createElement('canvas');
-  off.width=cw; off.height=ch;
+  off.width=Math.round(totW); off.height=Math.round(totH);
   var oc=off.getContext('2d');
 
-  // Transform: same as draw() but with OX=0, OY=0, ZM=1
-  oc.fillStyle='#3042c8'; // court bg (no black margin)
-  if(!land){
-    oc.translate(0,0); oc.scale(SC,SC);
-  } else {
-    oc.translate(0,CW*SC); oc.rotate(-Math.PI/2); oc.scale(SC,SC);
-  }
+  oc.fillStyle='#181818'; oc.fillRect(0,0,off.width,off.height); // fondo exterior
+  if(!land){ oc.translate(M*SC, M*SC); oc.scale(SC,SC); }
+  else     { oc.translate(M*SC, M*SC+CW*SC); oc.rotate(-Math.PI/2); oc.scale(SC,SC); }
 
-  // Draw court
-  (function(){
-    var c=oc, W=CW,H=CH,net=H/2,svc=305,lw=6;
-    c.fillStyle='#3042c8'; c.fillRect(0,0,W,H);
-    c.fillStyle='rgba(255,255,255,0.04)';
-    c.fillRect(0,0,W,300); c.fillRect(0,H-300,W,300);
-    c.strokeStyle='rgba(255,255,255,0.95)'; c.lineWidth=lw; c.lineCap='square'; c.setLineDash([]);
-    c.strokeRect(lw/2,lw/2,W-lw,H-lw);
-    function hl(x,y,w){c.beginPath();c.moveTo(x,y);c.lineTo(x+w,y);c.stroke();}
-    function vl(x,y1,y2){c.beginPath();c.moveTo(x,y1);c.lineTo(x,y2);c.stroke();}
-    hl(0,svc,W); hl(0,H-svc,W); vl(W/2,svc,H-svc);
-    c.lineWidth=lw*2.5; c.strokeStyle='#fff'; hl(0,net,W);
-  })();
-
-  // Draw strokes
-  var savedCtx=ctx; ctx=oc;
+  var savedCtx=ctx, savedSel=S.sel;
+  ctx=oc; S.sel=null;                 // sin resaltado de selección en la captura
+  drawCourt();
   strokes.forEach(function(st){drawStroke(st);});
-  ctx=savedCtx;
+  drawChips(land);
+  ctx=savedCtx; S.sel=savedSel;
 
-  // Draw chips
-  (function(){
-    var c=oc;
-    PLAYERS.forEach(function(p){
-      c.beginPath(); c.arc(p.cx,p.cy,CHIP_R,0,Math.PI*2);
-      c.fillStyle=p.color; c.fill();
-      c.strokeStyle='rgba(255,255,255,0.7)'; c.lineWidth=2; c.setLineDash([]); c.stroke();
-      c.save(); c.translate(p.cx,p.cy);
-      if(land) c.rotate(Math.PI/2);
-      c.fillStyle='#fff'; c.font='bold '+CHIP_R+'px "Bebas Neue",sans-serif';
-      c.textAlign='center'; c.textBaseline='middle'; c.fillText(p.label,0,1);
-      c.restore();
-    });
-  })();
-
-  var url=off.toDataURL('image/png');
   var a=document.createElement('a');
-  a.href=url; a.download='pizarra-padel-2d.png'; a.click();
+  a.href=off.toDataURL('image/png'); a.download='pizarra-padel-2d.png'; a.click();
   showToast('Captura guardada');
 }
 
@@ -647,6 +721,91 @@ window.addEventListener('orientationchange',function(){
 document.addEventListener('touchmove',function(e){
   if(currentScreen==='board-screen') e.preventDefault();
 },{passive:false});
+
+// ==================================================
+// GENERADOR DE PISTA
+// ==================================================
+var genReady=false, gcv;
+function openGenerator(){
+  showScreen('gen-screen');
+  if(!genReady){ genReady=true; initGenerator(); }
+  genSyncInputs(); genRender();
+}
+function initGenerator(){
+  gcv=document.getElementById('gen-cv');
+  ['courtColor','glassColor','meshColor','lineColor'].forEach(function(k){
+    document.getElementById('g-'+k).addEventListener('input',function(e){
+      courtConfig[k]=e.target.value; genRender();
+    });
+  });
+  ['wall','glassSide','meshSide','serviceOff'].forEach(function(k){
+    document.getElementById('g-'+k).addEventListener('input',function(e){
+      courtConfig[k]=+e.target.value; genLabel(k); genRender();
+    });
+  });
+  window.addEventListener('resize',function(){ if(currentScreen==='gen-screen') genRender(); });
+}
+function genLabel(k){
+  var el=document.getElementById('g-'+k+'-v'); if(!el)return;
+  el.textContent=(courtConfig[k]/100).toFixed(2).replace(/0$/,'').replace(/\.$/,'')+' m';
+}
+function genSyncInputs(){
+  ['courtColor','glassColor','meshColor','lineColor'].forEach(function(k){
+    document.getElementById('g-'+k).value=courtConfig[k];
+  });
+  ['wall','glassSide','meshSide','serviceOff'].forEach(function(k){
+    document.getElementById('g-'+k).value=courtConfig[k]; genLabel(k);
+  });
+}
+// Vista previa: reutiliza drawCourt() intercambiando el ctx.
+function genRender(){
+  if(!gcv)return;
+  var r=gcv.getBoundingClientRect();
+  gcv.width=Math.max(1,Math.round(r.width)); gcv.height=Math.max(1,Math.round(r.height));
+  var M=courtMargin(), totW=CW+2*M, totH=CH+2*M;
+  var s=Math.min(gcv.width/totW, gcv.height/totH);
+  var ox=(gcv.width-totW*s)/2+M*s, oy=(gcv.height-totH*s)/2+M*s;
+  var c=gcv.getContext('2d');
+  c.setTransform(1,0,0,1,0,0);
+  c.fillStyle='#181818'; c.fillRect(0,0,gcv.width,gcv.height);
+  c.translate(ox,oy); c.scale(s,s);
+  var saved=ctx; ctx=c; drawCourt(); ctx=saved;
+  c.setTransform(1,0,0,1,0,0);
+}
+function genReset(){
+  Object.assign(courtConfig, JSON.parse(JSON.stringify(COURT_DEFAULTS)));
+  genSyncInputs(); genRender();
+}
+function genApply(){
+  saveCourtConfig();
+  openBoard();
+  if(boardReady){ fitCourt(); draw(); }
+  showToast('Pista aplicada');
+}
+// Exporta la pista como SVG vectorial.
+function buildCourtSVG(){
+  var cc=courtConfig, M=courtMargin(), W=CW, H=CH;
+  var g=cc.wall, gs=cc.glassSide, ms=cc.meshSide, svc=cc.serviceOff;
+  var vbW=W+2*M, vbH=H+2*M, ox=M, oy=M, lw=6;
+  function R(x,y,w,h,f){return '<rect x="'+(ox+x)+'" y="'+(oy+y)+'" width="'+w+'" height="'+h+'" fill="'+f+'"/>';}
+  function L(x1,y1,x2,y2,w){return '<line x1="'+(ox+x1)+'" y1="'+(oy+y1)+'" x2="'+(ox+x2)+'" y2="'+(oy+y2)+'" stroke="'+cc.lineColor+'" stroke-width="'+w+'"/>';}
+  var s='<svg xmlns="http://www.w3.org/2000/svg" width="'+vbW+'" height="'+vbH+'" viewBox="0 0 '+vbW+' '+vbH+'">';
+  s+=R(-M,-M,vbW,vbH,'#181818');
+  s+=R(0,0,W,H,cc.courtColor);
+  [[0,-g,W,g],[0,H,W,g],[-g,0,g,gs],[-g,H-gs,g,gs],[W,0,g,gs],[W,H-gs,g,gs],
+   [-g,-g,g,g],[W,-g,g,g],[-g,H,g,g],[W,H,g,g]].forEach(function(r){s+=R(r[0],r[1],r[2],r[3],cc.glassColor);});
+  [[-g,gs,g,ms],[-g,H-gs-ms,g,ms],[W,gs,g,ms],[W,H-gs-ms,g,ms]].forEach(function(r){s+=R(r[0],r[1],r[2],r[3],cc.meshColor);});
+  s+='<rect x="'+(ox+lw/2)+'" y="'+(oy+lw/2)+'" width="'+(W-lw)+'" height="'+(H-lw)+'" fill="none" stroke="'+cc.lineColor+'" stroke-width="'+lw+'"/>';
+  s+=L(0,svc,W,svc,lw)+L(0,H-svc,W,H-svc,lw)+L(W/2,svc,W/2,H-svc,lw)+L(0,H/2,W,H/2,lw*2.5);
+  s+='</svg>';
+  return s;
+}
+function genDownloadSVG(){
+  var blob=new Blob([buildCourtSVG()],{type:'image/svg+xml;charset=utf-8'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='pista-padel.svg'; a.click();
+  showToast('SVG descargado');
+}
 
 // Service worker
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
