@@ -171,6 +171,25 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   border:1px solid var(--border);background:rgba(16,19,26,.85);color:#e6edf3;cursor:pointer;}
 #board-screen.immersive #immersive-exit{display:flex;}
 #immersive-exit svg{width:20px;height:20px;}
+
+/* ── MIS PIZARRAS ── */
+#boards-screen{background:var(--bg);}
+.boards-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 40px;}
+.boards-save{display:flex;gap:8px;margin-bottom:18px;}
+.boards-save input{flex:1;min-width:0;padding:13px;border-radius:12px;border:1px solid var(--border);
+  background:var(--card);color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;}
+.boards-save .gen-btn-main{flex:0 0 auto;padding:13px 16px;}
+.boards-list{display:flex;flex-direction:column;gap:10px;}
+.boards-empty{color:var(--muted);font-size:14px;text-align:center;padding:40px 12px;}
+.board-item{display:flex;align-items:center;gap:10px;background:var(--card);
+  border:1px solid var(--border);border-radius:14px;padding:12px 14px;}
+.board-meta{flex:1;min-width:0;}
+.board-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.board-date{font-size:12px;color:var(--muted);margin-top:2px;}
+.board-act{flex:0 0 auto;padding:9px 13px;border-radius:10px;border:1px solid var(--accent);
+  background:rgba(0,229,160,.12);color:var(--accent);font-size:13px;font-weight:600;
+  cursor:pointer;font-family:'DM Sans',sans-serif;}
+.board-act.board-del{border-color:#ef4444;background:rgba(239,68,68,.1);color:#ef4444;padding:9px 12px;}
 </style>
 </head>
 <body>
@@ -229,13 +248,13 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
-    <div class="feat-card" onclick="showPro()">
+    <div class="feat-card" onclick="openBoards()">
       <div class="feat-icon green">&#128193;</div>
       <div class="feat-info">
         <div class="feat-title">Guardar pizarras</div>
-        <div class="feat-desc">Guarda tus jugadas y accede a ellas cuando quieras</div>
+        <div class="feat-desc">Guarda tus jugadas con nombre y vuelve a cargarlas cuando quieras</div>
       </div>
-      <div class="pro-tag">&#128274; PRO</div>
+      <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
   </div>
 </div>
@@ -396,6 +415,24 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <button class="gen-btn-ghost" style="width:100%" onclick="genDownloadSVG()">Descargar SVG</button>
     </div>
+  </div>
+</div>
+
+<!-- MIS PIZARRAS -->
+<div id="boards-screen" class="screen">
+  <div class="gen-tb">
+    <button class="back-btn" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Inicio
+    </button>
+    <span class="gen-title">Mis pizarras</span>
+  </div>
+  <div class="boards-body">
+    <div class="boards-save">
+      <input id="board-name" placeholder="Nombre de la jugada" maxlength="40">
+      <button class="gen-btn-main" onclick="boardsSaveCurrent()">Guardar actual</button>
+    </div>
+    <div id="boards-list" class="boards-list"></div>
   </div>
 </div>
 
@@ -1061,6 +1098,48 @@ function seqPlaySegment(seg){
     else { seqPlaySegment(seg+1); }
   }
   SEQ.raf=requestAnimationFrame(step);
+}
+
+// ==================================================
+// MIS PIZARRAS (guardar / cargar jugadas)
+// ==================================================
+function openBoards(){ showScreen('boards-screen'); boardsRender(); }
+function boardsAll(){ try{ return JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; } }
+function boardsSet(a){ try{ localStorage.setItem('padel.boards', JSON.stringify(a)); }catch(e){} }
+function boardsSaveCurrent(){
+  var inp=document.getElementById('board-name');
+  var name=(inp.value||'').trim() || ('Jugada '+(boardsAll().length+1));
+  var a=boardsAll();
+  a.unshift({
+    name:name, date:Date.now(),
+    strokes:JSON.parse(JSON.stringify(strokes)),
+    players:PLAYERS.map(function(p){return {id:p.id,cx:p.cx,cy:p.cy};}),
+    court:JSON.parse(JSON.stringify(courtConfig))
+  });
+  boardsSet(a); inp.value=''; boardsRender(); showToast('Pizarra guardada');
+}
+function boardsLoad(i){
+  var a=boardsAll(), b=a[i]; if(!b) return;
+  strokes=JSON.parse(JSON.stringify(b.strokes||[]));
+  if(b.players) b.players.forEach(function(fp){ var p=PLAYERS.find(function(x){return x.id===fp.id;}); if(p){p.cx=fp.cx;p.cy=fp.cy;} });
+  if(b.court) Object.assign(courtConfig, b.court);
+  openBoard(); if(cv){ fitCourt(); draw(); } showToast('Pizarra "'+b.name+'" cargada');
+}
+function boardsDelete(i){ var a=boardsAll(); a.splice(i,1); boardsSet(a); boardsRender(); showToast('Pizarra borrada'); }
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function boardsRender(){
+  var a=boardsAll(), el=document.getElementById('boards-list');
+  if(!el) return;
+  if(!a.length){ el.innerHTML='<div class="boards-empty">A&uacute;n no has guardado ninguna pizarra.<br>Dibuja una jugada y pulsa &laquo;Guardar actual&raquo;.</div>'; return; }
+  el.innerHTML=a.map(function(b,i){
+    var d=new Date(b.date);
+    var ds=d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    return '<div class="board-item"><div class="board-meta">'+
+      '<div class="board-name">'+escapeHtml(b.name)+'</div>'+
+      '<div class="board-date">'+ds+' &middot; '+((b.strokes||[]).length)+' trazos</div></div>'+
+      '<button class="board-act" onclick="boardsLoad('+i+')">Cargar</button>'+
+      '<button class="board-act board-del" onclick="boardsDelete('+i+')">&times;</button></div>';
+  }).join('');
 }
 
 // Service worker
