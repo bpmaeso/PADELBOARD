@@ -474,6 +474,10 @@ function drawCourt(){
   var cc=courtConfig;
   var W=CW,H=CH,net=H/2,svc=cc.serviceOff,lw=6;
   var g=cc.wall, gs=cc.glassSide, ms=cc.meshSide;
+  // Clamp defensivo: cristal + reja nunca tapan la puerta (deja hueco mínimo junto a la red)
+  var DOORGAP=70;
+  gs=Math.max(0, Math.min(gs, H/2-DOORGAP));
+  ms=Math.max(0, Math.min(ms, H/2-DOORGAP-gs));
   ctx.setLineDash([]);
 
   // Superficie de la pista + sombreado sutil de zonas de fondo
@@ -810,6 +814,9 @@ function genApply(){
 function buildCourtSVG(){
   var cc=courtConfig, M=courtMargin(), W=CW, H=CH;
   var g=cc.wall, gs=cc.glassSide, ms=cc.meshSide, svc=cc.serviceOff;
+  var DOORGAP=70;
+  gs=Math.max(0, Math.min(gs, H/2-DOORGAP));
+  ms=Math.max(0, Math.min(ms, H/2-DOORGAP-gs));
   var vbW=W+2*M, vbH=H+2*M, ox=M, oy=M, lw=6;
   var PLATE=200, jamb=12;
   function R(x,y,w,h,f){return '<rect x="'+(ox+x)+'" y="'+(oy+y)+'" width="'+w+'" height="'+h+'" fill="'+f+'"/>';}
