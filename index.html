@@ -426,6 +426,18 @@ function fitCourt(){
   OY=(vh-dimH*SC)/2 + M*SC;
 }
 
+// Limita el paneo para que la pista (con paredes) siempre cubra la pantalla:
+// nunca se ven bordes negros y, en el zoom mínimo (ZM=1), queda centrada exacta.
+function clampPan(){
+  if(!cv)return;
+  var s=SC*ZM, land=courtLand(), M=courtMargin();
+  var left0=OX-M*s, top0=OY-M*s;                       // borde exterior con PX=PY=0
+  var cW=((land?CH:CW)+2*M)*s, cH=((land?CW:CH)+2*M)*s; // tamaño en pantalla
+  var vw=cv.width, vh=cv.height;
+  if(cW>=vw){ PX=Math.max(vw-(left0+cW), Math.min(-left0, PX)); } else { PX=(vw-cW)/2-left0; }
+  if(cH>=vh){ PY=Math.max(vh-(top0+cH), Math.min(-top0, PY)); } else { PY=(vh-cH)/2-top0; }
+}
+
 function rotateBoard(){
   desktopRotated=!desktopRotated;
   PX=0;PY=0;ZM=1;
@@ -635,7 +647,7 @@ function boardEvents(){
       var th=tbH(),mx=nm.x,my=nm.y-th;
       PX=mx-OX-(mx-OX-PX)*(nz/ZM); PY=my-OY-(my-OY-PY)*(nz/ZM);
       PX+=nm.x-S.pinchM.x; PY+=nm.y-S.pinchM.y;
-      ZM=nz;S.pinchD=nd;S.pinchM=nm;draw();return;
+      ZM=nz;S.pinchD=nd;S.pinchM=nm;clampPan();draw();return;
     }
     // Drag chip
     if(S.sel&&!S.drawing){
