@@ -16,26 +16,27 @@
 | DNS | Dynu `padel-jdlq10.mywire.org` → `143.47.33.174` |
 | Caddy bloque | `padel-jdlq10.mywire.org { root * /usr/share/caddy/padel; file_server; encode gzip zstd; try_files {path} /index.html }` |
 
-## Estructura típica de la PWA
+## Estructura real de la PWA
 
 ```
 PADELBOARD/
-├── index.html
+├── index.html          # pantalla HOME
+├── padel-board.html    # pizarra táctica 2D
+├── padel-3d.html       # vista 3D
 ├── manifest.json
 ├── sw.js
-├── icons/
-│   ├── icon-192.png
-│   ├── icon-512.png
-│   └── apple-touch-icon.png
-├── css/
-├── js/
-├── assets/
+├── icon-192.png        # iconos en la RAÍZ (no en icons/)
+├── icon-512.png
+├── docs/
+├── CLAUDE.md
 └── README.md
 ```
 
+> Nota: CSS y JS van inline dentro de los `.html` (PWA vanilla, sin bundler). No hay carpetas `css/`, `js/` ni `assets/` por ahora.
+
 ## PWA requirements
 
-- `manifest.json`: name, short_name, start_url, display=standalone, theme_color, background_color, icons (192 + 512 + maskable).
+- `manifest.json`: name, short_name, start_url=`./index.html`, scope=`./`, display=`fullscreen`, theme_color (`#10131a`), background_color (`#0a0b0e`), icons 192 + 512 (cada uno con `purpose: any` y `maskable`, rutas relativas en la raíz).
 - `<link rel="manifest">` en `<head>`.
 - `<meta name="theme-color">`.
 - `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`.
@@ -45,7 +46,7 @@ PADELBOARD/
 
 ```bash
 # URLs vivas
-for path in / /manifest.json /sw.js /icons/icon-192.png /icons/icon-512.png /css/styles.css /js/app.js /apple-touch-icon.png; do
+for path in / /index.html /padel-board.html /padel-3d.html /manifest.json /sw.js /icon-192.png /icon-512.png; do
   printf '%-40s ' "$path"; curl -s -o /dev/null -w '%{http_code}\n' "https://padel-jdlq10.mywire.org$path"
 done
 # Esperado: todos 200
