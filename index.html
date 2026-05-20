@@ -278,7 +278,6 @@ function openBoard(){
   showScreen('board-screen');
   if(!boardReady){ boardReady=true; initBoard(); }
 }
-function openBoard3D(){ window.location.href='padel-3d.html'; }
 function showPro(){ document.getElementById('pro-modal').classList.add('open'); }
 function closePro(){ document.getElementById('pro-modal').classList.remove('open'); }
 
@@ -562,11 +561,11 @@ function setColor(c){
 }
 function setStroke(w){
   S.stroke=w;
-  ['sw0','sw1','sw2','sw0l','sw1l','sw2l'].forEach(function(id){
+  ['sw0','sw1','sw2'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.classList.remove('active');
   });
-  var m={2:['sw0','sw0l'],3.5:['sw1','sw1l'],6:['sw2','sw2l']};
-  (m[w]||[]).forEach(function(id){var el=document.getElementById(id);if(el)el.classList.add('active');});
+  var id={2:'sw0',3.5:'sw1',6:'sw2'}[w];
+  if(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
 }
 function boardClearAll(){strokes=[];live=null;if(cv)draw();showToast('Pizarra vaciada');}
 
