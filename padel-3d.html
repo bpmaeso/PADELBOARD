@@ -17,14 +17,21 @@
 :root{--panel:#10131a;--border:#1e222c;--accent:#00e5a0;--text:#e6edf3;--muted:#4a5060;}
 html,body{width:100%;height:100%;background:#0a0a0f;overflow:hidden;touch-action:none;font-family:sans-serif;}
 #toolbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--panel);
-  border-bottom:1px solid var(--border);display:flex;align-items:center;
-  gap:5px;padding:0 10px;height:48px;overflow-x:auto;scrollbar-width:none;}
-#toolbar::-webkit-scrollbar{display:none;}
+  border-bottom:1px solid var(--border);display:flex;flex-direction:column;}
+.trow3d{display:flex;align-items:center;gap:5px;padding:0 10px;height:44px;overflow-x:auto;scrollbar-width:none;}
+.trow3d::-webkit-scrollbar{display:none;}
+#row2-3d{border-top:1px solid var(--border);}
 .tb{display:flex;align-items:center;justify-content:center;width:34px;height:34px;
   border-radius:8px;border:1.5px solid transparent;background:transparent;
   color:var(--muted);cursor:pointer;flex-shrink:0;transition:all .12s;}
 .tb:hover{background:rgba(255,255,255,.07);color:var(--text);}
+.tb.active{background:var(--accent);color:#000;border-color:var(--accent);}
 .tb svg{width:16px;height:16px;pointer-events:none;}
+.csw3d{width:22px;height:22px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;flex-shrink:0;transition:transform .1s;}
+.csw3d.active{border-color:#00e5a0;transform:scale(1.15);}
+.swb3d{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);background:transparent;cursor:pointer;flex-shrink:0;}
+.swb3d.active{border-color:var(--accent);background:rgba(0,229,160,.13);}
+.swb3d .dot{background:#e6edf3;border-radius:50%;}
 .sep{width:1px;height:22px;background:var(--border);flex-shrink:0;margin:0 2px;}
 .abtn{padding:5px 9px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;
   border:1px solid var(--border);border-radius:6px;background:transparent;
@@ -33,7 +40,7 @@ html,body{width:100%;height:100%;background:#0a0a0f;overflow:hidden;touch-action
 .back-btn{padding:5px 10px;font-size:11px;font-weight:600;
   background:rgba(0,229,160,.15);color:var(--accent);border:1px solid var(--accent);
   border-radius:6px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
-#cv{position:fixed;top:48px;left:0;width:100%;height:calc(100% - 48px);display:block;}
+#cv{position:fixed;top:88px;left:0;width:100%;height:calc(100% - 88px);display:block;}
 #help{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
   background:rgba(0,0,0,.55);color:rgba(255,255,255,.4);padding:4px 12px;
   border-radius:14px;font-size:10px;pointer-events:none;z-index:50;white-space:nowrap;}
@@ -44,30 +51,51 @@ html,body{width:100%;height:100%;background:#0a0a0f;overflow:hidden;touch-action
 <body>
 <div id="loading">Cargando...</div>
 <div id="toolbar">
-  <button class="tb" onclick="location.href='index.html'" title="Inicio" style="color:var(--text);">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-  </button>
-  <div class="sep"></div>
-  <button class="abtn active" id="btn-iso"  onclick="setCam('iso')">Iso</button>
-  <button class="abtn"        id="btn-top"  onclick="setCam('top')">Cenital</button>
-  <button class="abtn"        id="btn-side" onclick="setCam('side')">Lateral</button>
-  <button class="abtn"        id="btn-end"  onclick="setCam('end')">Fondo</button>
-  <div class="sep"></div>
-  <button class="tb" onclick="takeScreenshot()" title="Captura" style="color:#00e5a0;">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-      <circle cx="12" cy="13" r="4"/>
-    </svg>
-  </button>
-  <button class="tb" onclick="setCam('iso')" title="Reset">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-      <path d="M3 3v5h5"/>
-    </svg>
-  </button>
+  <div class="trow3d" id="row1-3d">
+    <button class="tb" onclick="location.href='index.html'" title="Inicio" style="color:var(--text);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <div class="sep"></div>
+    <button class="tb active" id="t3d-orbit" onclick="setTool3d('orbit')" title="Orbitar (1 dedo gira la cámara)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+    </button>
+    <button class="tb" id="t3d-move" onclick="setTool3d('move')" title="Mover fichas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+    </button>
+    <button class="tb" id="t3d-pen" onclick="setTool3d('pen')" title="Lápiz">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    </button>
+    <button class="tb" id="t3d-eraser" onclick="setTool3d('eraser')" title="Goma">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg>
+    </button>
+    <div class="sep"></div>
+    <button class="abtn active" id="btn-iso"  onclick="setCam('iso')">Iso</button>
+    <button class="abtn"        id="btn-top"  onclick="setCam('top')">Cenital</button>
+    <button class="abtn"        id="btn-side" onclick="setCam('side')">Lateral</button>
+    <button class="abtn"        id="btn-end"  onclick="setCam('end')">Fondo</button>
+    <div class="sep"></div>
+    <button class="tb" onclick="clearStrokes3d()" title="Vaciar trazos" style="color:#ef4444;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+    </button>
+    <button class="tb" onclick="takeScreenshot()" title="Captura" style="color:#00e5a0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    </button>
+  </div>
+  <div class="trow3d" id="row2-3d">
+    <div class="csw3d active" style="background:#ffffff"                        data-c="#ffffff" onclick="setColor3d('#ffffff')"></div>
+    <div class="csw3d"        style="background:#facc15"                        data-c="#facc15" onclick="setColor3d('#facc15')"></div>
+    <div class="csw3d"        style="background:#22c55e"                        data-c="#22c55e" onclick="setColor3d('#22c55e')"></div>
+    <div class="csw3d"        style="background:#ef4444"                        data-c="#ef4444" onclick="setColor3d('#ef4444')"></div>
+    <div class="csw3d"        style="background:#f97316"                        data-c="#f97316" onclick="setColor3d('#f97316')"></div>
+    <div class="csw3d"        style="background:#111;outline:1px solid #555"    data-c="#111111" onclick="setColor3d('#111111')"></div>
+    <div class="sep"></div>
+    <button class="swb3d"        id="w3d-0" onclick="setWidth3d(0.05)"><div class="dot" style="width:4px;height:4px"></div></button>
+    <button class="swb3d active" id="w3d-1" onclick="setWidth3d(0.09)"><div class="dot" style="width:7px;height:7px"></div></button>
+    <button class="swb3d"        id="w3d-2" onclick="setWidth3d(0.14)"><div class="dot" style="width:10px;height:10px"></div></button>
+  </div>
 </div>
 <canvas id="cv"></canvas>
-<div id="help">2 dedos: rotar + pellizcar zoom | Clic derecho: rotar, rueda: zoom</div>
+<div id="help">1 dedo: herramienta activa · 2 dedos: orbitar + zoom</div>
 
 <script>
 var PLAYER_TEX={};
@@ -331,6 +359,7 @@ function buildWalls() {
 // ============================================================
 var labelMeshes = [];
 var billboards  = [];
+var players3d   = [];  // fichas arrastrables: {plane,label,figH,x,z}
 
 function makeTintedTexture(imgSrc, hexColor, flipX) {
   // Load silhouette PNG, tint it with team colour
@@ -397,6 +426,7 @@ function addLabel(text, x, y, z) {
   plane.renderOrder = 3;
   scene.add(plane);
   labelMeshes.push(plane);
+  return plane;
 }
 
 function buildPlayer(x, z, hexColor, isFemale, label) {
@@ -426,7 +456,8 @@ function buildPlayer(x, z, hexColor, isFemale, label) {
   billboards.push(plane);
 
   // Label above figure
-  addLabel(label, x, figH + 0.28, z);
+  var lbl = addLabel(label, x, figH + 0.28, z);
+  players3d.push({plane:plane, label:lbl, figH:figH, x:x, z:z});
 }
 
 function buildPlayers() {
@@ -466,6 +497,115 @@ function setCam(name) {
 }
 
 // ============================================================
+// HERRAMIENTAS (mover fichas, dibujar, goma)
+// ============================================================
+var TOOL='orbit', COLOR3D='#ffffff', WIDTH3D=0.09;
+var floorPlane = new THREE.Plane(new THREE.Vector3(0,1,0), -0.03);
+var raycaster  = new THREE.Raycaster();
+var strokes3d=[];               // {mesh, pts, color, width}
+var drawing3d=false, curPts=null, liveMesh=null, selPlayer=null, orbit1=null;
+
+function setTool3d(t){
+  TOOL=t;
+  ['orbit','move','pen','eraser'].forEach(function(k){
+    var el=document.getElementById('t3d-'+k); if(el) el.classList.toggle('active', k===t);
+  });
+}
+function setColor3d(c){
+  COLOR3D=c;
+  document.querySelectorAll('.csw3d').forEach(function(s){ s.classList.toggle('active', s.dataset.c===c); });
+}
+function setWidth3d(w){
+  WIDTH3D=w;
+  var map={0.05:'w3d-0',0.09:'w3d-1',0.14:'w3d-2'};
+  ['w3d-0','w3d-1','w3d-2'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  var el=document.getElementById(map[w]); if(el) el.classList.add('active');
+}
+
+function screenToFloor(cx,cy){
+  var rect=cv.getBoundingClientRect();
+  var nx=((cx-rect.left)/rect.width)*2-1;
+  var ny=-((cy-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera({x:nx,y:ny}, camera);
+  var hit=new THREE.Vector3();
+  return raycaster.ray.intersectPlane(floorPlane, hit) ? hit : null;
+}
+
+// Cinta plana sobre el suelo (XZ) para que el trazo tenga grosor y se vea desde cualquier ángulo
+function buildRibbon(pts, width, colorHex){
+  if(!pts || pts.length<2) return null;
+  var hw=width/2, y=0.06, pos=[], idx=[], vi=0;
+  for(var i=0;i<pts.length-1;i++){
+    var a=pts[i], b=pts[i+1];
+    var dx=b.x-a.x, dz=b.z-a.z, len=Math.hypot(dx,dz); if(len<1e-5) continue;
+    var px=-dz/len*hw, pz=dx/len*hw;
+    pos.push(a.x+px,y,a.z+pz, a.x-px,y,a.z-pz, b.x-px,y,b.z-pz, b.x+px,y,b.z+pz);
+    idx.push(vi,vi+1,vi+2, vi,vi+2,vi+3); vi+=4;
+  }
+  if(!pos.length) return null;
+  var g=new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+  g.setIndex(idx);
+  var m=new THREE.MeshBasicMaterial({color:new THREE.Color(colorHex), side:THREE.DoubleSide, transparent:true, depthWrite:false});
+  var mesh=new THREE.Mesh(g,m); mesh.renderOrder=5;
+  return mesh;
+}
+function disposeMesh(mesh){ if(!mesh)return; scene.remove(mesh); if(mesh.geometry)mesh.geometry.dispose(); if(mesh.material)mesh.material.dispose(); }
+function updateLive(){ disposeMesh(liveMesh); liveMesh=buildRibbon(curPts, WIDTH3D, COLOR3D); if(liveMesh) scene.add(liveMesh); }
+function commitStroke(){
+  disposeMesh(liveMesh); liveMesh=null;
+  if(curPts && curPts.length>1){
+    var mesh=buildRibbon(curPts, WIDTH3D, COLOR3D);
+    if(mesh){ scene.add(mesh); strokes3d.push({mesh:mesh, pts:curPts.slice(), color:COLOR3D, width:WIDTH3D}); }
+  }
+  curPts=null;
+}
+function clearStrokes3d(){ strokes3d.forEach(function(st){ disposeMesh(st.mesh); }); strokes3d=[]; }
+function eraseAt(hit){
+  var r2=0.5*0.5;
+  for(var i=strokes3d.length-1;i>=0;i--){
+    if(strokes3d[i].pts.some(function(pt){ var dx=pt.x-hit.x, dz=pt.z-hit.z; return dx*dx+dz*dz<=r2; })){
+      disposeMesh(strokes3d[i].mesh); strokes3d.splice(i,1);
+    }
+  }
+}
+function pickPlayer(hit){
+  var best=null, bd=1.5*1.5;
+  players3d.forEach(function(p){ var dx=p.x-hit.x, dz=p.z-hit.z, d=dx*dx+dz*dz; if(d<bd){ bd=d; best=p; } });
+  return best;
+}
+function movePlayer(p, hit){
+  p.x=Math.max(-HW+0.2, Math.min(HW-0.2, hit.x));
+  p.z=Math.max(-HL+0.2, Math.min(HL-0.2, hit.z));
+  p.plane.position.x=p.x; p.plane.position.z=p.z;
+  if(p.label){ p.label.position.x=p.x; p.label.position.z=p.z; }
+}
+
+// Gesto activo de 1 dedo / clic izquierdo según herramienta
+function toolDown(cx,cy){
+  if(TOOL==='orbit'){ orbit1={x:cx,y:cy,theta:cam.theta,phi:cam.phi}; return; }
+  var hit=screenToFloor(cx,cy); if(!hit) return;
+  if(TOOL==='move'){ selPlayer=pickPlayer(hit); }
+  else if(TOOL==='pen'){ drawing3d=true; curPts=[{x:hit.x,z:hit.z}]; }
+  else if(TOOL==='eraser'){ eraseAt(hit); }
+}
+function toolMove(cx,cy){
+  if(TOOL==='orbit' && orbit1){
+    cam.theta=orbit1.theta-(cx-orbit1.x)*0.007;
+    cam.phi=Math.max(0.05,Math.min(Math.PI*0.49, orbit1.phi-(cy-orbit1.y)*0.006));
+    applyCam(); return;
+  }
+  var hit=screenToFloor(cx,cy); if(!hit) return;
+  if(TOOL==='move' && selPlayer){ movePlayer(selPlayer, hit); }
+  else if(TOOL==='pen' && drawing3d){ curPts.push({x:hit.x,z:hit.z}); updateLive(); }
+  else if(TOOL==='eraser'){ eraseAt(hit); }
+}
+function toolUp(){
+  if(TOOL==='pen' && drawing3d) commitStroke();
+  drawing3d=false; selPlayer=null; orbit1=null;
+}
+
+// ============================================================
 // CONTROLS
 // ============================================================
 var drag=null, pinchRef=null;
@@ -474,14 +614,17 @@ cv.addEventListener('contextmenu', function(e){e.preventDefault();});
 
 cv.addEventListener('mousedown', function(e){
   if(e.button===2) drag={x:e.clientX,y:e.clientY,theta:cam.theta,phi:cam.phi};
+  else if(e.button===0) toolDown(e.clientX,e.clientY);
 });
 window.addEventListener('mousemove', function(e){
-  if(!drag) return;
-  cam.theta = drag.theta - (e.clientX-drag.x)*0.007;
-  cam.phi   = Math.max(0.05, Math.min(Math.PI*0.49, drag.phi-(e.clientY-drag.y)*0.006));
-  applyCam();
+  if(drag){
+    cam.theta = drag.theta - (e.clientX-drag.x)*0.007;
+    cam.phi   = Math.max(0.05, Math.min(Math.PI*0.49, drag.phi-(e.clientY-drag.y)*0.006));
+    applyCam(); return;
+  }
+  toolMove(e.clientX,e.clientY);
 });
-window.addEventListener('mouseup', function(){ drag=null; });
+window.addEventListener('mouseup', function(){ drag=null; toolUp(); });
 cv.addEventListener('wheel', function(e){
   e.preventDefault();
   cam.r = Math.max(5, Math.min(65, cam.r + e.deltaY*0.04));
@@ -491,7 +634,7 @@ cv.addEventListener('wheel', function(e){
 cv.addEventListener('touchstart', function(e){
   e.preventDefault();
   if(e.touches.length===2){
-    drag=null;
+    toolUp(); drag=null;
     var dx=e.touches[0].clientX-e.touches[1].clientX;
     var dy=e.touches[0].clientY-e.touches[1].clientY;
     pinchRef={
@@ -500,6 +643,8 @@ cv.addEventListener('touchstart', function(e){
       my:(e.touches[0].clientY+e.touches[1].clientY)/2,
       theta:cam.theta, phi:cam.phi
     };
+  } else if(e.touches.length===1){
+    toolDown(e.touches[0].clientX, e.touches[0].clientY);
   }
 },{passive:false});
 
@@ -515,18 +660,21 @@ cv.addEventListener('touchmove', function(e){
     cam.theta = pinchRef.theta - (mx-pinchRef.mx)*0.008;
     cam.phi   = Math.max(0.05,Math.min(Math.PI*0.49, pinchRef.phi-(my-pinchRef.my)*0.007));
     applyCam();
+  } else if(e.touches.length===1){
+    toolMove(e.touches[0].clientX, e.touches[0].clientY);
   }
 },{passive:false});
 
 cv.addEventListener('touchend', function(e){
   if(e.touches.length<2){ pinchRef=null; drag=null; }
+  if(e.touches.length===0) toolUp();
 });
 
 // ============================================================
 // RESIZE + LOOP
 // ============================================================
 function resize() {
-  var w=window.innerWidth, h=window.innerHeight-48;
+  var w=window.innerWidth, h=window.innerHeight-88;
   renderer.setSize(w,h);
   camera.aspect=w/h;
   camera.updateProjectionMatrix();
