@@ -65,6 +65,12 @@ html,body{width:100%;height:100%;background:#0a0a0f;overflow:hidden;touch-action
     <button class="tb" id="t3d-pen" onclick="setTool3d('pen')" title="Lápiz">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
     </button>
+    <button class="tb" id="t3d-arrow" onclick="setTool3d('arrow')" title="Flecha (suelo)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9,5 19,5 19,15"/></svg>
+    </button>
+    <button class="tb" id="t3d-traj" onclick="setTool3d('traj')" title="Trayectoria aérea (globo/remate)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 19 Q12 1 21 19"/><polyline points="21 13 21 19 15 19"/></svg>
+    </button>
     <button class="tb" id="t3d-eraser" onclick="setTool3d('eraser')" title="Goma">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg>
     </button>
@@ -507,7 +513,7 @@ var drawing3d=false, curPts=null, liveMesh=null, selPlayer=null, orbit1=null;
 
 function setTool3d(t){
   TOOL=t;
-  ['orbit','move','pen','eraser'].forEach(function(k){
+  ['orbit','move','pen','arrow','traj','eraser'].forEach(function(k){
     var el=document.getElementById('t3d-'+k); if(el) el.classList.toggle('active', k===t);
   });
 }
@@ -532,40 +538,69 @@ function screenToFloor(cx,cy){
 }
 
 // Cinta plana sobre el suelo (XZ) para que el trazo tenga grosor y se vea desde cualquier ángulo
-function buildRibbon(pts, width, colorHex){
-  if(!pts || pts.length<2) return null;
-  var hw=width/2, y=0.06, pos=[], idx=[], vi=0;
-  for(var i=0;i<pts.length-1;i++){
-    var a=pts[i], b=pts[i+1];
-    var dx=b.x-a.x, dz=b.z-a.z, len=Math.hypot(dx,dz); if(len<1e-5) continue;
-    var px=-dz/len*hw, pz=dx/len*hw;
-    pos.push(a.x+px,y,a.z+pz, a.x-px,y,a.z-pz, b.x-px,y,b.z-pz, b.x+px,y,b.z+pz);
-    idx.push(vi,vi+1,vi+2, vi,vi+2,vi+3); vi+=4;
+function tubeRadius(){ return Math.max(0.03, WIDTH3D*0.6); }
+function disposeObj(o){ if(!o) return; scene.remove(o); o.traverse(function(c){ if(c.geometry)c.geometry.dispose(); if(c.material)c.material.dispose(); }); }
+
+// Convierte la ruta dibujada (suelo) en puntos 3D. En 'traj' se eleva en arco.
+function curveVecs(pts, type, radius){
+  var n=pts.length, segLen=[0], total=0;
+  for(var i=1;i<n;i++){ total+=Math.hypot(pts[i].x-pts[i-1].x, pts[i].z-pts[i-1].z); segLen.push(total); }
+  var H = (type==='traj') ? Math.max(1.0, Math.min(4.5, total*0.4)) : 0;  // altura del arco
+  var base = (radius||0.05)+0.02;
+  var v=[];
+  for(var i=0;i<n;i++){
+    var t = total>0 ? segLen[i]/total : 0;
+    v.push(new THREE.Vector3(pts[i].x, base + (H ? H*Math.sin(Math.PI*t) : 0), pts[i].z));
   }
-  if(!pos.length) return null;
-  var g=new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
-  g.setIndex(idx);
-  var m=new THREE.MeshBasicMaterial({color:new THREE.Color(colorHex), side:THREE.DoubleSide, transparent:true, depthWrite:false});
-  var mesh=new THREE.Mesh(g,m); mesh.renderOrder=5;
-  return mesh;
+  return v;
 }
-function disposeMesh(mesh){ if(!mesh)return; scene.remove(mesh); if(mesh.geometry)mesh.geometry.dispose(); if(mesh.material)mesh.material.dispose(); }
-function updateLive(){ disposeMesh(liveMesh); liveMesh=buildRibbon(curPts, WIDTH3D, COLOR3D); if(liveMesh) scene.add(liveMesh); }
+
+// Crea el trazo 3D: tubo con volumen (+ cono de punta en flecha/trayectoria)
+function makeStroke(type, pts, colorHex, width){
+  if(!pts || pts.length<2) return null;
+  var radius=Math.max(0.03, width*0.6);
+  var vecs=curveVecs(pts, type, radius);
+  var curve=new THREE.CatmullRomCurve3(vecs);
+  var seg=Math.max(8, Math.min(160, Math.round(curve.getLength()*10)));
+  var mat=new THREE.MeshLambertMaterial({color:new THREE.Color(colorHex)});  // iluminado => se ve 3D
+  var group=new THREE.Group();
+  var tube=new THREE.Mesh(new THREE.TubeGeometry(curve, seg, radius, 10, false), mat);
+  tube.castShadow=true; group.add(tube);
+  if(type==='arrow' || type==='traj'){
+    var a=vecs[vecs.length-2], b=vecs[vecs.length-1];
+    var dir=new THREE.Vector3().subVectors(b,a).normalize();
+    var cone=new THREE.Mesh(new THREE.ConeGeometry(radius*2.4, radius*6, 14), mat);
+    cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
+    cone.position.copy(b).addScaledVector(dir, radius*3);
+    cone.castShadow=true; group.add(cone);
+  }
+  scene.add(group);
+  return group;
+}
+
+// Previsualización ligera mientras se arrastra (línea fina, sin coste)
+function updatePreview(){
+  disposeObj(liveMesh); liveMesh=null;
+  if(!curPts || curPts.length<2) return;
+  var vecs=curveVecs(curPts, TOOL, tubeRadius());
+  var g=new THREE.BufferGeometry().setFromPoints(vecs);
+  liveMesh=new THREE.Line(g, new THREE.LineBasicMaterial({color:new THREE.Color(COLOR3D)}));
+  scene.add(liveMesh);
+}
 function commitStroke(){
-  disposeMesh(liveMesh); liveMesh=null;
+  disposeObj(liveMesh); liveMesh=null;
   if(curPts && curPts.length>1){
-    var mesh=buildRibbon(curPts, WIDTH3D, COLOR3D);
-    if(mesh){ scene.add(mesh); strokes3d.push({mesh:mesh, pts:curPts.slice(), color:COLOR3D, width:WIDTH3D}); }
+    var g=makeStroke(TOOL, curPts, COLOR3D, WIDTH3D);
+    if(g) strokes3d.push({group:g, pts:curPts.slice(), type:TOOL, color:COLOR3D, width:WIDTH3D});
   }
   curPts=null;
 }
-function clearStrokes3d(){ strokes3d.forEach(function(st){ disposeMesh(st.mesh); }); strokes3d=[]; }
+function clearStrokes3d(){ strokes3d.forEach(function(st){ disposeObj(st.group); }); strokes3d=[]; }
 function eraseAt(hit){
   var r2=0.5*0.5;
   for(var i=strokes3d.length-1;i>=0;i--){
     if(strokes3d[i].pts.some(function(pt){ var dx=pt.x-hit.x, dz=pt.z-hit.z; return dx*dx+dz*dz<=r2; })){
-      disposeMesh(strokes3d[i].mesh); strokes3d.splice(i,1);
+      disposeObj(strokes3d[i].group); strokes3d.splice(i,1);
     }
   }
 }
@@ -586,7 +621,7 @@ function toolDown(cx,cy){
   if(TOOL==='orbit'){ orbit1={x:cx,y:cy,theta:cam.theta,phi:cam.phi}; return; }
   var hit=screenToFloor(cx,cy); if(!hit) return;
   if(TOOL==='move'){ selPlayer=pickPlayer(hit); }
-  else if(TOOL==='pen'){ drawing3d=true; curPts=[{x:hit.x,z:hit.z}]; }
+  else if(TOOL==='pen'||TOOL==='arrow'||TOOL==='traj'){ drawing3d=true; curPts=[{x:hit.x,z:hit.z}]; }
   else if(TOOL==='eraser'){ eraseAt(hit); }
 }
 function toolMove(cx,cy){
@@ -597,11 +632,11 @@ function toolMove(cx,cy){
   }
   var hit=screenToFloor(cx,cy); if(!hit) return;
   if(TOOL==='move' && selPlayer){ movePlayer(selPlayer, hit); }
-  else if(TOOL==='pen' && drawing3d){ curPts.push({x:hit.x,z:hit.z}); updateLive(); }
+  else if((TOOL==='pen'||TOOL==='arrow'||TOOL==='traj') && drawing3d){ curPts.push({x:hit.x,z:hit.z}); updatePreview(); }
   else if(TOOL==='eraser'){ eraseAt(hit); }
 }
 function toolUp(){
-  if(TOOL==='pen' && drawing3d) commitStroke();
+  if((TOOL==='pen'||TOOL==='arrow'||TOOL==='traj') && drawing3d) commitStroke();
   drawing3d=false; selPlayer=null; orbit1=null;
 }
 
