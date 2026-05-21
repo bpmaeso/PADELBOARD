@@ -4,7 +4,7 @@
 // nunca se cacheaban los .woff2 de fonts.gstatic.com, así que offline la
 // fuente caía a sans-serif. Ahora el CSS se precachea con la URL real y
 // tanto el CSS como los .woff2 se sirven con stale-while-revalidate.
-const CACHE = 'pizarra-padel-v14';
+const CACHE = 'pizarra-padel-v15';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.

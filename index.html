@@ -482,11 +482,13 @@ var S={tool:'pen',color:'#ffffff',stroke:3.5,drawing:false,sx:0,sy:0,path:[],
   ptrs:{},pinchD:null,pinchM:null,sel:null,wipe:false,wipePts:null};
 var CHIP_R=64;
 var WIPE_R=150; // radio del borrador ancho (3+ dedos), en u (~1.5 m por dedo)
+// Posición inicial: en la zona de fondo, detrás de la línea de saque (300/1700),
+// hacia la pared de fondo de cada equipo.
 var PLAYERS=[
-  {id:'p1',label:'D',color:'#2563eb',cx:250,cy:400},
-  {id:'p2',label:'R',color:'#2563eb',cx:750,cy:400},
-  {id:'p3',label:'R',color:'#dc2626',cx:250,cy:1600},
-  {id:'p4',label:'D',color:'#dc2626',cx:750,cy:1600}
+  {id:'p1',label:'D',color:'#2563eb',cx:250,cy:170},
+  {id:'p2',label:'R',color:'#2563eb',cx:750,cy:170},
+  {id:'p3',label:'R',color:'#dc2626',cx:250,cy:1830},
+  {id:'p4',label:'D',color:'#dc2626',cx:750,cy:1830}
 ];
 
 // Is touch device?
