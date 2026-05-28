@@ -751,6 +751,56 @@ var OX=0,OY=0,SC=1,PX=0,PY=0,ZM=1;
 var cv,ctx;
 var strokes=[],live=null;
 
+// ── Undo/Redo: pila de snapshots de `strokes` (deep clone) hasta 30 niveles.
+// `STROKE_HISTORY.past` guarda estados previos; `.future` los deshechos para
+// rehacerlos con redo. Cada vez que se confirma un trazo nuevo o se vacía la
+// pizarra llamamos a pushHistory(); undo()/redo() restauran un snapshot.
+var STROKE_HISTORY={past:[], future:[], MAX:30};
+function snapStrokes(){ return JSON.parse(JSON.stringify(strokes)); }
+function pushHistory(){
+  STROKE_HISTORY.past.push(snapStrokes());
+  if(STROKE_HISTORY.past.length>STROKE_HISTORY.MAX) STROKE_HISTORY.past.shift();
+  // Cualquier cambio nuevo invalida la pila de "rehacer".
+  STROKE_HISTORY.future.length=0;
+  updateUndoUI();
+}
+function undoStroke(){
+  if(!STROKE_HISTORY.past.length) return;
+  STROKE_HISTORY.future.push(snapStrokes());
+  if(STROKE_HISTORY.future.length>STROKE_HISTORY.MAX) STROKE_HISTORY.future.shift();
+  strokes=STROKE_HISTORY.past.pop();
+  live=null; if(cv) draw();
+  if(typeof scheduleAutoSave==='function') scheduleAutoSave();
+  updateUndoUI();
+}
+function redoStroke(){
+  if(!STROKE_HISTORY.future.length) return;
+  STROKE_HISTORY.past.push(snapStrokes());
+  if(STROKE_HISTORY.past.length>STROKE_HISTORY.MAX) STROKE_HISTORY.past.shift();
+  strokes=STROKE_HISTORY.future.pop();
+  live=null; if(cv) draw();
+  if(typeof scheduleAutoSave==='function') scheduleAutoSave();
+  updateUndoUI();
+}
+function updateUndoUI(){
+  var u=document.getElementById('btn-undo'), r=document.getElementById('btn-redo');
+  if(u) u.disabled=!STROKE_HISTORY.past.length;
+  if(r) r.disabled=!STROKE_HISTORY.future.length;
+}
+// Hook global de teclado: Ctrl+Z (undo), Ctrl+Y / Ctrl+Shift+Z (redo).
+// Mac usa metaKey, Win/Linux ctrlKey. Solo actuamos si la pizarra está visible
+// y no estamos escribiendo en un input/textarea/contenteditable.
+document.addEventListener('keydown', function(e){
+  if(currentScreen!=='board-screen') return;
+  var t=e.target;
+  if(t && (t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable)) return;
+  var mod=e.ctrlKey||e.metaKey;
+  if(!mod) return;
+  var k=(e.key||'').toLowerCase();
+  if(k==='z' && !e.shiftKey){ e.preventDefault(); undoStroke(); }
+  else if((k==='z' && e.shiftKey) || k==='y'){ e.preventDefault(); redoStroke(); }
+});
+
 // Configuración de la pista (paredes de cristal + reja, líneas y colores).
 // Editable desde el Generador de pista; estos valores son la pista realista de base.
 var courtConfig={
@@ -842,6 +892,7 @@ function initBoard(){
   applyFreeBoardDefaults();
   resizeBoard();
   boardEvents();
+  updateUndoUI();
 }
 
 // En tema Gratis fuerza: lápiz, color negro y grosor medio.
@@ -1112,10 +1163,16 @@ function drawStroke(s){
 }
 
 // Eraser
+// Snapshot lazy para undo: solo hacemos pushHistory en el primer borrado real
+// dentro de un mismo trazo de goma. _eraseDirty se resetea en pointerdown/up.
+var _eraseDirty=false;
+function eraseSnapshotOnce(){
+  if(!_eraseDirty){ pushHistory(); _eraseDirty=true; }
+}
 function eraseAt(cx,cy){
   var r2=(50/ZM)*(50/ZM),n=strokes.length;
-  strokes=strokes.filter(function(s){return !hitTest(s,cx,cy,r2);});
-  if(strokes.length!==n) draw();
+  var next=strokes.filter(function(s){return !hitTest(s,cx,cy,r2);});
+  if(next.length!==n){ eraseSnapshotOnce(); strokes=next; draw(); }
 }
 // Variante interpolada: borra todo entre el punto anterior y el actual, en
 // pasos de tamaño r/2 (radio de la goma) para que no se "salte" trazos con
@@ -1127,12 +1184,17 @@ function eraseLine(px,py,cx,cy){
   if(dist<=step){ eraseAt(cx,cy); return; }
   var n=Math.ceil(dist/step);
   // Acumular cambios y dibujar una sola vez para no thrashear `draw()`.
-  var r2=r*r, before=strokes.length;
+  var r2=r*r, before=strokes.length, snapshotted=false;
+  var work=strokes;
   for(var i=1;i<=n;i++){
     var t=i/n, x=px+dx*t, y=py+dy*t;
-    strokes=strokes.filter(function(s){return !hitTest(s,x,y,r2);});
+    work=work.filter(function(s){return !hitTest(s,x,y,r2);});
   }
-  if(strokes.length!==before) draw();
+  if(work.length!==before){
+    eraseSnapshotOnce();
+    strokes=work;
+    draw();
+  }
 }
 // Borrador ancho: arrastrar con 3+ dedos borra todo bajo el área de los dedos
 function wipeFingers(plist){
@@ -1141,7 +1203,7 @@ function wipeFingers(plist){
   S.wipePts=cps;
   if(!strokes.length) return false;
   var n=strokes.length;
-  strokes=strokes.filter(function(s){
+  var next=strokes.filter(function(s){
     var pp=pts(s);
     for(var i=0;i<cps.length;i++) for(var j=0;j<pp.length;j++){
       var dx=pp[j].x-cps[i].x, dy=pp[j].y-cps[i].y;
@@ -1149,7 +1211,13 @@ function wipeFingers(plist){
     }
     return true;
   });
-  return strokes.length!==n;
+  if(next.length!==n){
+    eraseSnapshotOnce();           // 1 snapshot por sesión de wipe
+    strokes=next;
+    if(typeof scheduleAutoSave==='function') scheduleAutoSave();
+    return true;
+  }
+  return false;
 }
 function hitTest(s,cx,cy,r2){
   return pts(s).some(function(p){return (p.x-cx)*(p.x-cx)+(p.y-cy)*(p.y-cy)<=r2;});
@@ -1180,14 +1248,14 @@ function boardEvents(){
     S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
     var plist=Object.values(S.ptrs);
     // 3+ dedos: borrador ancho (estilo borrador de pizarra)
-    if(plist.length>=3){ S.drawing=false; live=null; S.sel=null; S.pinchD=null; S.wipe=true; wipeFingers(plist); draw(); return; }
+    if(plist.length>=3){ S.drawing=false; live=null; S.sel=null; S.pinchD=null; S.wipe=true; _eraseDirty=false; wipeFingers(plist); draw(); return; }
     if(plist.length===2){S.drawing=false;live=null;S.pinchD=pd(plist);S.pinchM=pm(plist);return;}
     var pos=ptr(e);
     var chip=chipHit(pos.x,pos.y);
     if(chip){S.sel=chip.id;S.drawing=false;draw();cv.setPointerCapture(e.pointerId);return;}
     S.sel=null; S.drawing=true; S.sx=pos.x; S.sy=pos.y; S.path=[{x:pos.x,y:pos.y}];
     cv.setPointerCapture(e.pointerId);
-    if(S.tool==='eraser') eraseAt(pos.x,pos.y);
+    if(S.tool==='eraser'){ _eraseDirty=false; eraseAt(pos.x,pos.y); }
   });
 
   cv.addEventListener('pointermove',function(e){
@@ -1245,22 +1313,30 @@ function boardEvents(){
     e.preventDefault();
     delete S.ptrs[e.pointerId];
     // Salir del borrador ancho solo cuando se levantan todos los dedos
-    if(S.wipe){ if(Object.keys(S.ptrs).length===0){ S.wipe=false; S.wipePts=null; draw(); } return; }
+    if(S.wipe){ if(Object.keys(S.ptrs).length===0){ S.wipe=false; S.wipePts=null; _eraseDirty=false; draw(); } return; }
     if(S.sel){S.sel=null;draw();}
     if(!S.drawing){S.pinchD=null;S.pinchM=null;return;}
     S.drawing=false;
-    if(S.tool==='eraser'){live=null;return;}
+    if(S.tool==='eraser'){
+      live=null;
+      if(_eraseDirty && typeof scheduleAutoSave==='function') scheduleAutoSave();
+      _eraseDirty=false;
+      return;
+    }
     var pos=ptr(e);
+    // Trazo confirmado: snapshot del estado previo para undo/redo.
+    var added=false;
     if(S.tool==='pen'||S.tool==='pendash'){
-      if(S.path.length>1) strokes.push({type:S.tool,color:S.color,w:S.stroke,path:S.path.concat([pos])});
+      if(S.path.length>1){ pushHistory(); strokes.push({type:S.tool,color:S.color,w:S.stroke,path:S.path.concat([pos])}); added=true; }
     } else if(S.tool==='dot'){
-      strokes.push({type:'dot',color:S.color,w:S.stroke,x1:S.sx,y1:S.sy});
+      pushHistory(); strokes.push({type:'dot',color:S.color,w:S.stroke,x1:S.sx,y1:S.sy}); added=true;
     } else if(S.tool==='cross'){
-      strokes.push({type:'cross',color:S.color,w:S.stroke,x1:S.sx,y1:S.sy});
+      pushHistory(); strokes.push({type:'cross',color:S.color,w:S.stroke,x1:S.sx,y1:S.sy}); added=true;
     } else {
-      strokes.push({type:S.tool,color:S.color,w:S.stroke,x1:S.sx,y1:S.sy,x2:pos.x,y2:pos.y});
+      pushHistory(); strokes.push({type:S.tool,color:S.color,w:S.stroke,x1:S.sx,y1:S.sy,x2:pos.x,y2:pos.y}); added=true;
     }
     live=null; draw();
+    if(added && typeof scheduleAutoSave==='function') scheduleAutoSave();
   });
 
   cv.addEventListener('pointercancel',function(e){
@@ -1308,7 +1384,14 @@ function setStroke(w){
   var id={2:'sw0',3.5:'sw1',6:'sw2'}[w];
   if(id){var el=document.getElementById(id); if(el){ el.classList.add('active'); el.setAttribute('aria-pressed','true'); }}
 }
-function boardClearAll(){strokes=[];live=null;if(cv)draw();showToast('Pizarra vaciada');}
+function boardClearAll(){
+  // Permite recuperar la pizarra con Ctrl+Z tras un vaciado accidental.
+  if(strokes.length) pushHistory();
+  strokes=[];live=null;
+  if(cv)draw();
+  if(typeof scheduleAutoSave==='function') scheduleAutoSave();
+  showToast('Pizarra vaciada');
+}
 
 // Screenshot: pista + paredes a resolución FIJA (lado largo 1920px),
 // independiente de SC y del tamaño actual del viewport. Así el PNG sale igual
@@ -1511,6 +1594,9 @@ function seqApplyFrame(i){
   var f=SEQ.frames[i]; if(!f) return;
   f.players.forEach(function(fp){ var p=PLAYERS.find(function(x){return x.id===fp.id;}); if(p){p.cx=fp.cx;p.cy=fp.cy;} });
   strokes=JSON.parse(JSON.stringify(f.strokes));
+  // Aplicar un frame de la secuencia es un cambio de contexto: limpiamos el
+  // historial de undo/redo del trazado libre.
+  STROKE_HISTORY.past.length=0; STROKE_HISTORY.future.length=0; updateUndoUI();
   SEQ.idx=i; live=null; if(cv) draw(); seqUpdateUI();
 }
 function seqAddFrame(){
@@ -1614,7 +1700,10 @@ function boardsLoad(i){
     saveCourtConfig();
     courtChanged=true;
   }
+  // Cargar una pizarra resetea el historial: el contexto cambia por completo.
+  STROKE_HISTORY.past.length=0; STROKE_HISTORY.future.length=0; updateUndoUI();
   openBoard(); if(cv){ fitCourt(); draw(); }
+  if(typeof scheduleAutoSave==='function') scheduleAutoSave();
   if(courtChanged) showToast('Pizarra cargada — configuración de pista actualizada');
   else showToast('Pizarra "'+b.name+'" cargada');
 }
