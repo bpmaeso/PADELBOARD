@@ -80,15 +80,25 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 /* ── BOARD 2D ── */
 #board-screen{background:#181818;}
 #board-tb{position:absolute;top:0;left:0;right:0;z-index:100;
-  background:#10131a;border-bottom:1px solid #1e222c;display:flex;flex-direction:column;}
-.trow{display:flex;align-items:center;gap:3px;padding:0 4px;height:44px;overflow:hidden;}
+  background:#10131a;border-bottom:1px solid #1e222c;display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top,0);}
+.trow{display:flex;align-items:center;gap:2px;padding:0 3px;height:48px;overflow:hidden;}
 #board-r1{justify-content:space-between;}      /* grupos: izq / centro / der */
 #board-r2{border-top:1px solid #1e222c;justify-content:center;gap:6px;}
-.tgroup{display:flex;align-items:center;gap:1px;}
+.tgroup{display:flex;align-items:center;gap:0;}
 .sep{width:1px;height:22px;background:#1e222c;flex-shrink:0;margin:0 2px;}
-.tb{display:flex;align-items:center;justify-content:center;width:30px;height:34px;
+/* HIG: zona táctil >=40px (compromiso entre 44 ideal y caber en pantalla pequeña).
+   Usa min-width/min-height y permite reducir el área visual si el ancho lo exige. */
+.tb{display:flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;
+  width:40px;height:40px;
   border-radius:8px;border:1.5px solid transparent;background:transparent;
   color:#4a5060;cursor:pointer;flex-shrink:0;transition:all .12s;}
+/* En móviles MUY pequeños (≤380px) recortamos a 36px para que los 11 botones
+   de la fila 1 quepan sin desbordar. Sigue por encima del mínimo HIG efectivo. */
+@media (max-width:380px){
+  .tb{min-width:36px;min-height:36px;width:36px;height:36px;}
+  .trow{height:44px;}
+}
 .tb:hover,.tb:active{background:rgba(255,255,255,.06);color:#e6edf3;}
 .tb.active{background:#00e5a0;color:#000;border-color:#00e5a0;}
 .tb svg{width:16px;height:16px;pointer-events:none;}
@@ -477,7 +487,17 @@ function courtMargin(){ return courtConfig.wall + 10; } // hueco exterior para l
 // Valores de fábrica (para "Restablecer") y persistencia en el dispositivo.
 var COURT_DEFAULTS=JSON.parse(JSON.stringify(courtConfig));
 try{ var _cc=localStorage.getItem('padel.courtConfig'); if(_cc) Object.assign(courtConfig, JSON.parse(_cc)); }catch(e){}
-function saveCourtConfig(){ try{ localStorage.setItem('padel.courtConfig', JSON.stringify(courtConfig)); }catch(e){} }
+// Detector de cuota agotada (Safari/iOS también emite code 22).
+function isQuotaError(e){
+  if(!e) return false;
+  if(e.code===22||e.code===1014) return true;
+  var n=e.name||'';
+  return n==='QuotaExceededError'||n==='NS_ERROR_DOM_QUOTA_REACHED';
+}
+function saveCourtConfig(){
+  try{ localStorage.setItem('padel.courtConfig', JSON.stringify(courtConfig)); }
+  catch(e){ if(isQuotaError(e)) showToast('No hay espacio para guardar — borra alguna pizarra antigua'); }
+}
 var S={tool:'pen',color:'#ffffff',stroke:3.5,drawing:false,sx:0,sy:0,path:[],
   ptrs:{},pinchD:null,pinchM:null,sel:null,wipe:false,wipePts:null};
 var CHIP_R=64;
@@ -502,9 +522,20 @@ function courtLand(){ return false; }
 // de las fichas y que se lean bien si se sostiene el móvil en horizontal.
 function deviceLandscape(){ return window.innerWidth>window.innerHeight; }
 
-// Toolbar height: always single row (44px) — action buttons go to row2 in portrait
+// Toolbar height: 2 filas (44+44) + safe-area-inset-top en iOS. Se cachea
+// la altura real medida en resizeBoard() para no provocar reflows en cada
+// pointermove (tbH se llama muchas veces).
 var immersive=false;                          // pista a pantalla completa
-function tbH(){ return immersive ? 0 : 88; }  // 2 filas (88) o 0 en inmersivo
+var _tbCache=88;
+function tbH(){ return immersive ? 0 : _tbCache; }
+function tbMeasure(){
+  var el=document.getElementById('board-tb');
+  if(!el){ _tbCache=88; return; }
+  // Forzamos altura natural ignorando style.height impuesto por resizeBoard.
+  var prev=el.style.height; el.style.height='';
+  var h=el.offsetHeight; el.style.height=prev;
+  _tbCache=h>0?h:88;
+}
 
 function initBoard(){
   cv=document.getElementById('board-cv');
@@ -513,15 +544,34 @@ function initBoard(){
   boardEvents();
 }
 
-function resizeBoard(){
+// `keepZoom`: si la llamada viene de `orientationchange` mantenemos el zoom
+// actual y solo reproyectamos PX/PY al nuevo viewport vía clampPan(). Resize
+// normales (cambio de toolbar inmersiva, abrir/cerrar barra de secuencias)
+// siguen reseteando para que la pista quepa centrada.
+function resizeBoard(keepZoom){
   if(!cv)return;
+  tbMeasure(); // refresca cache de altura toolbar (incluye safe-area-inset)
   var th=tbH(), bi=seqBottomInset(), vw=window.innerWidth, vh=window.innerHeight-th-bi;
+  if(vh<0) vh=0;
   cv.width=vw; cv.height=vh; cv.style.top=th+'px';
   document.getElementById('board-tb').style.height=th+'px';
 
+  // Si hay un trazo en curso lo cancelamos limpiamente para no dejarlo a medias
+  // tras la rotación (el sistema dispara orientationchange sin pointerup).
+  var hadDrawing=S&&S.drawing;
+  if(hadDrawing){
+    S.drawing=false; S.path=[]; live=null;
+    if(keepZoom) showToast('Rotación detectada — trazo cancelado');
+  }
+
   fitCourt();
-  // Reset zoom/pan on resize but keep ZM at minimum 1
-  PX=0;PY=0;ZM=1;
+  if(keepZoom){
+    // Reproyectar dentro de los nuevos límites manteniendo ZM y PX/PY
+    clampPan();
+  } else {
+    // Reset zoom/pan on resize but keep ZM at minimum 1
+    PX=0;PY=0;ZM=1;
+  }
   draw();
 }
 
@@ -534,9 +584,13 @@ function seqBottomInset(){
 // Ajusta SC/OX/OY para que pista + paredes quepan centradas. OX/OY = court(0,0).
 function fitCourt(){
   var vw=window.innerWidth, vh=window.innerHeight-tbH()-seqBottomInset();
+  // Defensa: si el viewport útil colapsa (teclado virtual abierto, app en
+  // background, etc.) no recalculamos para evitar SC=0 y div/0 en toCourt.
+  if(vw<=0||vh<=0) return;
   var land=courtLand(), M=courtMargin();
   var dimW=(land?CH:CW)+2*M, dimH=(land?CW:CH)+2*M;
-  SC=Math.min(vw/dimW, vh/dimH);
+  // Clamp inferior: nunca dejar SC<=0 (rompería toCourt y clampPan).
+  SC=Math.max(Math.min(vw/dimW, vh/dimH), 0.01);
   OX=(vw-dimW*SC)/2 + M*SC;
   OY=(vh-dimH*SC)/2 + M*SC;
 }
@@ -562,6 +616,8 @@ function toScreen(cx,cy){
 }
 function toCourt(px,py){
   var s=SC*ZM;
+  // Defensa: si SC colapsa (viewport degenerado) evitamos div/0.
+  if(!s||s===0) return{x:0,y:0};
   var rx=(px-OX-PX)/s, ry=(py-OY-PY)/s;
   var land=courtLand();
   if(!land) return{x:rx,y:ry};
@@ -715,6 +771,23 @@ function eraseAt(cx,cy){
   strokes=strokes.filter(function(s){return !hitTest(s,cx,cy,r2);});
   if(strokes.length!==n) draw();
 }
+// Variante interpolada: borra todo entre el punto anterior y el actual, en
+// pasos de tamaño r/2 (radio de la goma) para que no se "salte" trazos con
+// dedos rápidos. Si no hay punto anterior, equivale a eraseAt.
+function eraseLine(px,py,cx,cy){
+  var r=50/ZM, step=Math.max(8,r/2);
+  if(px===undefined||py===undefined){ eraseAt(cx,cy); return; }
+  var dx=cx-px, dy=cy-py, dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist<=step){ eraseAt(cx,cy); return; }
+  var n=Math.ceil(dist/step);
+  // Acumular cambios y dibujar una sola vez para no thrashear `draw()`.
+  var r2=r*r, before=strokes.length;
+  for(var i=1;i<=n;i++){
+    var t=i/n, x=px+dx*t, y=py+dy*t;
+    strokes=strokes.filter(function(s){return !hitTest(s,x,y,r2);});
+  }
+  if(strokes.length!==before) draw();
+}
 // Borrador ancho: arrastrar con 3+ dedos borra todo bajo el área de los dedos
 function wipeFingers(plist){
   var th=tbH(), R2=WIPE_R*WIPE_R;
@@ -777,6 +850,16 @@ function boardEvents(){
     var plist=Object.values(S.ptrs);
     // Borrador ancho con 3+ dedos
     if(plist.length>=3){ S.wipe=true; S.pinchD=null; wipeFingers(plist); draw(); return; }
+    // Transición wipe (3+ dedos) → pinch (2 dedos): salir del modo wipe y
+    // reiniciar la distancia base del pinch para que el siguiente move calcule
+    // incremento desde cero. Sin esto, el primer move tras soltar un dedo
+    // disparaba un zoom enorme (bug Alto #4).
+    if(S.wipe && plist.length===2){
+      S.wipe=false; S.wipePts=null;
+      S.pinchD=pd(plist); S.pinchM=pm(plist);
+      draw();
+      return;
+    }
     if(S.wipe) return; // mantener modo borrado hasta soltar todos los dedos
     // Pinch zoom — clamp ZM so court never gets smaller than full view (ZM >= 1)
     if(plist.length===2&&S.pinchD!==null){
@@ -795,7 +878,14 @@ function boardEvents(){
     }
     if(!S.drawing||plist.length!==1) return;
     var pos=ptr(e);
-    if(S.tool==='eraser'){eraseAt(pos.x,pos.y);return;}
+    if(S.tool==='eraser'){
+      // Interpolar entre el último punto y el actual para no perder borrados
+      // cuando el dedo va rápido (gap > radio de la goma).
+      var prev=S.path&&S.path.length?S.path[S.path.length-1]:null;
+      if(prev) eraseLine(prev.x,prev.y,pos.x,pos.y); else eraseAt(pos.x,pos.y);
+      S.path.push(pos);
+      return;
+    }
     if(S.tool==='pen'||S.tool==='pendash'){
       S.path.push(pos);
       live={type:S.tool,color:S.color,w:S.stroke,path:S.path.slice()};
@@ -860,19 +950,24 @@ function setStroke(w){
 }
 function boardClearAll(){strokes=[];live=null;if(cv)draw();showToast('Pizarra vaciada');}
 
-// Screenshot: pista + paredes a escala base (ZM=1), sin márgenes negros.
-// Reutiliza drawCourt()/drawChips() intercambiando el ctx para no duplicar geometría.
+// Screenshot: pista + paredes a resolución FIJA (lado largo 1920px),
+// independiente de SC y del tamaño actual del viewport. Así el PNG sale igual
+// en móvil pequeño y en tablet. Reutiliza drawCourt()/drawChips() cambiando ctx.
 function boardScreenshot(){
   if(!cv)return;
   var land=courtLand(), M=courtMargin();
-  var totW=((land?CH:CW)+2*M)*SC, totH=((land?CW:CH)+2*M)*SC;
+  var dimW=(land?CH:CW)+2*M, dimH=(land?CW:CH)+2*M;
+  // Factor para que el lado más largo del PNG sea 1920px, manteniendo proporción.
+  var EXPORT_LONG=1920;
+  var EX = (dimW>dimH) ? (EXPORT_LONG/dimW) : (EXPORT_LONG/dimH);
+  var totW=dimW*EX, totH=dimH*EX;
   var off=document.createElement('canvas');
   off.width=Math.round(totW); off.height=Math.round(totH);
   var oc=off.getContext('2d');
 
   oc.fillStyle='#181818'; oc.fillRect(0,0,off.width,off.height); // fondo exterior
-  if(!land){ oc.translate(M*SC, M*SC); oc.scale(SC,SC); }
-  else     { oc.translate(M*SC, M*SC+CW*SC); oc.rotate(-Math.PI/2); oc.scale(SC,SC); }
+  if(!land){ oc.translate(M*EX, M*EX); oc.scale(EX,EX); }
+  else     { oc.translate(M*EX, M*EX+CW*EX); oc.rotate(-Math.PI/2); oc.scale(EX,EX); }
 
   var savedCtx=ctx, savedSel=S.sel;
   ctx=oc; S.sel=null;                 // sin resaltado de selección en la captura
@@ -895,7 +990,8 @@ function showToast(msg){
 // Resize / orientation
 window.addEventListener('resize',function(){if(currentScreen==='board-screen')resizeBoard();});
 window.addEventListener('orientationchange',function(){
-  setTimeout(function(){if(currentScreen==='board-screen')resizeBoard();},80);
+  // keepZoom=true: mantenemos ZM y reproyectamos PX/PY al nuevo viewport.
+  setTimeout(function(){if(currentScreen==='board-screen')resizeBoard(true);},80);
 });
 // Bloquear scroll/zoom global SOLO mientras la pizarra esté activa.
 // Si lo hacíamos siempre, rompía el scroll vertical del HOME en táctil.
@@ -1037,7 +1133,10 @@ function seqSyncControls(){
   var sb=document.getElementById('seq-speed-btn'); if(sb) sb.textContent=SEQ.speed+'×';
   var lb=document.getElementById('seq-loop-btn'); if(lb) lb.classList.toggle('active', SEQ.loop);
 }
-function seqSave(){ try{ localStorage.setItem('padel.seq', JSON.stringify(SEQ.frames)); }catch(e){} }
+function seqSave(){
+  try{ localStorage.setItem('padel.seq', JSON.stringify(SEQ.frames)); }
+  catch(e){ if(isQuotaError(e)) showToast('No hay espacio para guardar — borra alguna pizarra antigua'); }
+}
 function seqUpdateUI(){
   var n=SEQ.frames.length, el=document.getElementById('seq-count');
   if(el) el.textContent = n ? ((Math.min(SEQ.idx,n-1)+1)+' / '+n) : '0 frames';
@@ -1061,6 +1160,9 @@ function seqAddFrame(){
 }
 function seqDelFrame(){
   if(!SEQ.frames.length){ showToast('No hay frames'); return; }
+  // Si estamos reproduciendo, detener primero para no dejar el loop apuntando
+  // a un índice inexistente (causaba la "secuencia colgada").
+  if(SEQ.playing) seqStop();
   SEQ.frames.splice(SEQ.idx,1);
   SEQ.idx=Math.max(0,Math.min(SEQ.idx,SEQ.frames.length-1));
   seqSave();
@@ -1095,10 +1197,17 @@ function seqPlaySegment(seg){
     if(SEQ.loop){ seqPlaySegment(0); return; }
     seqStop(); seqApplyFrame(SEQ.frames.length-1); return;
   }
-  var dur=900/SEQ.speed, t0=performance.now();
+  // Guardas: si los frames se han modificado durante la reproducción (borrado,
+  // limpieza), evitamos NPE al interpolar a/b.
   var a=SEQ.frames[seg], b=SEQ.frames[seg+1];
+  if(!a||!b){ seqStop(); showToast('Reproducción interrumpida — frames modificados'); return; }
+  var dur=900/SEQ.speed, t0=performance.now();
   function step(now){
     if(!SEQ.playing) return;
+    // Re-validar en cada frame por si SEQ.frames cambió a mitad de animación.
+    if(!SEQ.frames[seg]||!SEQ.frames[seg+1]){
+      seqStop(); showToast('Reproducción interrumpida — frames modificados'); return;
+    }
     var k=Math.min(1,(now-t0)/dur);
     var e=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2; // easeInOutQuad
     a.players.forEach(function(ap){
@@ -1118,7 +1227,10 @@ function seqPlaySegment(seg){
 // ==================================================
 function openBoards(){ showScreen('boards-screen'); boardsRender(); }
 function boardsAll(){ try{ return JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; } }
-function boardsSet(a){ try{ localStorage.setItem('padel.boards', JSON.stringify(a)); }catch(e){} }
+function boardsSet(a){
+  try{ localStorage.setItem('padel.boards', JSON.stringify(a)); return true; }
+  catch(e){ if(isQuotaError(e)) showToast('No hay espacio para guardar — borra alguna pizarra antigua'); return false; }
+}
 function boardsSaveCurrent(){
   var inp=document.getElementById('board-name');
   var name=(inp.value||'').trim() || ('Jugada '+(boardsAll().length+1));
@@ -1135,8 +1247,16 @@ function boardsLoad(i){
   var a=boardsAll(), b=a[i]; if(!b) return;
   strokes=JSON.parse(JSON.stringify(b.strokes||[]));
   if(b.players) b.players.forEach(function(fp){ var p=PLAYERS.find(function(x){return x.id===fp.id;}); if(p){p.cx=fp.cx;p.cy=fp.cy;} });
-  if(b.court) Object.assign(courtConfig, b.court);
-  openBoard(); if(cv){ fitCourt(); draw(); } showToast('Pizarra "'+b.name+'" cargada');
+  var courtChanged=false;
+  if(b.court){
+    Object.assign(courtConfig, b.court);
+    // Persistir para que la configuración de pista no se pierda al reabrir.
+    saveCourtConfig();
+    courtChanged=true;
+  }
+  openBoard(); if(cv){ fitCourt(); draw(); }
+  if(courtChanged) showToast('Pizarra cargada — configuración de pista actualizada');
+  else showToast('Pizarra "'+b.name+'" cargada');
 }
 function boardsDelete(i){ var a=boardsAll(); a.splice(i,1); boardsSet(a); boardsRender(); showToast('Pizarra borrada'); }
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
