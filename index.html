@@ -144,7 +144,8 @@ body.is-pro .sep.pro-only{display:block!important;}
   color:#6b7280;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;flex-shrink:0;}
 .back-btn svg{width:14px;height:14px;}
 .csw{width:20px;height:20px;border-radius:50%;border:2.5px solid transparent;
-  cursor:pointer;flex-shrink:0;transition:transform .1s,border-color .1s;}
+  cursor:pointer;flex-shrink:0;transition:transform .1s,border-color .1s;
+  padding:0;font:inherit;}
 .csw:hover{transform:scale(1.15);}
 .csw.active{border-color:#00e5a0!important;transform:scale(1.22);}
 .swb{display:flex;align-items:center;justify-content:center;width:28px;height:28px;
@@ -517,70 +518,76 @@ body.is-pro .sep.pro-only{display:block!important;}
 
 <!-- BOARD 2D -->
 <div id="board-screen" class="screen">
-  <div id="board-tb">
+  <div id="board-tb" role="toolbar" aria-label="Herramientas de pizarra">
     <div class="trow" id="board-r1">
       <!-- Izquierda: Inicio + Captura -->
       <div class="tgroup">
-        <button class="tb" onclick="goHome()" title="Inicio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <button class="tb" onclick="goHome()" title="Inicio" aria-label="Volver al inicio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </button>
-        <button class="tb" onclick="boardScreenshot()" title="Captura" style="color:#00e5a0;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <button class="tb" onclick="boardScreenshot()" title="Captura" aria-label="Descargar captura PNG de la pizarra" style="color:#00e5a0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </button>
       </div>
       <!-- Centro: tipos de marcas -->
       <div class="tgroup">
-        <button class="tb active" id="btn-pen"     onclick="setTool('pen')" title="Lápiz">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <button class="tb active" id="btn-pen"     onclick="setTool('pen')" title="Lápiz" aria-label="Herramienta lápiz" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         </button>
-        <button class="tb pro-only" id="btn-pendash" onclick="setTool('pendash')" title="Lápiz discontinuo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2.5"><path d="M4 19 Q9 9 14 14 Q18 18 20 6"/></svg>
+        <button class="tb pro-only" id="btn-pendash" onclick="setTool('pendash')" title="Lápiz discontinuo" aria-label="Herramienta lápiz discontinuo" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2.5" aria-hidden="true"><path d="M4 19 Q9 9 14 14 Q18 18 20 6"/></svg>
         </button>
-        <button class="tb pro-only" id="btn-line"    onclick="setTool('line')" title="Línea">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/></svg>
+        <button class="tb pro-only" id="btn-line"    onclick="setTool('line')" title="Línea" aria-label="Herramienta línea recta" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="19" x2="19" y2="5"/></svg>
         </button>
-        <button class="tb pro-only" id="btn-arrow"   onclick="setTool('arrow')" title="Flecha">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9,5 19,5 19,15"/></svg>
+        <button class="tb pro-only" id="btn-arrow"   onclick="setTool('arrow')" title="Flecha" aria-label="Herramienta flecha" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9,5 19,5 19,15"/></svg>
         </button>
-        <button class="tb pro-only" id="btn-rect"    onclick="setTool('rect')" title="Rectángulo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
+        <button class="tb pro-only" id="btn-rect"    onclick="setTool('rect')" title="Rectángulo" aria-label="Herramienta rectángulo" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
         </button>
-        <button class="tb pro-only" id="btn-dot"     onclick="setTool('dot')" title="Punto">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/></svg>
+        <button class="tb pro-only" id="btn-dot"     onclick="setTool('dot')" title="Punto" aria-label="Herramienta punto" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/></svg>
         </button>
-        <button class="tb pro-only" id="btn-cross"   onclick="setTool('cross')" title="Cruz">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+        <button class="tb pro-only" id="btn-cross"   onclick="setTool('cross')" title="Cruz" aria-label="Herramienta cruz" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
         </button>
       </div>
-      <!-- Derecha: Goma + Vaciar -->
+      <!-- Derecha: Undo/Redo + Goma + Vaciar -->
       <div class="tgroup">
-        <button class="tb" id="btn-eraser"  onclick="setTool('eraser')" title="Goma">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg>
+        <button class="tb" id="btn-undo" onclick="undoStroke()" title="Deshacer (Ctrl+Z)" aria-label="Deshacer último trazo" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-4"/></svg>
         </button>
-        <button class="tb" onclick="boardClearAll()" title="Vaciar" style="color:#ef4444;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        <button class="tb" id="btn-redo" onclick="redoStroke()" title="Rehacer (Ctrl+Y)" aria-label="Rehacer trazo" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h4"/></svg>
+        </button>
+        <button class="tb" id="btn-eraser"  onclick="setTool('eraser')" title="Goma" aria-label="Herramienta goma de borrar" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg>
+        </button>
+        <button class="tb" onclick="boardClearAll()" title="Vaciar" aria-label="Vaciar toda la pizarra" style="color:#ef4444;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </button>
       </div>
     </div>
-    <div class="trow" id="board-r2">
-      <div class="csw pro-only active" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')"></div>
-      <div class="csw pro-only"        style="background:#facc15"                     data-c="#facc15" onclick="setColor('#facc15')"></div>
-      <div class="csw pro-only"        style="background:#22c55e"                     data-c="#22c55e" onclick="setColor('#22c55e')"></div>
-      <div class="csw pro-only"        style="background:#ef4444"                     data-c="#ef4444" onclick="setColor('#ef4444')"></div>
-      <div class="csw pro-only"        style="background:#f97316"                     data-c="#f97316" onclick="setColor('#f97316')"></div>
-      <div class="csw"                 style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')"></div>
-      <div class="sep pro-only"></div>
-      <button class="swb pro-only"        id="sw0" onclick="setStroke(2)"  ><div class="sdot" style="width:3px;height:3px"></div></button>
-      <button class="swb active"          id="sw1" onclick="setStroke(3.5)"><div class="sdot" style="width:5px;height:5px"></div></button>
-      <button class="swb pro-only"        id="sw2" onclick="setStroke(6)"  ><div class="sdot" style="width:8px;height:8px"></div></button>
+    <div class="trow" id="board-r2" role="group" aria-label="Color y grosor de trazo">
+      <button class="csw pro-only active" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')" aria-label="Color blanco" aria-pressed="true"></button>
+      <button class="csw pro-only"        style="background:#facc15"                     data-c="#facc15" onclick="setColor('#facc15')" aria-label="Color amarillo" aria-pressed="false"></button>
+      <button class="csw pro-only"        style="background:#22c55e"                     data-c="#22c55e" onclick="setColor('#22c55e')" aria-label="Color verde" aria-pressed="false"></button>
+      <button class="csw pro-only"        style="background:#ef4444"                     data-c="#ef4444" onclick="setColor('#ef4444')" aria-label="Color rojo" aria-pressed="false"></button>
+      <button class="csw pro-only"        style="background:#f97316"                     data-c="#f97316" onclick="setColor('#f97316')" aria-label="Color naranja" aria-pressed="false"></button>
+      <button class="csw"                 style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')" aria-label="Color negro" aria-pressed="false"></button>
+      <div class="sep pro-only" aria-hidden="true"></div>
+      <button class="swb pro-only"        id="sw0" onclick="setStroke(2)"   aria-label="Grosor fino" aria-pressed="false"><div class="sdot" style="width:3px;height:3px"></div></button>
+      <button class="swb active"          id="sw1" onclick="setStroke(3.5)" aria-label="Grosor medio" aria-pressed="true"><div class="sdot" style="width:5px;height:5px"></div></button>
+      <button class="swb pro-only"        id="sw2" onclick="setStroke(6)"   aria-label="Grosor grueso" aria-pressed="false"><div class="sdot" style="width:8px;height:8px"></div></button>
     </div>
   </div>
   <canvas id="board-cv"></canvas>
   <div id="board-toast" style="bottom:20px;"></div>
 
   <!-- Botón salir de pantalla completa (modo inmersivo) -->
-  <button id="immersive-exit" onclick="toggleImmersive()" title="Salir de pantalla completa">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9H4V4M9 9l-5-5M15 9h5V4m-5 5l5-5M9 15H4v5m5-5l-5 5M15 15h5v5m-5-5l5 5"/></svg>
+  <button id="immersive-exit" onclick="toggleImmersive()" title="Salir de pantalla completa" aria-label="Salir de pantalla completa">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 9H4V4M9 9l-5-5M15 9h5V4m-5 5l5-5M9 15H4v5m5-5l-5 5M15 15h5v5m-5-5l5 5"/></svg>
   </button>
 
   <!-- Panel del generador de secuencias -->
@@ -844,14 +851,25 @@ function applyFreeBoardDefaults(){
   S.tool='pen';
   S.color='#000000';
   S.stroke=3.5;
-  // Sincroniza UI por si hubiera quedado otro botón activo de una sesión Pro previa.
-  document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('active');});
-  var penBtn=document.getElementById('btn-pen'); if(penBtn) penBtn.classList.add('active');
-  document.querySelectorAll('.csw').forEach(function(s){s.classList.remove('active');});
-  ['sw0','sw1','sw2'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.classList.remove('active');
+  // Sincroniza UI + aria-pressed por si hubiera quedado otro botón activo de
+  // una sesión Pro previa.
+  var toolIds={'btn-pen':1,'btn-pendash':1,'btn-line':1,'btn-arrow':1,'btn-rect':1,'btn-dot':1,'btn-cross':1,'btn-eraser':1};
+  document.querySelectorAll('.tb').forEach(function(b){
+    b.classList.remove('active');
+    if(b.id && toolIds[b.id]) b.setAttribute('aria-pressed','false');
   });
-  var sw1=document.getElementById('sw1'); if(sw1) sw1.classList.add('active');
+  var penBtn=document.getElementById('btn-pen');
+  if(penBtn){ penBtn.classList.add('active'); penBtn.setAttribute('aria-pressed','true'); }
+  document.querySelectorAll('.csw').forEach(function(s){
+    s.classList.remove('active');
+    s.setAttribute('aria-pressed','false');
+  });
+  ['sw0','sw1','sw2'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){ el.classList.remove('active'); el.setAttribute('aria-pressed','false'); }
+  });
+  var sw1=document.getElementById('sw1');
+  if(sw1){ sw1.classList.add('active'); sw1.setAttribute('aria-pressed','true'); }
 }
 
 // `keepZoom`: si la llamada viene de `orientationchange` mantenemos el zoom
@@ -1260,21 +1278,35 @@ var TMAP={pen:'btn-pen',pendash:'btn-pendash',line:'btn-line',arrow:'btn-arrow',
   rect:'btn-rect',dot:'btn-dot',cross:'btn-cross',eraser:'btn-eraser'};
 function setTool(t){
   S.tool=t; S.sel=null;
-  document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('active');});
-  var el=document.getElementById(TMAP[t]); if(el)el.classList.add('active');
+  // Mantener aria-pressed sincronizado solo en los botones de herramienta (los
+  // del TMAP). El resto (.tb de inicio, captura, vaciar, undo, redo) no son
+  // toggles, no llevan aria-pressed.
+  var toolIds={};
+  Object.keys(TMAP).forEach(function(k){toolIds[TMAP[k]]=true;});
+  document.querySelectorAll('.tb').forEach(function(b){
+    b.classList.remove('active');
+    if(toolIds[b.id]) b.setAttribute('aria-pressed','false');
+  });
+  var el=document.getElementById(TMAP[t]);
+  if(el){ el.classList.add('active'); el.setAttribute('aria-pressed','true'); }
   if(cv) draw();
 }
 function setColor(c){
   S.color=c;
-  document.querySelectorAll('.csw').forEach(function(s){s.classList.toggle('active',s.dataset.c===c);});
+  document.querySelectorAll('.csw').forEach(function(s){
+    var on=s.dataset.c===c;
+    s.classList.toggle('active',on);
+    s.setAttribute('aria-pressed', on?'true':'false');
+  });
 }
 function setStroke(w){
   S.stroke=w;
   ['sw0','sw1','sw2'].forEach(function(id){
-    var el=document.getElementById(id);if(el)el.classList.remove('active');
+    var el=document.getElementById(id);
+    if(el){ el.classList.remove('active'); el.setAttribute('aria-pressed','false'); }
   });
   var id={2:'sw0',3.5:'sw1',6:'sw2'}[w];
-  if(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
+  if(id){var el=document.getElementById(id); if(el){ el.classList.add('active'); el.setAttribute('aria-pressed','true'); }}
 }
 function boardClearAll(){strokes=[];live=null;if(cv)draw();showToast('Pizarra vaciada');}
 
