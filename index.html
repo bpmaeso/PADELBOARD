@@ -1473,6 +1473,12 @@ function seqApplyFrame(i){
   SEQ.idx=i; live=null; if(cv) draw(); seqUpdateUI();
 }
 function seqAddFrame(){
+  // Tope soft: con muchos frames el snapshot crece sin control y degrada
+  // memoria/persistencia. Se aborta con aviso, el usuario puede borrar.
+  if(SEQ.frames.length>=50){
+    showToast('Máximo 50 frames por secuencia. Borra alguno antes de añadir otro.');
+    return;
+  }
   SEQ.frames.push(seqSnapshot());
   SEQ.idx=SEQ.frames.length-1; seqSave(); seqUpdateUI();
   showToast('Frame '+SEQ.frames.length+' capturado');
