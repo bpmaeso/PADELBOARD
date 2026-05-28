@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Pista de padel en perspectiva 3D con cristal traslucido">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a1a2e"/>
+      <stop offset="0.5" stop-color="#0f2540"/>
+      <stop offset="1" stop-color="#04101e"/>
+    </linearGradient>
+    <radialGradient id="bgGlow3" cx="0.5" cy="0.2" r="0.8">
+      <stop offset="0" stop-color="#5a8fc9" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#04101e" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e6fb8"/>
+      <stop offset="0.5" stop-color="#1559a0"/>
+      <stop offset="1" stop-color="#0a3a78"/>
+    </linearGradient>
+    <linearGradient id="floorHi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fbcec" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#7fbcec" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="glassL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#bfe4ff" stop-opacity="0.55"/>
+      <stop offset="0.5" stop-color="#9ed1ff" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#3a7fc4" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="glassR" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3a7fc4" stop-opacity="0.55"/>
+      <stop offset="0.5" stop-color="#9ed1ff" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#bfe4ff" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="glassBack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cce8ff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#4a90d0" stop-opacity="0.25"/>
+    </linearGradient>
+
+    <linearGradient id="frame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dcdcdc"/>
+      <stop offset="0.5" stop-color="#8a8a8a"/>
+      <stop offset="1" stop-color="#3a3a3a"/>
+    </linearGradient>
+
+    <radialGradient id="shadow3" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="url(#bg3)"/>
+  <rect width="512" height="512" rx="96" fill="url(#bgGlow3)"/>
+
+  <!-- Sombra bajo la pista -->
+  <ellipse cx="256" cy="440" rx="200" ry="22" fill="url(#shadow3)"/>
+
+  <!-- Suelo en perspectiva (trapecio) -->
+  <path d="M 80 410 L 432 410 L 372 250 L 140 250 Z" fill="url(#floor)"/>
+  <path d="M 80 410 L 432 410 L 372 250 L 140 250 Z" fill="url(#floorHi)"/>
+
+  <!-- Lineas de la pista en perspectiva -->
+  <g stroke="#ffffff" stroke-opacity="0.85" stroke-width="3" fill="none" stroke-linecap="round">
+    <!-- linea central -->
+    <line x1="256" y1="410" x2="256" y2="250"/>
+    <!-- linea de fondo -->
+    <line x1="140" y1="250" x2="372" y2="250"/>
+    <!-- linea de saque -->
+    <line x1="170" y1="330" x2="342" y2="330"/>
+    <!-- divisorias -->
+    <line x1="170" y1="330" x2="140" y2="410"/>
+    <line x1="342" y1="330" x2="372" y2="410"/>
+  </g>
+  <!-- sombra de las lineas para dar profundidad -->
+  <g stroke="#000" stroke-opacity="0.25" stroke-width="2" fill="none">
+    <line x1="256" y1="412" x2="256" y2="252"/>
+    <line x1="170" y1="332" x2="342" y2="332"/>
+  </g>
+
+  <!-- Cristales traseros -->
+  <path d="M 140 250 L 372 250 L 360 145 L 152 145 Z" fill="url(#glassBack)"/>
+  <!-- marco fondo -->
+  <path d="M 140 250 L 372 250 L 360 145 L 152 145 Z" fill="none" stroke="url(#frame)" stroke-width="6"/>
+
+  <!-- Cristales laterales -->
+  <path d="M 80 410 L 140 250 L 152 145 L 96 270 Z" fill="url(#glassL)"/>
+  <path d="M 80 410 L 140 250 L 152 145 L 96 270 Z" fill="none" stroke="url(#frame)" stroke-width="5"/>
+
+  <path d="M 432 410 L 372 250 L 360 145 L 416 270 Z" fill="url(#glassR)"/>
+  <path d="M 432 410 L 372 250 L 360 145 L 416 270 Z" fill="none" stroke="url(#frame)" stroke-width="5"/>
+
+  <!-- Postes verticales -->
+  <g stroke="url(#frame)" stroke-width="6" stroke-linecap="round">
+    <line x1="140" y1="250" x2="152" y2="145"/>
+    <line x1="372" y1="250" x2="360" y2="145"/>
+    <line x1="80" y1="410" x2="96" y2="270"/>
+    <line x1="432" y1="410" x2="416" y2="270"/>
+  </g>
+
+  <!-- Travesano superior -->
+  <path d="M 96 270 L 152 145 L 360 145 L 416 270" stroke="url(#frame)" stroke-width="6" fill="none" stroke-linejoin="round"/>
+
+  <!-- Red central -->
+  <g>
+    <rect x="140" y="320" width="232" height="44" fill="#0a1a2e" fill-opacity="0.55"/>
+    <g stroke="#cfd8e3" stroke-opacity="0.6" stroke-width="1">
+      <line x1="140" y1="328" x2="372" y2="328"/>
+      <line x1="140" y1="338" x2="372" y2="338"/>
+      <line x1="140" y1="348" x2="372" y2="348"/>
+      <line x1="140" y1="358" x2="372" y2="358"/>
+      <line x1="160" y1="320" x2="160" y2="364"/>
+      <line x1="190" y1="320" x2="190" y2="364"/>
+      <line x1="220" y1="320" x2="220" y2="364"/>
+      <line x1="256" y1="320" x2="256" y2="364"/>
+      <line x1="292" y1="320" x2="292" y2="364"/>
+      <line x1="322" y1="320" x2="322" y2="364"/>
+      <line x1="352" y1="320" x2="352" y2="364"/>
+    </g>
+    <rect x="140" y="318" width="232" height="6" fill="url(#frame)"/>
+  </g>
+
+  <!-- Reflejos cristales (highlights de luz) -->
+  <path d="M 165 160 L 175 250" stroke="#ffffff" stroke-opacity="0.55" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 340 160 L 350 250" stroke="#ffffff" stroke-opacity="0.55" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 110 290 L 125 380" stroke="#ffffff" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 400 290 L 388 380" stroke="#ffffff" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round"/>
+</svg>
