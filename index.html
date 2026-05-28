@@ -207,6 +207,10 @@ body.is-pro .sep.pro-only{display:block!important;}
   border:1px solid var(--border);background:rgba(16,19,26,.85);color:#e6edf3;cursor:pointer;}
 #board-screen.immersive #immersive-exit{display:flex;}
 #immersive-exit svg{width:20px;height:20px;}
+/* En inmersivo escondemos el cursor sobre el canvas para no ensuciar la
+   proyección. Durante el dibujo mostramos crosshair como pista visual. */
+#board-cv.cv-immersive{cursor:none;}
+#board-cv.cv-immersive.cv-drawing{cursor:crosshair;}
 
 /* ── MIS PIZARRAS ── */
 #boards-screen{background:var(--bg);}
@@ -859,6 +863,7 @@ function resizeBoard(keepZoom){
   var hadDrawing=S&&S.drawing;
   if(hadDrawing){
     S.drawing=false; S.path=[]; live=null;
+    if(cv) cv.classList.remove('cv-drawing');
     if(keepZoom) showToast('Rotación detectada — trazo cancelado');
   }
 
@@ -1157,6 +1162,7 @@ function boardEvents(){
     if(chip){S.sel=chip.id;S.drawing=false;draw();cv.setPointerCapture(e.pointerId);return;}
     S.sel=null; S.drawing=true; S.sx=pos.x; S.sy=pos.y; S.path=[{x:pos.x,y:pos.y}];
     cv.setPointerCapture(e.pointerId);
+    cv.classList.add('cv-drawing');
     if(S.tool==='eraser') eraseAt(pos.x,pos.y);
   });
 
@@ -1222,6 +1228,7 @@ function boardEvents(){
     if(S.sel){S.sel=null;draw();}
     if(!S.drawing){S.pinchD=null;S.pinchM=null;return;}
     S.drawing=false;
+    cv.classList.remove('cv-drawing');
     if(S.tool==='eraser'){live=null;return;}
     var pos=ptr(e);
     if(S.tool==='pen'||S.tool==='pendash'){
@@ -1239,7 +1246,7 @@ function boardEvents(){
   cv.addEventListener('pointercancel',function(e){
     delete S.ptrs[e.pointerId];
     if(Object.keys(S.ptrs).length===0){S.wipe=false;S.wipePts=null;}
-    S.drawing=false;live=null;S.sel=null;draw();
+    S.drawing=false;live=null;S.sel=null;cv.classList.remove('cv-drawing');draw();
   });
 }
 
@@ -1423,6 +1430,8 @@ function genDownloadSVG(){
 function setImmersive(on){
   immersive=on;
   document.getElementById('board-screen').classList.toggle('immersive', on);
+  // Sin clase en el canvas no podemos ocultar el cursor en escritorio.
+  if(cv) cv.classList.toggle('cv-immersive', on);
   if(cv) resizeBoard();
 }
 function toggleImmersive(){ setImmersive(!immersive); }
