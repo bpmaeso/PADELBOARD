@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>Paywall Variante B — Bottom sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0a0b0e; --card:#10131a; --border:#1e222c;
+  --accent:#00e5a0; --blue:#0099ff; --gold:#f59e0b;
+  --text:#e6edf3; --muted:#6b7280;
+  --sheet-bg:#141820;
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:'DM Sans',sans-serif;overflow:hidden;touch-action:manipulation;}
+
+/* Fondo demo */
+.demo-bg{position:fixed;inset:0;padding:56px 24px;background:
+  radial-gradient(800px 400px at 20% 0%, rgba(0,229,160,.07), transparent 60%),
+  radial-gradient(700px 350px at 100% 30%, rgba(0,153,255,.07), transparent 60%),
+  var(--bg);}
+.demo-logo{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;color:var(--text);opacity:.45;}
+.demo-sub{font-size:13px;color:var(--muted);margin-top:6px;opacity:.45;}
+
+/* Backdrop */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);
+  opacity:0;transition:opacity .25s ease;z-index:400;pointer-events:none;}
+.backdrop.show{opacity:1;pointer-events:auto;}
+
+/* Sheet */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:500;
+  background:var(--sheet-bg);
+  border-radius:22px 22px 0 0;
+  border-top:1px solid var(--border);
+  box-shadow:0 -20px 60px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;
+  max-width:520px;margin:0 auto;
+  height:60vh;
+  transform:translateY(0);
+  transition:transform .35s cubic-bezier(.2,.85,.3,1), height .35s cubic-bezier(.2,.85,.3,1);
+  will-change:transform,height;
+  touch-action:none;}
+.sheet.expanded{height:92vh;}
+.sheet.hidden{transform:translateY(100%);}
+
+/* Drag handle */
+.handle-area{padding:10px 0 6px;display:flex;justify-content:center;
+  cursor:grab;flex-shrink:0;}
+.handle-area:active{cursor:grabbing;}
+.handle{width:42px;height:5px;border-radius:3px;background:rgba(255,255,255,.18);}
+
+/* Header */
+.sh-head{padding:8px 24px 18px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.sh-icon{width:48px;height:48px;border-radius:14px;
+  background:linear-gradient(135deg, rgba(0,229,160,.18), rgba(0,153,255,.18));
+  border:1px solid rgba(0,229,160,.22);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh-icon svg{width:26px;height:26px;color:var(--accent);}
+.sh-title-wrap{flex:1;min-width:0;}
+.sh-title{font-size:22px;font-weight:700;letter-spacing:-.3px;}
+.sh-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+
+/* Scroll body */
+.sh-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:6px 22px 16px;}
+.sh-body::-webkit-scrollbar{width:0;}
+
+/* Features */
+.feat-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.feat-card{display:flex;align-items:flex-start;gap:12px;padding:14px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);
+  border-radius:14px;}
+.feat-check{width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--blue));
+  display:flex;align-items:center;justify-content:center;color:#000;
+  font-size:13px;font-weight:700;margin-top:1px;}
+.feat-body{flex:1;min-width:0;}
+.feat-title{font-size:15px;font-weight:600;color:var(--text);}
+.feat-desc{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.4;}
+
+/* Footer fijo con CTA */
+.sh-foot{padding:12px 22px 24px;background:var(--sheet-bg);
+  border-top:1px solid rgba(255,255,255,.05);flex-shrink:0;
+  padding-bottom:max(24px, env(safe-area-inset-bottom));}
+.price-line{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:10px;}
+.price-amount{font-size:28px;font-weight:700;letter-spacing:-1px;}
+.price-info{font-size:12px;color:var(--muted);}
+.cta-main{width:100%;padding:16px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent) 0%, var(--blue) 100%);
+  color:#000;font-size:16px;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  box-shadow:0 6px 20px rgba(0,229,160,.28);}
+.cta-row{display:flex;gap:10px;margin-top:10px;}
+.cta-sec{flex:1;padding:11px;border:1px solid rgba(255,255,255,.08);
+  background:transparent;color:var(--text);font-size:13px;cursor:pointer;
+  border-radius:11px;font-family:'DM Sans',sans-serif;}
+.cta-sec:hover{background:rgba(255,255,255,.04);}
+
+/* Reabrir */
+.reopen-btn{position:fixed;bottom:20px;right:20px;z-index:300;
+  background:var(--card);color:var(--text);border:1px solid var(--border);
+  padding:10px 16px;border-radius:12px;font-family:'DM Sans',sans-serif;
+  font-size:13px;cursor:pointer;display:none;}
+.reopen-btn.show{display:block;}
+
+@media (min-width:600px){
+  .sheet{border-radius:22px;left:50%;transform:translateX(-50%);bottom:30px;
+    max-width:440px;}
+  .sheet.hidden{transform:translateX(-50%) translateY(120%);}
+}
+</style>
+</head>
+<body>
+
+<div class="demo-bg">
+  <div class="demo-logo">PIZARRA PADEL</div>
+  <div class="demo-sub">App de fondo (demo)</div>
+</div>
+
+<div class="backdrop show" id="backdrop" onclick="closeSheet()"></div>
+
+<div class="sheet" id="sheet">
+
+  <div class="handle-area" id="handle">
+    <div class="handle"></div>
+  </div>
+
+  <div class="sh-head">
+    <div class="sh-icon">
+      <!-- Pala de padel estilizada -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="9" rx="6.5" ry="7"/>
+        <line x1="12" y1="16" x2="12" y2="22"/>
+        <line x1="9.5" y1="22" x2="14.5" y2="22"/>
+        <circle cx="9.5" cy="7.5" r=".8" fill="currentColor"/>
+        <circle cx="12" cy="9.5" r=".8" fill="currentColor"/>
+        <circle cx="14.5" cy="7.5" r=".8" fill="currentColor"/>
+        <circle cx="10.5" cy="11.5" r=".8" fill="currentColor"/>
+        <circle cx="13.5" cy="11.5" r=".8" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="sh-title-wrap">
+      <div class="sh-title">Padel Pro</div>
+      <div class="sh-sub">Todo lo que necesitas para entrenar.</div>
+    </div>
+  </div>
+
+  <div class="sh-body">
+    <div class="feat-list">
+      <div class="feat-card">
+        <div class="feat-check">&#10003;</div>
+        <div class="feat-body">
+          <div class="feat-title">Pizarra 3D</div>
+          <div class="feat-desc">Rotacion libre, jugadores con perspectiva real, vista cenital o desde fondo.</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-check">&#10003;</div>
+        <div class="feat-body">
+          <div class="feat-title">Jugadas animadas</div>
+          <div class="feat-desc">Graba frames, reproduce a pantalla completa y comparte en MP4 con tus jugadores.</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-check">&#10003;</div>
+        <div class="feat-body">
+          <div class="feat-title">Pizarras ilimitadas</div>
+          <div class="feat-desc">Guarda toda tu biblioteca tactica sin limite de jugadas o entrenamientos.</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-check">&#10003;</div>
+        <div class="feat-body">
+          <div class="feat-title">Herramientas avanzadas</div>
+          <div class="feat-desc">Parabolas, trayectorias, anotaciones tecnicas y plantillas profesionales.</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-check">&#10003;</div>
+        <div class="feat-body">
+          <div class="feat-title">Nube sincronizada</div>
+          <div class="feat-desc">Tus pizarras siempre disponibles en movil, tablet y desktop.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sh-foot">
+    <div class="price-line">
+      <span class="price-amount">1&euro;</span>
+      <span class="price-info">pago unico &middot; sin renovaciones</span>
+    </div>
+    <button class="cta-main" onclick="buy()">Empezar gratis &middot; 1&euro;/unico</button>
+    <div class="cta-row">
+      <button class="cta-sec" onclick="trial()">7 dias gratis</button>
+      <button class="cta-sec" onclick="restore()">Restaurar compra</button>
+    </div>
+  </div>
+
+</div>
+
+<button class="reopen-btn" id="reopen" onclick="openSheet()">Abrir sheet</button>
+
+<script>
+const sheet = document.getElementById('sheet');
+const backdrop = document.getElementById('backdrop');
+const handle = document.getElementById('handle');
+const reopen = document.getElementById('reopen');
+
+let startY=0, dragging=false, startHeight=60;
+
+function onStart(y){
+  dragging=true;
+  startY=y;
+  const h = sheet.getBoundingClientRect().height;
+  const vh = window.innerHeight;
+  startHeight = (h/vh)*100;
+  sheet.style.transition='none';
+}
+function onMove(y){
+  if(!dragging) return;
+  const dy = y - startY;
+  const vh = window.innerHeight;
+  const dh = (dy/vh)*100;
+  let newH = startHeight - dh;
+  newH = Math.max(20, Math.min(95, newH));
+  sheet.style.height = newH+'vh';
+}
+function onEnd(){
+  if(!dragging) return;
+  dragging=false;
+  sheet.style.transition='';
+  const h = sheet.getBoundingClientRect().height;
+  const vh = window.innerHeight;
+  const pct = (h/vh)*100;
+  if(pct < 30){ closeSheet(); }
+  else if(pct > 75){ sheet.classList.add('expanded'); sheet.style.height=''; }
+  else { sheet.classList.remove('expanded'); sheet.style.height=''; }
+}
+
+handle.addEventListener('touchstart', e=>onStart(e.touches[0].clientY), {passive:true});
+handle.addEventListener('touchmove', e=>onMove(e.touches[0].clientY), {passive:true});
+handle.addEventListener('touchend', onEnd);
+handle.addEventListener('mousedown', e=>{onStart(e.clientY); e.preventDefault();});
+window.addEventListener('mousemove', e=>onMove(e.clientY));
+window.addEventListener('mouseup', onEnd);
+
+function closeSheet(){
+  sheet.classList.add('hidden');
+  backdrop.classList.remove('show');
+  setTimeout(()=>reopen.classList.add('show'),300);
+}
+function openSheet(){
+  sheet.classList.remove('hidden','expanded');
+  sheet.style.height='';
+  backdrop.classList.add('show');
+  reopen.classList.remove('show');
+}
+
+function buy(){ alert('[mockup] Iniciar compra Pro 1€'); }
+function trial(){ alert('[mockup] Comenzar 7 dias gratis'); }
+function restore(){ alert('[mockup] Restaurar compra previa'); }
+</script>
+
+</body>
+</html>
