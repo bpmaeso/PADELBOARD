@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Mano sosteniendo pala dimensional">
+  <defs>
+    <linearGradient id="bg6" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e2f24"/>
+      <stop offset="0.5" stop-color="#0a3a26"/>
+      <stop offset="1" stop-color="#03130c"/>
+    </linearGradient>
+    <radialGradient id="bgGlow6" cx="0.3" cy="0.25" r="0.85">
+      <stop offset="0" stop-color="#2d8a5a" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#03130c" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Piel -->
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbd7b0"/>
+      <stop offset="0.55" stop-color="#e0a878"/>
+      <stop offset="1" stop-color="#7a4422"/>
+    </linearGradient>
+    <radialGradient id="skinHi" cx="0.4" cy="0.3" r="0.5">
+      <stop offset="0" stop-color="#fff3df" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#fff3df" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="skinShade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#3a1808" stop-opacity="0.55"/>
+    </linearGradient>
+
+    <!-- Pala azul -->
+    <linearGradient id="paddleBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5dc7ff"/>
+      <stop offset="0.55" stop-color="#1c79c8"/>
+      <stop offset="1" stop-color="#0a2c52"/>
+    </linearGradient>
+    <radialGradient id="paddleBlueHi" cx="0.35" cy="0.25" r="0.5">
+      <stop offset="0" stop-color="#e6f5ff" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#e6f5ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rim6" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d8edff"/>
+      <stop offset="0.5" stop-color="#4a9ad8"/>
+      <stop offset="1" stop-color="#0a2c52"/>
+    </linearGradient>
+    <linearGradient id="grip6" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1a1f25"/>
+      <stop offset="0.5" stop-color="#3a444f"/>
+      <stop offset="1" stop-color="#0a0d12"/>
+    </linearGradient>
+
+    <radialGradient id="shadow6" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="url(#bg6)"/>
+  <rect width="512" height="512" rx="96" fill="url(#bgGlow6)"/>
+
+  <!-- Sombra suelo -->
+  <ellipse cx="256" cy="445" rx="170" ry="18" fill="url(#shadow6)"/>
+
+  <!-- PALA detrás de la mano -->
+  <g transform="rotate(-18 256 220)">
+    <!-- mango (sale por debajo de la mano) -->
+    <rect x="234" y="280" width="44" height="140" rx="14" fill="url(#grip6)"/>
+    <g stroke="#000" stroke-opacity="0.5" stroke-width="2">
+      <line x1="234" y1="305" x2="278" y2="310"/>
+      <line x1="234" y1="320" x2="278" y2="325"/>
+      <line x1="234" y1="335" x2="278" y2="340"/>
+      <line x1="234" y1="350" x2="278" y2="355"/>
+      <line x1="234" y1="365" x2="278" y2="370"/>
+      <line x1="234" y1="380" x2="278" y2="385"/>
+      <line x1="234" y1="395" x2="278" y2="400"/>
+    </g>
+    <g stroke="#6a727b" stroke-opacity="0.5" stroke-width="1">
+      <line x1="234" y1="308" x2="278" y2="313"/>
+      <line x1="234" y1="323" x2="278" y2="328"/>
+      <line x1="234" y1="338" x2="278" y2="343"/>
+      <line x1="234" y1="353" x2="278" y2="358"/>
+      <line x1="234" y1="368" x2="278" y2="373"/>
+    </g>
+    <ellipse cx="256" cy="418" rx="30" ry="9" fill="#0a0d12"/>
+    <ellipse cx="256" cy="416" rx="26" ry="5" fill="#3a444f"/>
+
+    <!-- Cabeza -->
+    <ellipse cx="256" cy="160" rx="120" ry="142" fill="url(#rim6)"/>
+    <ellipse cx="256" cy="160" rx="106" ry="128" fill="url(#paddleBlue)"/>
+    <ellipse cx="256" cy="160" rx="106" ry="128" fill="url(#paddleBlueHi)"/>
+
+    <!-- Patron de agujeros -->
+    <g fill="#0a1a2e">
+      <circle cx="256" cy="90" r="7"/>
+      <circle cx="220" cy="100" r="7"/>
+      <circle cx="292" cy="100" r="7"/>
+      <circle cx="190" cy="130" r="7"/>
+      <circle cx="256" cy="130" r="7"/>
+      <circle cx="322" cy="130" r="7"/>
+      <circle cx="160" cy="165" r="7"/>
+      <circle cx="220" cy="165" r="7"/>
+      <circle cx="292" cy="165" r="7"/>
+      <circle cx="352" cy="165" r="7"/>
+      <circle cx="190" cy="200" r="7"/>
+      <circle cx="256" cy="200" r="7"/>
+      <circle cx="322" cy="200" r="7"/>
+      <circle cx="220" cy="235" r="7"/>
+      <circle cx="292" cy="235" r="7"/>
+      <circle cx="256" cy="265" r="7"/>
+    </g>
+    <g fill="#e6f5ff" opacity="0.7">
+      <circle cx="254" cy="88" r="2"/>
+      <circle cx="218" cy="98" r="2"/>
+      <circle cx="290" cy="98" r="2"/>
+      <circle cx="188" cy="128" r="2"/>
+      <circle cx="254" cy="128" r="2"/>
+      <circle cx="320" cy="128" r="2"/>
+      <circle cx="158" cy="163" r="2"/>
+      <circle cx="218" cy="163" r="2"/>
+      <circle cx="290" cy="163" r="2"/>
+      <circle cx="350" cy="163" r="2"/>
+      <circle cx="188" cy="198" r="2"/>
+      <circle cx="254" cy="198" r="2"/>
+      <circle cx="320" cy="198" r="2"/>
+      <circle cx="218" cy="233" r="2"/>
+      <circle cx="290" cy="233" r="2"/>
+      <circle cx="254" cy="263" r="2"/>
+    </g>
+
+    <path d="M 152 150 Q 165 60 256 35" stroke="#e6f5ff" stroke-opacity="0.6" stroke-width="6" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- MANO (silueta estilizada agarrando el grip) -->
+  <g>
+    <!-- Antebrazo -->
+    <path d="M 200 460 L 200 350 Q 220 320 256 320 Q 292 320 312 350 L 312 460 Z" fill="url(#skin)"/>
+    <path d="M 200 460 L 200 350 Q 220 320 256 320 Q 292 320 312 350 L 312 460 Z" fill="url(#skinShade)"/>
+
+    <!-- Palma -->
+    <path d="M 196 340 Q 196 295 240 280 L 296 280 Q 326 295 326 340 Q 326 365 308 372 L 220 372 Q 196 365 196 340 Z" fill="url(#skin)"/>
+    <path d="M 196 340 Q 196 295 240 280 L 296 280 Q 326 295 326 340 Q 326 365 308 372 L 220 372 Q 196 365 196 340 Z" fill="url(#skinShade)"/>
+
+    <!-- Pulgar curvado sobre el grip -->
+    <path d="M 196 320 Q 170 305 168 280 Q 168 258 188 252 Q 208 250 218 270 Q 222 285 218 305 Z" fill="url(#skin)"/>
+    <path d="M 196 320 Q 170 305 168 280 Q 168 258 188 252 Q 208 250 218 270 Q 222 285 218 305 Z" fill="url(#skinShade)" opacity="0.6"/>
+
+    <!-- Dedos cerrados envolviendo grip (4 nudillos visibles desde detras) -->
+    <g>
+      <ellipse cx="240" cy="282" rx="12" ry="9" fill="url(#skin)"/>
+      <ellipse cx="263" cy="278" rx="12" ry="9" fill="url(#skin)"/>
+      <ellipse cx="286" cy="282" rx="12" ry="9" fill="url(#skin)"/>
+      <ellipse cx="307" cy="290" rx="11" ry="9" fill="url(#skin)"/>
+      <!-- Sombras entre dedos -->
+      <path d="M 252 276 Q 252 290 252 296" stroke="#7a4422" stroke-opacity="0.55" stroke-width="2" fill="none"/>
+      <path d="M 275 274 Q 275 290 275 296" stroke="#7a4422" stroke-opacity="0.55" stroke-width="2" fill="none"/>
+      <path d="M 298 278 Q 298 290 298 296" stroke="#7a4422" stroke-opacity="0.55" stroke-width="2" fill="none"/>
+    </g>
+
+    <!-- Highlight luminoso -->
+    <path d="M 196 340 Q 196 295 240 280 L 296 280 Q 326 295 326 340 Q 326 365 308 372 L 220 372 Q 196 365 196 340 Z" fill="url(#skinHi)"/>
+    <ellipse cx="220" cy="310" rx="14" ry="20" fill="#fff3df" fill-opacity="0.35"/>
+
+    <!-- Linea palma (textura sugerida) -->
+    <path d="M 220 330 Q 256 348 296 332" stroke="#7a4422" stroke-opacity="0.4" stroke-width="2" fill="none"/>
+    <path d="M 232 350 Q 256 358 282 350" stroke="#7a4422" stroke-opacity="0.35" stroke-width="1.5" fill="none"/>
+
+    <!-- Muñeca (sombra de la pala detrás) -->
+    <path d="M 200 372 L 312 372 L 312 390 L 200 390 Z" fill="#000" fill-opacity="0.18"/>
+  </g>
+</svg>
