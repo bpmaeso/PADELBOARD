@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PADELBOARD - P con barra de red">
+  <defs>
+    <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E3B6C"/>
+      <stop offset="1" stop-color="#1B6FB8"/>
+    </linearGradient>
+  </defs>
+  <!-- Fondo cuadrado con esquinas redondeadas -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg1)"/>
+
+  <!-- Safe zone maskable: margen 10% (52,52 a 460,460) -->
+
+  <!-- Letra P bold tipográfica geométrica.
+       Cuerpo vertical + bucle superior. La barra horizontal central
+       se estiliza como red de pádel (líneas verticales). -->
+  <g fill="#FFFFFF">
+    <!-- Tronco vertical de la P -->
+    <rect x="140" y="100" width="68" height="312" rx="10"/>
+    <!-- Bucle superior de la P (forma de D) -->
+    <path d="M 208 100
+             H 290
+             A 78 78 0 0 1 290 256
+             H 208
+             Z"/>
+  </g>
+
+  <!-- Barra horizontal estilizada como red de pádel,
+       saliendo de la base del bucle hacia la derecha -->
+  <g>
+    <!-- Marco superior e inferior de la red -->
+    <rect x="208" y="232" width="232" height="10" fill="#F2C94C"/>
+    <rect x="208" y="278" width="232" height="10" fill="#F2C94C"/>
+    <!-- Líneas verticales de la red -->
+    <g stroke="#FFFFFF" stroke-width="4" opacity="0.95">
+      <line x1="232" y1="242" x2="232" y2="278"/>
+      <line x1="256" y1="242" x2="256" y2="278"/>
+      <line x1="280" y1="242" x2="280" y2="278"/>
+      <line x1="304" y1="242" x2="304" y2="278"/>
+      <line x1="328" y1="242" x2="328" y2="278"/>
+      <line x1="352" y1="242" x2="352" y2="278"/>
+      <line x1="376" y1="242" x2="376" y2="278"/>
+      <line x1="400" y1="242" x2="400" y2="278"/>
+      <line x1="424" y1="242" x2="424" y2="278"/>
+    </g>
+  </g>
+</svg>

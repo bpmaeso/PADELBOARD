@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PADELBOARD - Monograma PB entrelazado">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0A2540"/>
+      <stop offset="1" stop-color="#13355E"/>
+    </linearGradient>
+    <linearGradient id="oro2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F6D365"/>
+      <stop offset="1" stop-color="#C9962B"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg2)"/>
+
+  <!-- Monograma PB entrelazado, elegante.
+       La P en blanco, la B en dorado, se cruzan en el centro.
+       Safe zone: contenido 80% (margen 10% = 52..460). -->
+
+  <!-- P (blanco) -->
+  <g fill="#FFFFFF">
+    <!-- tronco vertical de la P (a la izquierda) -->
+    <rect x="120" y="96" width="56" height="320" rx="8"/>
+    <!-- bucle de la P -->
+    <path d="M 176 96
+             H 246
+             A 70 70 0 0 1 246 236
+             H 176
+             Z"/>
+  </g>
+
+  <!-- B (dorada) entrelazada, desplazada a la derecha -->
+  <g fill="url(#oro2)">
+    <!-- tronco vertical de la B -->
+    <rect x="232" y="96" width="56" height="320" rx="8"/>
+    <!-- bucle superior de la B -->
+    <path d="M 288 96
+             H 352
+             A 60 60 0 0 1 352 216
+             H 288
+             Z"/>
+    <!-- bucle inferior de la B (mas grande) -->
+    <path d="M 288 216
+             H 364
+             A 68 68 0 0 1 364 352
+             H 288
+             Z"/>
+  </g>
+
+  <!-- Detalle de entrelazado: pequeño "hueco" donde la P pasa por encima de la B -->
+  <rect x="232" y="158" width="14" height="36" fill="#0A2540"/>
+
+  <!-- Pequeño detalle de pelota dorada en la base, sutil -->
+  <circle cx="406" cy="406" r="14" fill="url(#oro2)"/>
+  <circle cx="406" cy="406" r="14" fill="none" stroke="#0A2540" stroke-width="2" stroke-dasharray="3 3"/>
+</svg>
