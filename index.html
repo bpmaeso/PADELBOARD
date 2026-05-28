@@ -76,6 +76,31 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   color:#000;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .pro-btn-cancel{width:100%;padding:12px;border:none;background:transparent;
   color:var(--muted);font-size:14px;cursor:pointer;margin-top:8px;font-family:'DM Sans',sans-serif;}
+.pro-btn-dev{width:100%;padding:10px;border:1px dashed var(--border);border-radius:10px;
+  background:transparent;color:var(--muted);font-size:12px;cursor:pointer;
+  margin-top:14px;font-family:'DM Sans',sans-serif;letter-spacing:.5px;}
+.pro-btn-dev:active{background:rgba(255,255,255,.04);color:var(--text);}
+
+/* Banner Hacerse Pro en HOME */
+.unlock-pro{margin:14px;padding:16px 18px;border-radius:16px;
+  background:linear-gradient(135deg,var(--gold) 0%,#fb923c 100%);
+  color:#1a0f00;display:flex;align-items:center;gap:12px;cursor:pointer;
+  box-shadow:0 4px 18px rgba(245,158,11,.25);}
+.unlock-pro:active{transform:scale(0.985);}
+.unlock-pro .up-ic{font-size:24px;flex-shrink:0;}
+.unlock-pro .up-txt{flex:1;min-width:0;}
+.unlock-pro .up-title{font-size:15px;font-weight:700;line-height:1.2;}
+.unlock-pro .up-sub{font-size:12px;opacity:.78;margin-top:2px;line-height:1.3;}
+.unlock-pro .up-arrow{flex-shrink:0;}
+.unlock-pro .up-arrow svg{width:18px;height:18px;}
+
+/* Elementos solo visibles en Pro (herramientas/colores/grosores extra).
+   Cuando body.is-pro: cada selector restaura su display original. */
+.pro-only{display:none!important;}
+body.is-pro .tb.pro-only,
+body.is-pro .swb.pro-only{display:flex!important;}
+body.is-pro .csw.pro-only{display:inline-block!important;}
+body.is-pro .sep.pro-only{display:block!important;}
 
 /* ── BOARD 2D ── */
 #board-screen{background:#181818;}
@@ -223,9 +248,19 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
     </div>
   </div>
 
+  <!-- CTA: hacerse Pro (solo visible si !isPro) -->
+  <div id="unlock-pro" class="unlock-pro" onclick="showPro()" style="display:none;">
+    <div class="up-ic">&#10022;</div>
+    <div class="up-txt">
+      <div class="up-title">Desbloquear todo (Pro)</div>
+      <div class="up-sub">Pizarra 3D, generador de pista, secuencias y mucho más</div>
+    </div>
+    <div class="up-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+
   <div class="section-label">Pro <span style="color:var(--gold)">&#10022;</span></div>
   <div class="cards">
-    <div class="feat-card" onclick="location.href='padel-3d.html'">
+    <div class="feat-card" onclick="goPro3D()">
       <div class="feat-icon blue">&#128311;</div>
       <div class="feat-info">
         <div class="feat-title">Pizarra 3D</div>
@@ -233,7 +268,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
-    <div class="feat-card" onclick="openGenerator()">
+    <div class="feat-card" onclick="requirePro(openGenerator)">
       <div class="feat-icon purple">&#127967;</div>
       <div class="feat-info">
         <div class="feat-title">Generador de pista</div>
@@ -241,7 +276,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
-    <div class="feat-card" onclick="openSequence()">
+    <div class="feat-card" onclick="requirePro(openSequence)">
       <div class="feat-icon orange">&#127916;</div>
       <div class="feat-info">
         <div class="feat-title">Generador de secuencias</div>
@@ -249,7 +284,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
-    <div class="feat-card" onclick="openBoards()">
+    <div class="feat-card" onclick="requirePro(openBoards)">
       <div class="feat-icon green">&#128193;</div>
       <div class="feat-info">
         <div class="feat-title">Guardar pizarras</div>
@@ -264,17 +299,18 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 <div id="pro-modal">
   <div class="pro-sheet">
     <h2>Pizarra Pádel Pro &#10022;</h2>
-    <p>Lleva tu análisis táctico al siguiente nivel con las herramientas avanzadas.</p>
+    <p>Lleva tu análisis táctico al siguiente nivel desbloqueando todas las herramientas avanzadas.</p>
     <div class="pro-feats">
       <div class="pro-feat"><span class="pro-feat-ic">&#128311;</span>Pizarra 3D con rotación libre y jugadores</div>
       <div class="pro-feat"><span class="pro-feat-ic">&#127967;</span>Generador de pista personalizable 2D + 3D</div>
       <div class="pro-feat"><span class="pro-feat-ic">&#127916;</span>Grabación y exportación de jugadas animadas</div>
       <div class="pro-feat"><span class="pro-feat-ic">&#128193;</span>Guardar y cargar pizarras ilimitadas</div>
-      <div class="pro-feat"><span class="pro-feat-ic">&#127912;</span>Herramientas 3D avanzadas y parábolas</div>
-      <div class="pro-feat"><span class="pro-feat-ic">&#9729;</span>Sincronización en la nube</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#127912;</span>Pizarra 2D realista, 6 colores y 3 grosores</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#9729;</span>Sincronización en la nube (próximamente)</div>
     </div>
-    <button class="pro-btn-main" onclick="closePro()">Próximamente - Avísame</button>
+    <button class="pro-btn-main" onclick="closePro()">Próximamente</button>
     <button class="pro-btn-cancel" onclick="closePro()">Volver</button>
+    <button class="pro-btn-dev" onclick="activateProDev()">Activar Pro (modo dev)</button>
   </div>
 </div>
 
@@ -296,22 +332,22 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
         <button class="tb active" id="btn-pen"     onclick="setTool('pen')" title="Lápiz">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         </button>
-        <button class="tb" id="btn-pendash" onclick="setTool('pendash')" title="Lápiz discontinuo">
+        <button class="tb pro-only" id="btn-pendash" onclick="setTool('pendash')" title="Lápiz discontinuo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2.5"><path d="M4 19 Q9 9 14 14 Q18 18 20 6"/></svg>
         </button>
-        <button class="tb" id="btn-line"    onclick="setTool('line')" title="Línea">
+        <button class="tb pro-only" id="btn-line"    onclick="setTool('line')" title="Línea">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/></svg>
         </button>
-        <button class="tb" id="btn-arrow"   onclick="setTool('arrow')" title="Flecha">
+        <button class="tb pro-only" id="btn-arrow"   onclick="setTool('arrow')" title="Flecha">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9,5 19,5 19,15"/></svg>
         </button>
-        <button class="tb" id="btn-rect"    onclick="setTool('rect')" title="Rectángulo">
+        <button class="tb pro-only" id="btn-rect"    onclick="setTool('rect')" title="Rectángulo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
         </button>
-        <button class="tb" id="btn-dot"     onclick="setTool('dot')" title="Punto">
+        <button class="tb pro-only" id="btn-dot"     onclick="setTool('dot')" title="Punto">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/></svg>
         </button>
-        <button class="tb" id="btn-cross"   onclick="setTool('cross')" title="Cruz">
+        <button class="tb pro-only" id="btn-cross"   onclick="setTool('cross')" title="Cruz">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
         </button>
       </div>
@@ -326,16 +362,16 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
     </div>
     <div class="trow" id="board-r2">
-      <div class="csw active" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')"></div>
-      <div class="csw"        style="background:#facc15"                     data-c="#facc15" onclick="setColor('#facc15')"></div>
-      <div class="csw"        style="background:#22c55e"                     data-c="#22c55e" onclick="setColor('#22c55e')"></div>
-      <div class="csw"        style="background:#ef4444"                     data-c="#ef4444" onclick="setColor('#ef4444')"></div>
-      <div class="csw"        style="background:#f97316"                     data-c="#f97316" onclick="setColor('#f97316')"></div>
-      <div class="csw"        style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')"></div>
-      <div class="sep"></div>
-      <button class="swb"        id="sw0" onclick="setStroke(2)"  ><div class="sdot" style="width:3px;height:3px"></div></button>
-      <button class="swb active" id="sw1" onclick="setStroke(3.5)"><div class="sdot" style="width:5px;height:5px"></div></button>
-      <button class="swb"        id="sw2" onclick="setStroke(6)"  ><div class="sdot" style="width:8px;height:8px"></div></button>
+      <div class="csw pro-only active" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')"></div>
+      <div class="csw pro-only"        style="background:#facc15"                     data-c="#facc15" onclick="setColor('#facc15')"></div>
+      <div class="csw pro-only"        style="background:#22c55e"                     data-c="#22c55e" onclick="setColor('#22c55e')"></div>
+      <div class="csw pro-only"        style="background:#ef4444"                     data-c="#ef4444" onclick="setColor('#ef4444')"></div>
+      <div class="csw pro-only"        style="background:#f97316"                     data-c="#f97316" onclick="setColor('#f97316')"></div>
+      <div class="csw"                 style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')"></div>
+      <div class="sep pro-only"></div>
+      <button class="swb pro-only"        id="sw0" onclick="setStroke(2)"  ><div class="sdot" style="width:3px;height:3px"></div></button>
+      <button class="swb active"          id="sw1" onclick="setStroke(3.5)"><div class="sdot" style="width:5px;height:5px"></div></button>
+      <button class="swb pro-only"        id="sw2" onclick="setStroke(6)"  ><div class="sdot" style="width:8px;height:8px"></div></button>
     </div>
   </div>
   <canvas id="board-cv"></canvas>
@@ -448,9 +484,56 @@ function goHome(){ showScreen('home'); }
 function openBoard(){
   showScreen('board-screen');
   if(!boardReady){ boardReady=true; initBoard(); }
+  else { applyFreeBoardDefaults(); if(cv){ fitCourt(); draw(); } }
 }
 function showPro(){ document.getElementById('pro-modal').classList.add('open'); }
 function closePro(){ document.getElementById('pro-modal').classList.remove('open'); }
+
+// ==================================================
+// FREEMIUM GATE
+// ==================================================
+// Estado Pro persistido en localStorage. Por ahora se activa sin pasarela:
+//   · URL ?pro=1  → activa, limpia la query
+//   · URL ?pro=0  → desactiva, limpia la query
+//   · Botón "Activar Pro (modo dev)" del modal → activa y recarga
+// En el futuro lo sustituirá Stripe/IAP.
+function isPro(){
+  try{ return localStorage.getItem('padel.pro')==='1'; }catch(e){ return false; }
+}
+function setPro(v){
+  try{ localStorage.setItem('padel.pro', v?'1':'0'); }catch(e){}
+  applyProUI();
+}
+function requirePro(fn){ if(isPro()) fn(); else showPro(); }
+function goPro3D(){ if(isPro()) location.href='padel-3d.html'; else showPro(); }
+function activateProDev(){ setPro(true); location.reload(); }
+
+// Refresca clase body + visibilidad del CTA "Desbloquear todo".
+function applyProUI(){
+  var pro=isPro();
+  document.body.classList.toggle('is-pro', pro);
+  var up=document.getElementById('unlock-pro');
+  if(up) up.style.display = pro ? 'none' : 'flex';
+}
+
+// Procesa ?pro=0|1 al cargar (dev-toggle por URL) y limpia la query.
+(function processProQuery(){
+  try{
+    var u=new URL(window.location.href);
+    var q=u.searchParams.get('pro');
+    if(q==='1' || q==='0'){
+      try{ localStorage.setItem('padel.pro', q==='1'?'1':'0'); }catch(e){}
+      u.searchParams.delete('pro');
+      var clean=u.pathname + (u.searchParams.toString()?'?'+u.searchParams.toString():'') + u.hash;
+      history.replaceState(null,'',clean);
+    }
+  }catch(e){}
+})();
+
+// Aplica clase body antes de pintar nada para que .pro-only no parpadee.
+document.addEventListener('DOMContentLoaded', applyProUI);
+// También al cargar el script (por si DOMContentLoaded ya pasó).
+if(document.readyState!=='loading') applyProUI();
 
 // ==================================================
 // BOARD 2D
@@ -473,11 +556,29 @@ var courtConfig={
   meshSide  :495,         // reja lateral a continuación (4.95 m)
   serviceOff:300          // línea de saque a 3 m del fondo
 };
-function courtMargin(){ return courtConfig.wall + 10; } // hueco exterior para las paredes
+// En tema Gratis no hay pared exterior: solo deja el margen mínimo.
+function courtMargin(){ return (isPro() ? courtConfig.wall : 0) + 10; }
 // Valores de fábrica (para "Restablecer") y persistencia en el dispositivo.
 var COURT_DEFAULTS=JSON.parse(JSON.stringify(courtConfig));
 try{ var _cc=localStorage.getItem('padel.courtConfig'); if(_cc) Object.assign(courtConfig, JSON.parse(_cc)); }catch(e){}
 function saveCourtConfig(){ try{ localStorage.setItem('padel.courtConfig', JSON.stringify(courtConfig)); }catch(e){} }
+
+// Pista del tema GRATIS: blanca, líneas azul oscuro, sin cristal/reja/puerta.
+// Es override visual en runtime: NO se persiste, así que al pasar a Pro
+// recupera el courtConfig que el usuario hubiese personalizado.
+var FREE_COURT={
+  courtColor:'#ffffff',
+  glassColor:'#ffffff',
+  meshColor :'#ffffff',
+  meshLine  :'#ffffff',
+  lineColor :'#0a1d4a',
+  wall      :0,
+  glassSide :0,
+  meshSide  :0,
+  serviceOff:300
+};
+// Devuelve la config a usar para pintar: Pro = la del usuario, Gratis = FREE_COURT.
+function currentCourtConfig(){ return isPro() ? courtConfig : FREE_COURT; }
 var S={tool:'pen',color:'#ffffff',stroke:3.5,drawing:false,sx:0,sy:0,path:[],
   ptrs:{},pinchD:null,pinchM:null,sel:null,wipe:false,wipePts:null};
 var CHIP_R=64;
@@ -509,8 +610,26 @@ function tbH(){ return immersive ? 0 : 88; }  // 2 filas (88) o 0 en inmersivo
 function initBoard(){
   cv=document.getElementById('board-cv');
   ctx=cv.getContext('2d');
+  applyFreeBoardDefaults();
   resizeBoard();
   boardEvents();
+}
+
+// En tema Gratis fuerza: lápiz, color negro y grosor medio.
+// En tema Pro respeta lo que tenga el usuario.
+function applyFreeBoardDefaults(){
+  if(isPro()) return;
+  S.tool='pen';
+  S.color='#000000';
+  S.stroke=3.5;
+  // Sincroniza UI por si hubiera quedado otro botón activo de una sesión Pro previa.
+  document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('active');});
+  var penBtn=document.getElementById('btn-pen'); if(penBtn) penBtn.classList.add('active');
+  document.querySelectorAll('.csw').forEach(function(s){s.classList.remove('active');});
+  ['sw0','sw1','sw2'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.classList.remove('active');
+  });
+  var sw1=document.getElementById('sw1'); if(sw1) sw1.classList.add('active');
 }
 
 function resizeBoard(){
@@ -594,7 +713,25 @@ function draw(){
   ctx.restore();
 }
 
+// Tema GRATIS: rectángulo blanco con las líneas oficiales en azul oscuro.
+// Sin cristal, sin reja, sin puerta — lo más limpio posible.
+function drawCourtFree(){
+  var cc=FREE_COURT, W=CW, H=CH, net=H/2, svc=cc.serviceOff, lw=6;
+  ctx.setLineDash([]);
+  ctx.fillStyle=cc.courtColor; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=cc.lineColor; ctx.lineWidth=lw; ctx.lineCap='square';
+  ctx.strokeRect(lw/2,lw/2,W-lw,H-lw);            // perímetro
+  ctx.beginPath(); ctx.moveTo(0,svc);   ctx.lineTo(W,svc);   ctx.stroke();  // saque arriba
+  ctx.beginPath(); ctx.moveTo(0,H-svc); ctx.lineTo(W,H-svc); ctx.stroke();  // saque abajo
+  ctx.beginPath(); ctx.moveTo(W/2,svc); ctx.lineTo(W/2,H-svc); ctx.stroke(); // central
+  ctx.lineWidth=lw*2.5;
+  ctx.beginPath(); ctx.moveTo(0,net); ctx.lineTo(W,net); ctx.stroke();      // red
+}
+
 function drawCourt(){
+  // Tema GRATIS: pista limpia (rectángulo blanco + líneas oficiales en azul oscuro).
+  // No dibuja cristal, reja ni puerta.
+  if(!isPro()){ drawCourtFree(); return; }
   var cc=courtConfig;
   var W=CW,H=CH,net=H/2,svc=cc.serviceOff,lw=6;
   var g=cc.wall, gs=cc.glassSide, ms=cc.meshSide;
