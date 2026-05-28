@@ -207,6 +207,10 @@ body.is-pro .sep.pro-only{display:block!important;}
   border:1px solid var(--border);background:rgba(16,19,26,.85);color:#e6edf3;cursor:pointer;}
 #board-screen.immersive #immersive-exit{display:flex;}
 #immersive-exit svg{width:20px;height:20px;}
+/* En inmersivo escondemos el cursor sobre el canvas para no ensuciar la
+   proyección. Durante el dibujo mostramos crosshair como pista visual. */
+#board-cv.cv-immersive{cursor:none;}
+#board-cv.cv-immersive.cv-drawing{cursor:crosshair;}
 
 /* ── MIS PIZARRAS ── */
 #boards-screen{background:var(--bg);}
@@ -866,6 +870,7 @@ function resizeBoard(keepZoom){
   var hadDrawing=S&&S.drawing;
   if(hadDrawing){
     S.drawing=false; S.path=[]; live=null;
+    if(cv) cv.classList.remove('cv-drawing');
     if(keepZoom) showToast('Rotación detectada — trazo cancelado');
   }
 
@@ -1177,13 +1182,17 @@ function boardEvents(){
     if(chip){S.sel=chip.id;S.drawing=false;draw();cv.setPointerCapture(e.pointerId);return;}
     S.sel=null; S.drawing=true; S.sx=pos.x; S.sy=pos.y; S.path=[{x:pos.x,y:pos.y}];
     cv.setPointerCapture(e.pointerId);
+    cv.classList.add('cv-drawing');
     if(S.tool==='eraser') eraseAt(pos.x,pos.y);
   });
 
   cv.addEventListener('pointermove',function(e){
-    e.preventDefault();
     if(e.pointerId in S.ptrs) S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
     var plist=Object.values(S.ptrs);
+    // Solo bloquear el scroll/gesto del navegador cuando realmente interactuamos
+    // con la pista (dibujando, borrando, o con 2+ punteros). Hover sin botón no
+    // debe interferir con scroll de hover de páginas que embeban el canvas.
+    if(S.drawing||S.wipe||plist.length>=2) e.preventDefault();
     // Borrador ancho con 3+ dedos
     if(plist.length>=3){ S.wipe=true; S.pinchD=null; wipeFingers(plist); draw(); return; }
     // Transición wipe (3+ dedos) → pinch (2 dedos): salir del modo wipe y
@@ -1249,6 +1258,7 @@ function boardEvents(){
       return;
     }
     S.drawing=false;
+    cv.classList.remove('cv-drawing');
     if(S.tool==='eraser'){live=null;return;}
     var pos=ptr(e);
     if(S.tool==='pen'||S.tool==='pendash'){
@@ -1270,7 +1280,7 @@ function boardEvents(){
       if(S.pinchResetT){clearTimeout(S.pinchResetT);S.pinchResetT=null;}
       S.pinchD=null;S.pinchM=null;
     }
-    S.drawing=false;live=null;S.sel=null;draw();
+    S.drawing=false;live=null;S.sel=null;cv.classList.remove('cv-drawing');draw();
   });
 }
 
@@ -1362,8 +1372,11 @@ window.addEventListener('orientationchange',function(){
 });
 // Bloquear scroll/zoom global SOLO mientras la pizarra esté activa.
 // Si lo hacíamos siempre, rompía el scroll vertical del HOME en táctil.
+// Y solo bloqueamos el gesto si el touch ocurre sobre el canvas — un input
+// o textarea visible en la pizarra debe poder hacer scroll/selección normal.
 document.addEventListener('touchmove',function(e){
-  if(currentScreen==='board-screen') e.preventDefault();
+  if(currentScreen!=='board-screen') return;
+  if(e.target && e.target.closest && e.target.closest('#board-cv')) e.preventDefault();
 },{passive:false});
 
 // ==================================================
@@ -1471,6 +1484,8 @@ function genDownloadSVG(){
 function setImmersive(on){
   immersive=on;
   document.getElementById('board-screen').classList.toggle('immersive', on);
+  // Sin clase en el canvas no podemos ocultar el cursor en escritorio.
+  if(cv) cv.classList.toggle('cv-immersive', on);
   if(cv) resizeBoard();
 }
 function toggleImmersive(){ setImmersive(!immersive); }
@@ -1521,6 +1536,12 @@ function seqApplyFrame(i){
   SEQ.idx=i; live=null; if(cv) draw(); seqUpdateUI();
 }
 function seqAddFrame(){
+  // Tope soft: con muchos frames el snapshot crece sin control y degrada
+  // memoria/persistencia. Se aborta con aviso, el usuario puede borrar.
+  if(SEQ.frames.length>=50){
+    showToast('Máximo 50 frames por secuencia. Borra alguno antes de añadir otro.');
+    return;
+  }
   SEQ.frames.push(seqSnapshot());
   SEQ.idx=SEQ.frames.length-1; seqSave(); seqUpdateUI();
   showToast('Frame '+SEQ.frames.length+' capturado');
@@ -1602,7 +1623,14 @@ function seqPlaySegment(seg){
 // MIS PIZARRAS (guardar / cargar jugadas)
 // ==================================================
 function openBoards(){ showScreen('boards-screen'); boardsRender(); }
-function boardsAll(){ try{ return JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; } }
+function boardsAll(){
+  // Defensivo: aunque el JSON global parsee, una entrada corrupta (sin name o
+  // sin strokes) puede romper boardsRender o boardsLoad. Filtramos por contrato
+  // mínimo: name string y strokes array.
+  var raw; try{ raw=JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; }
+  if(!Array.isArray(raw)) return [];
+  return raw.filter(function(b){ return b && typeof b.name==='string' && Array.isArray(b.strokes); });
+}
 function boardsSet(a){
   try{ localStorage.setItem('padel.boards', JSON.stringify(a)); return true; }
   catch(e){ if(isQuotaError(e)) showToast('No hay espacio para guardar — borra alguna pizarra antigua'); return false; }
@@ -1641,13 +1669,24 @@ function boardsRender(){
   if(!el) return;
   if(!a.length){ el.innerHTML='<div class="boards-empty">A&uacute;n no has guardado ninguna pizarra.<br>Dibuja una jugada y pulsa &laquo;Guardar actual&raquo;.</div>'; return; }
   el.innerHTML=a.map(function(b,i){
-    var d=new Date(b.date);
-    var ds=d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-    return '<div class="board-item"><div class="board-meta">'+
-      '<div class="board-name">'+escapeHtml(b.name)+'</div>'+
-      '<div class="board-date">'+ds+' &middot; '+((b.strokes||[]).length)+' trazos</div></div>'+
-      '<button class="board-act" onclick="boardsLoad('+i+')">Cargar</button>'+
-      '<button class="board-act board-del" onclick="boardsDelete('+i+')">&times;</button></div>';
+    try{
+      var d=new Date(b.date);
+      var ds=d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      // Forzar a entero para evitar inyección si una entrada importada tiene
+      // strokes manipulado (p.ej. {length: '<script>'}).
+      var nStrokes=Number((b.strokes||[]).length)|0;
+      return '<div class="board-item"><div class="board-meta">'+
+        '<div class="board-name">'+escapeHtml(b.name)+'</div>'+
+        '<div class="board-date">'+ds+' &middot; '+nStrokes+' trazos</div></div>'+
+        '<button class="board-act" onclick="boardsLoad('+i+')">Cargar</button>'+
+        '<button class="board-act board-del" onclick="boardsDelete('+i+')">&times;</button></div>';
+    }catch(err){
+      // Una entrada corrupta no debe romper toda la lista.
+      return '<div class="board-item"><div class="board-meta">'+
+        '<div class="board-name">(pizarra corrupta)</div>'+
+        '<div class="board-date">No se pudo renderizar</div></div>'+
+        '<button class="board-act board-del" onclick="boardsDelete('+i+')">&times;</button></div>';
+    }
   }).join('');
 }
 
