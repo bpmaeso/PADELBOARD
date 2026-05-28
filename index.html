@@ -127,6 +127,17 @@ body.is-pro .sep.pro-only{display:block!important;}
 }
 .tb:hover,.tb:active{background:rgba(255,255,255,.06);color:#e6edf3;}
 .tb.active{background:#00e5a0;color:#000;border-color:#00e5a0;}
+/* Foco visible para navegación por teclado (no aparece con mouse/touch). */
+.tb:focus-visible,.csw:focus-visible,.swb:focus-visible,
+.gen-btn-main:focus-visible,.gen-btn-ghost:focus-visible,
+.board-act:focus-visible,.back-btn:focus-visible,
+.seqb:focus-visible,.seqmini:focus-visible,
+.feat-card:focus-visible,.unlock-pro:focus-visible{
+  outline:2px solid #00e5a0;outline-offset:2px;
+}
+/* Botones de toolbar deshabilitados (undo/redo cuando no aplica). */
+.tb:disabled,.tb[disabled]{opacity:.35;cursor:not-allowed;}
+.tb:disabled:hover,.tb[disabled]:hover{background:transparent;color:#9aa3b8;}
 .tb svg{width:16px;height:16px;pointer-events:none;}
 .back-btn{display:flex;align-items:center;gap:5px;padding:0 10px;height:34px;
   border-radius:8px;border:1px solid #1e222c;background:transparent;
