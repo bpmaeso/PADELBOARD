@@ -400,6 +400,93 @@ body.is-pro .sep.pro-only{display:block!important;}
   .tut-track,.tut-overlay{transition:none;}
   .tut-slide [class^="tut-anim-"]{animation:none!important;}
 }
+
+/* ── TUTORIAL-B: VÍDEO 6s (variante alternativa, prefijo .tutv-) ── */
+.tutv-help-btn{
+  position:absolute;top:56px;right:165px;z-index:50;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(16,19,26,.7);border:1px solid var(--border);
+  color:var(--muted);font-size:12px;font-family:'DM Sans',sans-serif;
+  padding:7px 12px;border-radius:999px;cursor:pointer;
+  backdrop-filter:blur(6px);transition:all .15s;
+}
+@media (max-width:380px){
+  .tutv-help-btn{right:auto;left:18px;}
+}
+.tutv-help-btn:hover,.tutv-help-btn:focus-visible{color:var(--accent);border-color:var(--accent);outline:none;}
+.tutv-help-btn svg{width:14px;height:14px;}
+.tutv-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(6,8,12,.94);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  font-family:'DM Sans',sans-serif;
+  opacity:0;transition:opacity .25s ease;
+  padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+  box-sizing:border-box;
+}
+.tutv-overlay.on{display:flex;opacity:1;}
+.tutv-close{
+  position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(16,19,26,.85);border:1px solid var(--border);
+  color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.tutv-close:hover,.tutv-close:focus-visible{color:var(--accent);border-color:var(--accent);outline:none;}
+.tutv-close svg{width:18px;height:18px;}
+.tutv-stage{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  max-width:100%;
+}
+.tutv-canvas-wrap{
+  position:relative;
+  width:min(360px,86vw);
+  aspect-ratio:360/640;
+  max-height:74vh;
+  border-radius:20px;overflow:hidden;
+  background:#0a0b0e;
+  box-shadow:0 12px 40px rgba(0,0,0,.55);
+  border:1px solid var(--border);
+}
+.tutv-canvas-wrap canvas{
+  width:100%;height:100%;display:block;
+}
+.tutv-progress{
+  width:min(360px,86vw);
+  height:3px;border-radius:999px;background:rgba(255,255,255,.08);
+  overflow:hidden;
+}
+.tutv-progress-bar{
+  height:100%;width:0;background:linear-gradient(90deg,var(--accent),#00b8ff);
+  transition:width .08s linear;
+}
+.tutv-controls{
+  display:flex;align-items:center;gap:10px;
+  width:min(360px,86vw);
+}
+.tutv-btn{
+  flex:1;padding:12px 14px;border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.tutv-btn-ghost{
+  background:transparent;color:var(--muted);
+  border:1px solid var(--border);
+}
+.tutv-btn-ghost:hover,.tutv-btn-ghost:focus-visible{color:var(--text);border-color:#2a3142;outline:none;}
+.tutv-btn-icon{
+  flex:0 0 auto;width:42px;height:42px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;border:1px solid var(--border);border-radius:12px;
+  color:var(--text);cursor:pointer;
+}
+.tutv-btn-icon:hover,.tutv-btn-icon:focus-visible{border-color:var(--accent);color:var(--accent);outline:none;}
+.tutv-btn-icon svg{width:18px;height:18px;}
+.tutv-btn-icon .tutv-ic-pause{display:none;}
+.tutv-btn-icon.tutv-playing .tutv-ic-play{display:none;}
+.tutv-btn-icon.tutv-playing .tutv-ic-pause{display:inline;}
+@media (prefers-reduced-motion: reduce){
+  .tutv-overlay{transition:none;}
+}
 </style>
 </head>
 <body>
@@ -481,6 +568,10 @@ body.is-pro .sep.pro-only{display:block!important;}
   <button id="btnTut" class="tut-help-btn" type="button" aria-label="Ver tutorial" onclick="window.showTutorial && window.showTutorial()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.6-2.5 2-2.5 4"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
     &iquest;C&oacute;mo se usa?
+  </button>
+  <button id="btnTutVideo" class="tutv-help-btn" type="button" aria-label="Ver v&iacute;deo del tutorial" onclick="window.showTutorialVideo && window.showTutorialVideo()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg>
+    Ver v&iacute;deo
   </button>
 </div>
 
@@ -1861,6 +1952,467 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').cat
   } else {
     auto();
   }
+})();
+
+// ==================================================
+// TUTORIAL-B: VÍDEO 6s (variante alternativa)
+// Canvas 2D programático, 4 segmentos en bucle, sin imágenes externas.
+// Expone window.showTutorialVideo. No se auto-arranca.
+// ==================================================
+(function(){
+  var CW=360, CH=640;           // tamaño lógico canvas portrait
+  var DURATION=6000;            // total ms
+  // Segmentos: [start, end, label, drawFn]
+  // 0–1.5s pista, 1.5–3s borrar 3 dedos, 3–4.5s pinch zoom, 4.5–6s captura
+  var SEG_BOUNDS=[
+    {start:0,    end:1500, label:'Pinta libremente'},
+    {start:1500, end:3000, label:'Borra con 3 dedos'},
+    {start:3000, end:4500, label:'Pellizca para zoom'},
+    {start:4500, end:6000, label:'Captura tu jugada'}
+  ];
+  var XFADE=200;                // ms cross-fade entre segmentos
+
+  var overlay=null, cvs=null, ctx=null, progressBar=null, playBtn=null;
+  var rafId=null, startTs=0, pausedAt=0, paused=false, looping=true, built=false;
+  var dpr=1;
+  var reducedMotion=false;
+
+  function prefersReduced(){
+    try{ return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    catch(_){ return false; }
+  }
+
+  function build(){
+    if(built) return;
+    overlay=document.createElement('div');
+    overlay.className='tutv-overlay';
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-label','Vídeo del tutorial');
+    overlay.setAttribute('tabindex','-1');
+    overlay.innerHTML=
+      '<button class="tutv-close" type="button" data-act="close" aria-label="Cerrar">'+
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>'+
+      '</button>'+
+      '<div class="tutv-stage">'+
+        '<div class="tutv-canvas-wrap"><canvas id="tutvCv" width="'+CW+'" height="'+CH+'" aria-label="Animación del tutorial"></canvas></div>'+
+        '<div class="tutv-progress"><div class="tutv-progress-bar" id="tutvBar"></div></div>'+
+        '<div class="tutv-controls">'+
+          '<button class="tutv-btn-icon" id="tutvPlay" type="button" data-act="toggle" aria-label="Pausa/Reproducir">'+
+            '<svg class="tutv-ic-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4"/></svg>'+
+            '<svg class="tutv-ic-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'+
+          '</button>'+
+          '<button class="tutv-btn tutv-btn-ghost" type="button" data-act="close">Cerrar</button>'+
+        '</div>'+
+      '</div>';
+    document.body.appendChild(overlay);
+    cvs=overlay.querySelector('#tutvCv');
+    ctx=cvs.getContext('2d');
+    progressBar=overlay.querySelector('#tutvBar');
+    playBtn=overlay.querySelector('#tutvPlay');
+
+    // Ajuste de pixel ratio para canvas nítido
+    dpr=Math.min(window.devicePixelRatio||1, 2);
+    cvs.width=CW*dpr;
+    cvs.height=CH*dpr;
+    ctx.scale(dpr,dpr);
+
+    // Click handlers (delegados)
+    overlay.addEventListener('click', function(e){
+      var act=e.target && e.target.closest && e.target.closest('[data-act]');
+      if(!act){
+        // click fuera del stage = cerrar
+        if(e.target===overlay) close();
+        return;
+      }
+      var a=act.getAttribute('data-act');
+      if(a==='close') close();
+      else if(a==='toggle') togglePlay();
+    });
+
+    document.addEventListener('keydown', onKey);
+    built=true;
+  }
+
+  function onKey(e){
+    if(!overlay || !overlay.classList.contains('on')) return;
+    if(e.key==='Escape'){ e.preventDefault(); close(); }
+    else if(e.key===' ' || e.key==='Spacebar'){ e.preventDefault(); togglePlay(); }
+  }
+
+  // ---------- DIBUJO ----------
+  // Pista 10x20 estilo "Padel Pádel": rectángulo + línea central + saques + red.
+  // Coordenadas canvas (360x640). Margen 40px arriba/abajo, 50px lados.
+  var COURT={x:55, y:60, w:250, h:480};
+
+  function drawBackdrop(){
+    // Fondo oscuro con sutil gradiente para que parezca el board
+    var g=ctx.createLinearGradient(0,0,0,CH);
+    g.addColorStop(0,'#0d1220');
+    g.addColorStop(1,'#0a0b0e');
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,CW,CH);
+  }
+
+  // Dibuja la pista. `progress` ∈ [0,1] controla cuánto de las líneas se ha trazado.
+  // `scale` multiplica el tamaño desde el centro (para el segmento de zoom).
+  function drawCourt(progress, scale){
+    var cx=COURT.x+COURT.w/2, cy=COURT.y+COURT.h/2;
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.scale(scale,scale);
+    ctx.translate(-cx,-cy);
+
+    // Superficie azul
+    ctx.fillStyle='#3042c8';
+    ctx.fillRect(COURT.x, COURT.y, COURT.w, COURT.h);
+
+    // Cristal blanco (borde)
+    ctx.strokeStyle='#dff4ff';
+    ctx.lineWidth=4;
+    ctx.strokeRect(COURT.x, COURT.y, COURT.w, COURT.h);
+
+    // Líneas blancas: progresivamente reveladas según `progress`
+    ctx.strokeStyle='#ffffff';
+    ctx.lineCap='round';
+    // Lista de líneas en orden de dibujado (de simple a complejo)
+    // [x1,y1,x2,y2,grosor]
+    var sx=COURT.x, sy=COURT.y, w=COURT.w, h=COURT.h;
+    var midY=sy+h/2;
+    var srvTop=sy+h*0.25;
+    var srvBot=sy+h*0.75;
+    var lines=[
+      [sx, midY, sx+w, midY, 4],          // red central (más gruesa)
+      [sx, srvTop, sx+w, srvTop, 2.2],    // línea saque arriba
+      [sx, srvBot, sx+w, srvBot, 2.2],    // línea saque abajo
+      [sx+w/2, srvTop, sx+w/2, srvBot, 2.2] // línea central entre saques
+    ];
+    // `progress` recorre las 4 líneas: cada una recibe 1/4 del tiempo
+    var per=1/lines.length;
+    for(var i=0;i<lines.length;i++){
+      var t=Math.max(0, Math.min(1, (progress - i*per)/per));
+      if(t<=0) continue;
+      var L=lines[i];
+      ctx.lineWidth=L[4];
+      ctx.beginPath();
+      ctx.moveTo(L[0], L[1]);
+      ctx.lineTo(L[0] + (L[2]-L[0])*t, L[1] + (L[3]-L[1])*t);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Dibuja un dedo (círculo con halo)
+  function drawFinger(x, y, r){
+    r=r||16;
+    ctx.fillStyle='rgba(0,229,160,0.25)';
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#00e5a0';
+    ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle='#00e5a0';
+    ctx.beginPath(); ctx.arc(x,y,r*0.32,0,Math.PI*2); ctx.fill();
+  }
+
+  // Trazos amarillos de muestra (jugada dibujada) que luego se borrarán
+  function drawSampleStrokes(clipMaxX){
+    ctx.save();
+    if(clipMaxX!=null){
+      ctx.beginPath();
+      ctx.rect(clipMaxX, COURT.y, COURT.x+COURT.w-clipMaxX, COURT.h);
+      ctx.clip();
+    }
+    ctx.strokeStyle='#facc15';
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    ctx.lineWidth=4;
+    // Trazo 1
+    ctx.beginPath();
+    ctx.moveTo(COURT.x+30, COURT.y+150);
+    ctx.quadraticCurveTo(COURT.x+90, COURT.y+90, COURT.x+150, COURT.y+130);
+    ctx.stroke();
+    // Trazo 2
+    ctx.beginPath();
+    ctx.moveTo(COURT.x+50, COURT.y+260);
+    ctx.lineTo(COURT.x+200, COURT.y+280);
+    ctx.stroke();
+    // Trazo 3
+    ctx.beginPath();
+    ctx.moveTo(COURT.x+60, COURT.y+380);
+    ctx.quadraticCurveTo(COURT.x+130, COURT.y+350, COURT.x+210, COURT.y+400);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Etiqueta de texto inferior
+  function drawCaption(text){
+    ctx.save();
+    ctx.fillStyle='#e6edf3';
+    ctx.font='600 18px "DM Sans", sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    // Sombra sutil para legibilidad sobre la pista
+    ctx.shadowColor='rgba(0,0,0,0.6)';
+    ctx.shadowBlur=8;
+    ctx.fillText(text, CW/2, CH-40);
+    ctx.restore();
+  }
+
+  // ---------- SEGMENTOS ----------
+  // Cada segmento recibe t ∈ [0,1] (su progreso local). Dibuja a pantalla completa.
+  // El cross-fade entre segmentos lo gestiona drawFrame() vía alpha global.
+  function seg1(t){
+    // Pista trazada de cero
+    drawCourt(t, 1);
+    drawCaption(SEG_BOUNDS[0].label);
+  }
+
+  function seg2(t){
+    // Pista ya hecha + trazos amarillos + 3 dedos arrastrando que borran franja
+    drawCourt(1, 1);
+    // wipe avanza de COURT.x a COURT.x+COURT.w
+    var wipeX = COURT.x + COURT.w * t;
+    drawSampleStrokes(wipeX);
+    // 3 dedos en línea horizontal, banda vertical centrada
+    var fy = COURT.y + COURT.h*0.5;
+    drawFinger(wipeX,        fy-30, 14);
+    drawFinger(wipeX-22,     fy,    14);
+    drawFinger(wipeX-12,     fy+30, 14);
+    drawCaption(SEG_BOUNDS[1].label);
+  }
+
+  function seg3(t){
+    // Pista escala 1 -> 1.4 con ease-in-out, 2 dedos separándose en diagonal
+    var ease = t<0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+    var scale = 1 + 0.4*ease;
+    drawCourt(1, scale);
+    var cx=CW/2, cy=COURT.y+COURT.h/2;
+    // Posición inicial cerca (50 px) y final lejos (130 px), diagonal NE-SO
+    var d = 50 + 80*ease;
+    // dedo 1 (arriba-izquierda)
+    drawFinger(cx - d*0.7, cy - d*0.7, 16);
+    // dedo 2 (abajo-derecha)
+    drawFinger(cx + d*0.7, cy + d*0.7, 16);
+    drawCaption(SEG_BOUNDS[2].label);
+  }
+
+  function seg4(t){
+    // Captura: pista + icono cámara + flash + etiqueta PNG
+    drawCourt(1, 1);
+    drawSampleStrokes(null);
+
+    // Flash blanco: aparece en t=0.1-0.3, fade out
+    var flashA = 0;
+    if(t>=0.1 && t<=0.4){
+      flashA = 1 - (t-0.1)/0.3;
+      flashA = Math.max(0, Math.min(1, flashA))*0.85;
+    }
+    if(flashA>0){
+      ctx.save();
+      ctx.globalAlpha=flashA;
+      ctx.fillStyle='#ffffff';
+      ctx.fillRect(COURT.x, COURT.y, COURT.w, COURT.h);
+      ctx.restore();
+    }
+
+    // Icono cámara en el centro de la pista
+    var camX=CW/2, camY=COURT.y+COURT.h*0.4;
+    ctx.save();
+    ctx.translate(camX, camY);
+    // Cuerpo cámara
+    ctx.strokeStyle='#00e5a0';
+    ctx.lineWidth=3;
+    ctx.lineJoin='round';
+    ctx.beginPath();
+    // Path tipo: M -30 -16 L -22 -28 H 22 L 30 -16 H 38 a6 6 0 0 1 6 6 V 26 a6 6 0 0 1 -6 6 H -38 a6 6 0 0 1 -6 -6 V -10 a6 6 0 0 1 6 -6 Z
+    ctx.moveTo(-30,-16);
+    ctx.lineTo(-22,-28);
+    ctx.lineTo(22,-28);
+    ctx.lineTo(30,-16);
+    ctx.lineTo(38,-16);
+    ctx.arc(38,-10,6,-Math.PI/2,0);
+    ctx.lineTo(44,26);
+    ctx.arc(38,26,6,0,Math.PI/2);
+    ctx.lineTo(-38,32);
+    ctx.arc(-38,26,6,Math.PI/2,Math.PI);
+    ctx.lineTo(-44,-10);
+    ctx.arc(-38,-10,6,Math.PI,3*Math.PI/2);
+    ctx.closePath();
+    ctx.stroke();
+    // Lente
+    ctx.beginPath(); ctx.arc(0,6,14,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+
+    // Etiqueta PNG: fade-in en t > 0.4
+    var pngA = 0;
+    if(t>=0.4){
+      pngA = Math.min(1, (t-0.4)/0.3);
+    }
+    if(pngA>0){
+      ctx.save();
+      ctx.globalAlpha=pngA;
+      var pngY = camY + 60 + (1-pngA)*8;
+      ctx.fillStyle='#00e5a0';
+      var pw=64, ph=24;
+      // pill
+      ctx.beginPath();
+      var px=CW/2-pw/2, py=pngY-ph/2, rr=8;
+      ctx.moveTo(px+rr,py);
+      ctx.arcTo(px+pw,py,px+pw,py+ph,rr);
+      ctx.arcTo(px+pw,py+ph,px,py+ph,rr);
+      ctx.arcTo(px,py+ph,px,py,rr);
+      ctx.arcTo(px,py,px+pw,py,rr);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle='#000';
+      ctx.font='700 12px "DM Sans", sans-serif';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText('PNG', CW/2, pngY);
+      ctx.restore();
+    }
+
+    drawCaption(SEG_BOUNDS[3].label);
+  }
+
+  var SEG_FNS=[seg1, seg2, seg3, seg4];
+
+  // ---------- LOOP ----------
+  function drawFrame(elapsed){
+    drawBackdrop();
+
+    // Determinar segmento actual + cross-fade
+    var t = Math.max(0, Math.min(DURATION, elapsed));
+    var current=-1;
+    for(var i=0;i<SEG_BOUNDS.length;i++){
+      if(t>=SEG_BOUNDS[i].start && t<SEG_BOUNDS[i].end){ current=i; break; }
+    }
+    if(current<0) current=SEG_BOUNDS.length-1;
+
+    var seg=SEG_BOUNDS[current];
+    var localT=(t-seg.start)/(seg.end-seg.start);
+    if(localT<0) localT=0; if(localT>1) localT=1;
+
+    // Cross-fade: durante los primeros XFADE ms del segmento (excepto el 1º),
+    // pintamos también el final del segmento anterior con alpha decreciente.
+    var fadeIn = 1;
+    if(current>0 && (t-seg.start)<XFADE){
+      var fp = (t-seg.start)/XFADE; // 0->1
+      fadeIn = fp;
+      // pintar segmento anterior por debajo
+      ctx.save();
+      ctx.globalAlpha = 1-fp;
+      SEG_FNS[current-1](1);
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.globalAlpha = fadeIn;
+    SEG_FNS[current](localT);
+    ctx.restore();
+
+    // Progreso global
+    if(progressBar){
+      progressBar.style.width = (t/DURATION*100).toFixed(2)+'%';
+    }
+  }
+
+  function tick(ts){
+    if(!startTs) startTs=ts;
+    var elapsed = ts - startTs - pausedAt;
+    if(elapsed >= DURATION){
+      if(looping){
+        startTs = ts;
+        pausedAt = 0;
+        elapsed = 0;
+      } else {
+        drawFrame(DURATION);
+        paused = true;
+        if(playBtn) playBtn.classList.remove('tutv-playing');
+        return;
+      }
+    }
+    drawFrame(elapsed);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function drawReducedMotion(){
+    // Sin animar: muestra solo el primer frame de cada segmento, lado a lado.
+    // Como solo cabe uno en pantalla, mostramos el segmento 1 + un footer
+    // con los textos de los 4 pasos.
+    drawBackdrop();
+    drawCourt(1, 1);
+    drawSampleStrokes(null);
+    ctx.save();
+    ctx.fillStyle='#e6edf3';
+    ctx.font='600 14px "DM Sans", sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    var y = CH - 130;
+    ctx.fillText('Tutorial vídeo (animación desactivada)', CW/2, y); y+=24;
+    ctx.font='400 12px "DM Sans", sans-serif';
+    ctx.fillStyle='#cdd6e5';
+    for(var i=0;i<SEG_BOUNDS.length;i++){
+      ctx.fillText((i+1)+'. '+SEG_BOUNDS[i].label, CW/2, y);
+      y+=18;
+    }
+    ctx.restore();
+    if(progressBar) progressBar.style.width='100%';
+  }
+
+  function startLoop(){
+    cancelLoop();
+    startTs=0; pausedAt=0; paused=false;
+    if(playBtn) playBtn.classList.add('tutv-playing');
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function cancelLoop(){
+    if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+  }
+
+  // Pausa congelando el "elapsed" actual y reanuda ajustando pausedAt.
+  var pauseElapsed=0;
+  function togglePlay(){
+    if(!overlay || !overlay.classList.contains('on')) return;
+    if(reducedMotion) return; // sin sentido pausar el frame estático
+    if(paused){
+      paused=false;
+      // ajustar para que tick() considere pauseElapsed como base
+      startTs = performance.now() - pauseElapsed;
+      pausedAt = 0;
+      if(playBtn) playBtn.classList.add('tutv-playing');
+      rafId = requestAnimationFrame(tick);
+    } else {
+      paused=true;
+      cancelLoop();
+      pauseElapsed = performance.now() - startTs - pausedAt;
+      if(playBtn) playBtn.classList.remove('tutv-playing');
+    }
+  }
+
+  function open(){
+    build();
+    reducedMotion = prefersReduced();
+    overlay.classList.add('on');
+    if(reducedMotion){
+      cancelLoop();
+      drawReducedMotion();
+      if(playBtn) playBtn.classList.remove('tutv-playing');
+    } else {
+      startLoop();
+    }
+    setTimeout(function(){ try{ overlay.focus(); }catch(_){ } }, 30);
+  }
+
+  function close(){
+    if(!overlay) return;
+    overlay.classList.remove('on');
+    cancelLoop();
+    paused=false;
+  }
+
+  window.showTutorialVideo = open;
 })();
 
 </script>
