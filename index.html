@@ -1517,12 +1517,21 @@ function seqPlaySegment(seg){
   // limpieza), evitamos NPE al interpolar a/b.
   var a=SEQ.frames[seg], b=SEQ.frames[seg+1];
   if(!a||!b){ seqStop(); showToast('Reproducción interrumpida — frames modificados'); return; }
-  var dur=900/SEQ.speed, t0=performance.now();
+  var dur=900/SEQ.speed, t0=performance.now(), lastSpeed=SEQ.speed;
   function step(now){
     if(!SEQ.playing) return;
     // Re-validar en cada frame por si SEQ.frames cambió a mitad de animación.
     if(!SEQ.frames[seg]||!SEQ.frames[seg+1]){
       seqStop(); showToast('Reproducción interrumpida — frames modificados'); return;
+    }
+    // Bug #21: si SEQ.speed cambió a mitad de segmento, recalcular dur y reescalar
+    // t0 para que el progreso visual (k) sea continuo y la nueva velocidad se note
+    // de inmediato sin esperar al siguiente segmento.
+    if(SEQ.speed!==lastSpeed){
+      var kPrev=Math.min(1,(now-t0)/dur);
+      dur=900/SEQ.speed;
+      t0=now-kPrev*dur;
+      lastSpeed=SEQ.speed;
     }
     var k=Math.min(1,(now-t0)/dur);
     var e=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2; // easeInOutQuad
