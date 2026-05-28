@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Padelboard - Pizarra de entrenador con trazo de tiza">
+  <title>Padelboard - Pizarra de entrenador con trazo de tiza</title>
+  <!-- Pizarra negra-azulada -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="#0B1530"/>
+
+  <!-- Textura sutil de tiza borrada (manchas blancas opacas) -->
+  <g fill="#FFFFFF" opacity="0.05">
+    <ellipse cx="140" cy="200" rx="80" ry="35"/>
+    <ellipse cx="380" cy="340" rx="90" ry="40"/>
+    <ellipse cx="260" cy="120" rx="60" ry="25"/>
+  </g>
+
+  <!-- Marco interior de pizarra (madera amarilla) -->
+  <rect x="60" y="60" width="392" height="392" rx="40" fill="none"
+        stroke="#FACC15" stroke-width="6" opacity="0.85"/>
+
+  <defs>
+    <marker id="arrowChalk4" viewBox="0 0 14 14" refX="9" refY="7" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 14 7 L 0 14 z" fill="#FFFFFF"/>
+    </marker>
+  </defs>
+
+  <!-- Linea estrategica de tiza, trazo a mano (irregular) -->
+  <path d="M 110 380
+           C 150 300, 200 360, 240 280
+           S 320 200, 360 240
+           Q 400 270, 400 170"
+        fill="none"
+        stroke="#FFFFFF"
+        stroke-width="14"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.92"
+        marker-end="url(#arrowChalk4)"/>
+
+  <!-- Pequenas marcas tipo "tiza" en la trayectoria -->
+  <g fill="#FFFFFF" opacity="0.45">
+    <circle cx="158" cy="328" r="3"/>
+    <circle cx="190" cy="338" r="2"/>
+    <circle cx="288" cy="248" r="3"/>
+    <circle cx="332" cy="232" r="2"/>
+  </g>
+
+  <!-- Cruz de X (posicion inicial) -->
+  <g stroke="#EF4444" stroke-width="10" stroke-linecap="round" fill="none">
+    <line x1="92" y1="362" x2="128" y2="398"/>
+    <line x1="128" y1="362" x2="92" y2="398"/>
+  </g>
+
+  <!-- Pelota de padel amarilla al final del trazo -->
+  <circle cx="412" cy="155" r="22" fill="#FACC15" stroke="#FFFFFF" stroke-width="4"/>
+  <path d="M 392 148 Q 412 168 432 148" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+</svg>

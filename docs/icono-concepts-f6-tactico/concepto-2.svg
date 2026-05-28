@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Padelboard - Flecha tactica con mini pista">
+  <title>Padelboard - Flecha tactica con mini pista</title>
+  <!-- Fondo azul oscuro -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="#0F1E3A"/>
+
+  <!-- Flecha curva grande amarilla (gesto de jugada) -->
+  <defs>
+    <marker id="arrowYellow2" viewBox="0 0 14 14" refX="9" refY="7" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 14 7 L 0 14 z" fill="#FACC15"/>
+    </marker>
+  </defs>
+
+  <!-- Curva en S amplia que ocupa el centro -->
+  <path d="M 110 380 C 160 200, 320 200, 360 320 S 420 360, 410 150"
+        fill="none"
+        stroke="#FACC15"
+        stroke-width="26"
+        stroke-linecap="round"
+        marker-end="url(#arrowYellow2)"/>
+
+  <!-- Pequenos puntos punteados a lo largo (trazo a mano) -->
+  <g fill="#FFFFFF" opacity="0.55">
+    <circle cx="135" cy="338" r="4"/>
+    <circle cx="170" cy="290" r="4"/>
+    <circle cx="220" cy="248" r="4"/>
+    <circle cx="280" cy="240" r="4"/>
+  </g>
+
+  <!-- Mini pista de padel en esquina inferior izquierda -->
+  <g transform="translate(80 360)" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <rect x="0" y="0" width="120" height="80" rx="6" stroke-width="5" fill="#0B1530"/>
+    <line x1="0" y1="40" x2="120" y2="40" stroke-width="5" stroke-dasharray="6 5"/>
+    <line x1="0" y1="18" x2="120" y2="18" stroke-width="3"/>
+    <line x1="0" y1="62" x2="120" y2="62" stroke-width="3"/>
+    <line x1="60" y1="18" x2="60" y2="62" stroke-width="3"/>
+  </g>
+
+  <!-- Marca pequena roja: pelota o punto de impacto -->
+  <circle cx="118" cy="378" r="9" fill="#EF4444" stroke="#FFFFFF" stroke-width="3"/>
+</svg>
