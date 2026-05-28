@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PADELBOARD - pista cenital minimalista">
+  <!-- Fondo cuadrado redondeado estilo iOS -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="#0B5FFF"/>
+
+  <!-- Pista esquemática vista cenital, centrada en safe-zone (margen 10%) -->
+  <!-- Rectángulo exterior de pista -->
+  <rect x="120" y="80" width="272" height="352" rx="14"
+        fill="none" stroke="#FFFFFF" stroke-width="10"/>
+
+  <!-- Línea central horizontal (red) -->
+  <line x1="120" y1="256" x2="392" y2="256"
+        stroke="#FFFFFF" stroke-width="10"/>
+
+  <!-- Línea de fondo superior -->
+  <line x1="120" y1="176" x2="392" y2="176"
+        stroke="#FFFFFF" stroke-width="8"/>
+  <!-- Línea de fondo inferior -->
+  <line x1="120" y1="336" x2="392" y2="336"
+        stroke="#FFFFFF" stroke-width="8"/>
+
+  <!-- División central vertical (entre líneas de saque) -->
+  <line x1="256" y1="176" x2="256" y2="336"
+        stroke="#FFFFFF" stroke-width="8"/>
+
+  <!-- Pelota amarilla centrada en la red -->
+  <circle cx="256" cy="256" r="22" fill="#FFD600"/>
+</svg>

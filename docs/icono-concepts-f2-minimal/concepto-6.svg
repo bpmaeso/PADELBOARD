@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PADELBOARD - jugada en U con pelota">
+  <!-- Fondo cuadrado redondeado -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="#111827"/>
+
+  <!-- Flecha en U (jugada de devolución por la pared)
+       Trazo grueso, semicírculo abierto hacia arriba con dos puntas -->
+  <path d="M 130 180
+           L 130 330
+           A 126 126 0 0 0 382 330
+           L 382 180"
+        fill="none"
+        stroke="#FFFFFF"
+        stroke-width="12"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Punta de flecha izquierda (apunta hacia arriba) -->
+  <polyline points="98,212 130,180 162,212"
+            fill="none" stroke="#FFFFFF"
+            stroke-width="12"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+
+  <!-- Punta de flecha derecha (apunta hacia arriba) -->
+  <polyline points="350,212 382,180 414,212"
+            fill="none" stroke="#FFFFFF"
+            stroke-width="12"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+
+  <!-- Pelota amarilla en el punto más bajo de la U -->
+  <circle cx="256" cy="408" r="30" fill="#FFD600"/>
+</svg>
