@@ -105,15 +105,25 @@ body.is-pro .sep.pro-only{display:block!important;}
 /* ── BOARD 2D ── */
 #board-screen{background:#181818;}
 #board-tb{position:absolute;top:0;left:0;right:0;z-index:100;
-  background:#10131a;border-bottom:1px solid #1e222c;display:flex;flex-direction:column;}
-.trow{display:flex;align-items:center;gap:3px;padding:0 4px;height:44px;overflow:hidden;}
+  background:#10131a;border-bottom:1px solid #1e222c;display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top,0);}
+.trow{display:flex;align-items:center;gap:2px;padding:0 3px;height:48px;overflow:hidden;}
 #board-r1{justify-content:space-between;}      /* grupos: izq / centro / der */
 #board-r2{border-top:1px solid #1e222c;justify-content:center;gap:6px;}
-.tgroup{display:flex;align-items:center;gap:1px;}
+.tgroup{display:flex;align-items:center;gap:0;}
 .sep{width:1px;height:22px;background:#1e222c;flex-shrink:0;margin:0 2px;}
-.tb{display:flex;align-items:center;justify-content:center;width:30px;height:34px;
+/* HIG: zona táctil >=40px (compromiso entre 44 ideal y caber en pantalla pequeña).
+   Usa min-width/min-height y permite reducir el área visual si el ancho lo exige. */
+.tb{display:flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;
+  width:40px;height:40px;
   border-radius:8px;border:1.5px solid transparent;background:transparent;
   color:#4a5060;cursor:pointer;flex-shrink:0;transition:all .12s;}
+/* En móviles MUY pequeños (≤380px) recortamos a 36px para que los 11 botones
+   de la fila 1 quepan sin desbordar. Sigue por encima del mínimo HIG efectivo. */
+@media (max-width:380px){
+  .tb{min-width:36px;min-height:36px;width:36px;height:36px;}
+  .trow{height:44px;}
+}
 .tb:hover,.tb:active{background:rgba(255,255,255,.06);color:#e6edf3;}
 .tb.active{background:#00e5a0;color:#000;border-color:#00e5a0;}
 .tb svg{width:16px;height:16px;pointer-events:none;}
@@ -216,6 +226,180 @@ body.is-pro .sep.pro-only{display:block!important;}
   background:rgba(0,229,160,.12);color:var(--accent);font-size:13px;font-weight:600;
   cursor:pointer;font-family:'DM Sans',sans-serif;}
 .board-act.board-del{border-color:#ef4444;background:rgba(239,68,68,.1);color:#ef4444;padding:9px 12px;}
+
+/* ── TUTORIAL ONBOARDING ── */
+.tut-help-btn{
+  position:absolute;top:56px;right:18px;z-index:50;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(16,19,26,.7);border:1px solid var(--border);
+  color:var(--muted);font-size:12px;font-family:'DM Sans',sans-serif;
+  padding:7px 12px;border-radius:999px;cursor:pointer;
+  backdrop-filter:blur(6px);transition:all .15s;
+}
+.tut-help-btn:hover,.tut-help-btn:focus-visible{color:var(--accent);border-color:var(--accent);outline:none;}
+.tut-help-btn svg{width:14px;height:14px;}
+.tut-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(6,8,12,.94);
+  display:none;flex-direction:column;
+  font-family:'DM Sans',sans-serif;
+  opacity:0;transition:opacity .25s ease;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tut-overlay.on{display:flex;opacity:1;}
+.tut-skip{
+  position:absolute;top:calc(16px + env(safe-area-inset-top));right:18px;z-index:2;
+  background:transparent;border:none;
+  color:var(--muted);font-size:13px;font-family:'DM Sans',sans-serif;
+  cursor:pointer;padding:8px 12px;border-radius:8px;
+}
+.tut-skip:hover,.tut-skip:focus-visible{color:var(--text);outline:none;background:rgba(255,255,255,.05);}
+.tut-stage{
+  flex:1;display:flex;overflow:hidden;
+  touch-action:pan-y;
+  position:relative;
+}
+.tut-track{
+  display:flex;width:100%;height:100%;
+  transition:transform .35s cubic-bezier(.4,.0,.2,1);
+  will-change:transform;
+}
+.tut-slide{
+  flex:0 0 100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:64px 28px 16px;
+  text-align:center;
+  box-sizing:border-box;
+}
+.tut-mockup{
+  width:min(280px,72vw);
+  aspect-ratio:1/1;
+  background:#10131a;border:1px solid var(--border);border-radius:24px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:28px;
+  overflow:hidden;position:relative;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+}
+.tut-mockup svg{width:100%;height:100%;display:block;}
+.tut-title{
+  font-size:30px;font-weight:700;line-height:1.1;
+  margin-bottom:10px;letter-spacing:-.5px;
+  background:linear-gradient(135deg,var(--accent),#00b8ff);
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+}
+.tut-desc{
+  font-size:15px;color:var(--text);opacity:.85;
+  line-height:1.5;max-width:340px;
+  margin-bottom:10px;
+}
+.tut-foot{
+  padding:14px 24px calc(20px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.tut-dots{display:flex;gap:8px;}
+.tut-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#2a3142;transition:all .25s;
+}
+.tut-dot.on{background:var(--accent);width:22px;border-radius:4px;}
+.tut-pages{font-size:12px;color:var(--muted);letter-spacing:.5px;}
+.tut-nav{display:flex;align-items:center;gap:10px;width:100%;max-width:420px;}
+.tut-btn{
+  flex:1;padding:14px 16px;border:none;border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.tut-btn-ghost{
+  background:transparent;color:var(--muted);
+  border:1px solid var(--border);
+}
+.tut-btn-ghost:hover,.tut-btn-ghost:focus-visible{color:var(--text);border-color:#2a3142;outline:none;}
+.tut-btn-ghost[disabled]{opacity:.35;cursor:not-allowed;}
+.tut-btn-main{
+  background:linear-gradient(135deg,var(--accent),#00b8ff);
+  color:#000;border:none;
+}
+.tut-btn-main:hover,.tut-btn-main:focus-visible{filter:brightness(1.05);outline:none;}
+.tut-btn-main:active{transform:scale(.98);}
+
+/* Animaciones de los mockups */
+@keyframes tut-draw{
+  0%{stroke-dashoffset:var(--len,300);}
+  60%,100%{stroke-dashoffset:0;}
+}
+@keyframes tut-cursor{
+  0%{transform:translate(40px,40px);opacity:0;}
+  10%,90%{opacity:1;}
+  50%{transform:translate(170px,140px);}
+  100%{transform:translate(220px,200px);opacity:0;}
+}
+@keyframes tut-wipe{
+  0%{transform:translate(-30px,0);opacity:0;}
+  15%{opacity:1;}
+  100%{transform:translate(140px,0);opacity:1;}
+}
+@keyframes tut-wipe-mask{
+  0%{width:0;}
+  100%{width:170px;}
+}
+@keyframes tut-pinch-l{
+  0%,100%{transform:translate(110px,140px);}
+  50%{transform:translate(50px,90px);}
+}
+@keyframes tut-pinch-r{
+  0%,100%{transform:translate(170px,140px);}
+  50%{transform:translate(230px,190px);}
+}
+@keyframes tut-zoom{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.35);}
+}
+@keyframes tut-flash{
+  0%,100%{opacity:0;}
+  10%,30%{opacity:.9;}
+}
+@keyframes tut-fade-png{
+  0%,40%{opacity:0;transform:translateY(8px);}
+  60%,100%{opacity:1;transform:translateY(0);}
+}
+
+/* Animaciones que se activan por slide visible */
+.tut-slide[data-active="1"] .tut-anim-draw{
+  stroke-dasharray:var(--len,300);
+  animation:tut-draw 1.8s ease-out forwards;
+}
+.tut-slide[data-active="1"] .tut-anim-cursor{
+  animation:tut-cursor 2s ease-in-out infinite;
+}
+.tut-slide[data-active="1"] .tut-anim-wipe{
+  animation:tut-wipe 2.4s ease-in-out infinite;
+}
+.tut-slide[data-active="1"] .tut-anim-wipe-mask{
+  animation:tut-wipe-mask 2.4s ease-in-out infinite;
+}
+.tut-slide[data-active="1"] .tut-anim-finger-l{
+  animation:tut-pinch-l 2.4s ease-in-out infinite;
+}
+.tut-slide[data-active="1"] .tut-anim-finger-r{
+  animation:tut-pinch-r 2.4s ease-in-out infinite;
+}
+.tut-slide[data-active="1"] .tut-anim-zoom{
+  animation:tut-zoom 2.4s ease-in-out infinite;
+  transform-origin:center;
+}
+.tut-slide[data-active="1"] .tut-anim-flash{
+  animation:tut-flash 2.4s ease-in-out infinite;
+}
+.tut-slide[data-active="1"] .tut-anim-fade-png{
+  animation:tut-fade-png 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .tut-track,.tut-overlay{transition:none;}
+  .tut-slide [class^="tut-anim-"]{animation:none!important;}
+}
 </style>
 </head>
 <body>
@@ -293,6 +477,11 @@ body.is-pro .sep.pro-only{display:block!important;}
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
   </div>
+
+  <button id="btnTut" class="tut-help-btn" type="button" aria-label="Ver tutorial" onclick="window.showTutorial && window.showTutorial()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.6-2.5 2-2.5 4"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
+    &iquest;C&oacute;mo se usa?
+  </button>
 </div>
 
 <!-- PRO MODAL -->
@@ -561,7 +750,17 @@ function courtMargin(){ return (isPro() ? courtConfig.wall : 0) + 10; }
 // Valores de fábrica (para "Restablecer") y persistencia en el dispositivo.
 var COURT_DEFAULTS=JSON.parse(JSON.stringify(courtConfig));
 try{ var _cc=localStorage.getItem('padel.courtConfig'); if(_cc) Object.assign(courtConfig, JSON.parse(_cc)); }catch(e){}
-function saveCourtConfig(){ try{ localStorage.setItem('padel.courtConfig', JSON.stringify(courtConfig)); }catch(e){} }
+// Detector de cuota agotada (Safari/iOS también emite code 22).
+function isQuotaError(e){
+  if(!e) return false;
+  if(e.code===22||e.code===1014) return true;
+  var n=e.name||'';
+  return n==='QuotaExceededError'||n==='NS_ERROR_DOM_QUOTA_REACHED';
+}
+function saveCourtConfig(){
+  try{ localStorage.setItem('padel.courtConfig', JSON.stringify(courtConfig)); }
+  catch(e){ if(isQuotaError(e)) showToast('No hay espacio para guardar — borra alguna pizarra antigua'); }
+}
 
 // Pista del tema GRATIS: blanca, líneas azul oscuro, sin cristal/reja/puerta.
 // Es override visual en runtime: NO se persiste, así que al pasar a Pro
@@ -603,9 +802,20 @@ function courtLand(){ return false; }
 // de las fichas y que se lean bien si se sostiene el móvil en horizontal.
 function deviceLandscape(){ return window.innerWidth>window.innerHeight; }
 
-// Toolbar height: always single row (44px) — action buttons go to row2 in portrait
+// Toolbar height: 2 filas (44+44) + safe-area-inset-top en iOS. Se cachea
+// la altura real medida en resizeBoard() para no provocar reflows en cada
+// pointermove (tbH se llama muchas veces).
 var immersive=false;                          // pista a pantalla completa
-function tbH(){ return immersive ? 0 : 88; }  // 2 filas (88) o 0 en inmersivo
+var _tbCache=88;
+function tbH(){ return immersive ? 0 : _tbCache; }
+function tbMeasure(){
+  var el=document.getElementById('board-tb');
+  if(!el){ _tbCache=88; return; }
+  // Forzamos altura natural ignorando style.height impuesto por resizeBoard.
+  var prev=el.style.height; el.style.height='';
+  var h=el.offsetHeight; el.style.height=prev;
+  _tbCache=h>0?h:88;
+}
 
 function initBoard(){
   cv=document.getElementById('board-cv');
@@ -632,15 +842,34 @@ function applyFreeBoardDefaults(){
   var sw1=document.getElementById('sw1'); if(sw1) sw1.classList.add('active');
 }
 
-function resizeBoard(){
+// `keepZoom`: si la llamada viene de `orientationchange` mantenemos el zoom
+// actual y solo reproyectamos PX/PY al nuevo viewport vía clampPan(). Resize
+// normales (cambio de toolbar inmersiva, abrir/cerrar barra de secuencias)
+// siguen reseteando para que la pista quepa centrada.
+function resizeBoard(keepZoom){
   if(!cv)return;
+  tbMeasure(); // refresca cache de altura toolbar (incluye safe-area-inset)
   var th=tbH(), bi=seqBottomInset(), vw=window.innerWidth, vh=window.innerHeight-th-bi;
+  if(vh<0) vh=0;
   cv.width=vw; cv.height=vh; cv.style.top=th+'px';
   document.getElementById('board-tb').style.height=th+'px';
 
+  // Si hay un trazo en curso lo cancelamos limpiamente para no dejarlo a medias
+  // tras la rotación (el sistema dispara orientationchange sin pointerup).
+  var hadDrawing=S&&S.drawing;
+  if(hadDrawing){
+    S.drawing=false; S.path=[]; live=null;
+    if(keepZoom) showToast('Rotación detectada — trazo cancelado');
+  }
+
   fitCourt();
-  // Reset zoom/pan on resize but keep ZM at minimum 1
-  PX=0;PY=0;ZM=1;
+  if(keepZoom){
+    // Reproyectar dentro de los nuevos límites manteniendo ZM y PX/PY
+    clampPan();
+  } else {
+    // Reset zoom/pan on resize but keep ZM at minimum 1
+    PX=0;PY=0;ZM=1;
+  }
   draw();
 }
 
@@ -653,9 +882,13 @@ function seqBottomInset(){
 // Ajusta SC/OX/OY para que pista + paredes quepan centradas. OX/OY = court(0,0).
 function fitCourt(){
   var vw=window.innerWidth, vh=window.innerHeight-tbH()-seqBottomInset();
+  // Defensa: si el viewport útil colapsa (teclado virtual abierto, app en
+  // background, etc.) no recalculamos para evitar SC=0 y div/0 en toCourt.
+  if(vw<=0||vh<=0) return;
   var land=courtLand(), M=courtMargin();
   var dimW=(land?CH:CW)+2*M, dimH=(land?CW:CH)+2*M;
-  SC=Math.min(vw/dimW, vh/dimH);
+  // Clamp inferior: nunca dejar SC<=0 (rompería toCourt y clampPan).
+  SC=Math.max(Math.min(vw/dimW, vh/dimH), 0.01);
   OX=(vw-dimW*SC)/2 + M*SC;
   OY=(vh-dimH*SC)/2 + M*SC;
 }
@@ -681,6 +914,8 @@ function toScreen(cx,cy){
 }
 function toCourt(px,py){
   var s=SC*ZM;
+  // Defensa: si SC colapsa (viewport degenerado) evitamos div/0.
+  if(!s||s===0) return{x:0,y:0};
   var rx=(px-OX-PX)/s, ry=(py-OY-PY)/s;
   var land=courtLand();
   if(!land) return{x:rx,y:ry};
@@ -852,6 +1087,23 @@ function eraseAt(cx,cy){
   strokes=strokes.filter(function(s){return !hitTest(s,cx,cy,r2);});
   if(strokes.length!==n) draw();
 }
+// Variante interpolada: borra todo entre el punto anterior y el actual, en
+// pasos de tamaño r/2 (radio de la goma) para que no se "salte" trazos con
+// dedos rápidos. Si no hay punto anterior, equivale a eraseAt.
+function eraseLine(px,py,cx,cy){
+  var r=50/ZM, step=Math.max(8,r/2);
+  if(px===undefined||py===undefined){ eraseAt(cx,cy); return; }
+  var dx=cx-px, dy=cy-py, dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist<=step){ eraseAt(cx,cy); return; }
+  var n=Math.ceil(dist/step);
+  // Acumular cambios y dibujar una sola vez para no thrashear `draw()`.
+  var r2=r*r, before=strokes.length;
+  for(var i=1;i<=n;i++){
+    var t=i/n, x=px+dx*t, y=py+dy*t;
+    strokes=strokes.filter(function(s){return !hitTest(s,x,y,r2);});
+  }
+  if(strokes.length!==before) draw();
+}
 // Borrador ancho: arrastrar con 3+ dedos borra todo bajo el área de los dedos
 function wipeFingers(plist){
   var th=tbH(), R2=WIPE_R*WIPE_R;
@@ -914,6 +1166,16 @@ function boardEvents(){
     var plist=Object.values(S.ptrs);
     // Borrador ancho con 3+ dedos
     if(plist.length>=3){ S.wipe=true; S.pinchD=null; wipeFingers(plist); draw(); return; }
+    // Transición wipe (3+ dedos) → pinch (2 dedos): salir del modo wipe y
+    // reiniciar la distancia base del pinch para que el siguiente move calcule
+    // incremento desde cero. Sin esto, el primer move tras soltar un dedo
+    // disparaba un zoom enorme (bug Alto #4).
+    if(S.wipe && plist.length===2){
+      S.wipe=false; S.wipePts=null;
+      S.pinchD=pd(plist); S.pinchM=pm(plist);
+      draw();
+      return;
+    }
     if(S.wipe) return; // mantener modo borrado hasta soltar todos los dedos
     // Pinch zoom — clamp ZM so court never gets smaller than full view (ZM >= 1)
     if(plist.length===2&&S.pinchD!==null){
@@ -932,7 +1194,14 @@ function boardEvents(){
     }
     if(!S.drawing||plist.length!==1) return;
     var pos=ptr(e);
-    if(S.tool==='eraser'){eraseAt(pos.x,pos.y);return;}
+    if(S.tool==='eraser'){
+      // Interpolar entre el último punto y el actual para no perder borrados
+      // cuando el dedo va rápido (gap > radio de la goma).
+      var prev=S.path&&S.path.length?S.path[S.path.length-1]:null;
+      if(prev) eraseLine(prev.x,prev.y,pos.x,pos.y); else eraseAt(pos.x,pos.y);
+      S.path.push(pos);
+      return;
+    }
     if(S.tool==='pen'||S.tool==='pendash'){
       S.path.push(pos);
       live={type:S.tool,color:S.color,w:S.stroke,path:S.path.slice()};
@@ -997,19 +1266,24 @@ function setStroke(w){
 }
 function boardClearAll(){strokes=[];live=null;if(cv)draw();showToast('Pizarra vaciada');}
 
-// Screenshot: pista + paredes a escala base (ZM=1), sin márgenes negros.
-// Reutiliza drawCourt()/drawChips() intercambiando el ctx para no duplicar geometría.
+// Screenshot: pista + paredes a resolución FIJA (lado largo 1920px),
+// independiente de SC y del tamaño actual del viewport. Así el PNG sale igual
+// en móvil pequeño y en tablet. Reutiliza drawCourt()/drawChips() cambiando ctx.
 function boardScreenshot(){
   if(!cv)return;
   var land=courtLand(), M=courtMargin();
-  var totW=((land?CH:CW)+2*M)*SC, totH=((land?CW:CH)+2*M)*SC;
+  var dimW=(land?CH:CW)+2*M, dimH=(land?CW:CH)+2*M;
+  // Factor para que el lado más largo del PNG sea 1920px, manteniendo proporción.
+  var EXPORT_LONG=1920;
+  var EX = (dimW>dimH) ? (EXPORT_LONG/dimW) : (EXPORT_LONG/dimH);
+  var totW=dimW*EX, totH=dimH*EX;
   var off=document.createElement('canvas');
   off.width=Math.round(totW); off.height=Math.round(totH);
   var oc=off.getContext('2d');
 
   oc.fillStyle='#181818'; oc.fillRect(0,0,off.width,off.height); // fondo exterior
-  if(!land){ oc.translate(M*SC, M*SC); oc.scale(SC,SC); }
-  else     { oc.translate(M*SC, M*SC+CW*SC); oc.rotate(-Math.PI/2); oc.scale(SC,SC); }
+  if(!land){ oc.translate(M*EX, M*EX); oc.scale(EX,EX); }
+  else     { oc.translate(M*EX, M*EX+CW*EX); oc.rotate(-Math.PI/2); oc.scale(EX,EX); }
 
   var savedCtx=ctx, savedSel=S.sel;
   ctx=oc; S.sel=null;                 // sin resaltado de selección en la captura
@@ -1032,7 +1306,8 @@ function showToast(msg){
 // Resize / orientation
 window.addEventListener('resize',function(){if(currentScreen==='board-screen')resizeBoard();});
 window.addEventListener('orientationchange',function(){
-  setTimeout(function(){if(currentScreen==='board-screen')resizeBoard();},80);
+  // keepZoom=true: mantenemos ZM y reproyectamos PX/PY al nuevo viewport.
+  setTimeout(function(){if(currentScreen==='board-screen')resizeBoard(true);},80);
 });
 // Bloquear scroll/zoom global SOLO mientras la pizarra esté activa.
 // Si lo hacíamos siempre, rompía el scroll vertical del HOME en táctil.
@@ -1174,7 +1449,10 @@ function seqSyncControls(){
   var sb=document.getElementById('seq-speed-btn'); if(sb) sb.textContent=SEQ.speed+'×';
   var lb=document.getElementById('seq-loop-btn'); if(lb) lb.classList.toggle('active', SEQ.loop);
 }
-function seqSave(){ try{ localStorage.setItem('padel.seq', JSON.stringify(SEQ.frames)); }catch(e){} }
+function seqSave(){
+  try{ localStorage.setItem('padel.seq', JSON.stringify(SEQ.frames)); }
+  catch(e){ if(isQuotaError(e)) showToast('No hay espacio para guardar — borra alguna pizarra antigua'); }
+}
 function seqUpdateUI(){
   var n=SEQ.frames.length, el=document.getElementById('seq-count');
   if(el) el.textContent = n ? ((Math.min(SEQ.idx,n-1)+1)+' / '+n) : '0 frames';
@@ -1198,6 +1476,9 @@ function seqAddFrame(){
 }
 function seqDelFrame(){
   if(!SEQ.frames.length){ showToast('No hay frames'); return; }
+  // Si estamos reproduciendo, detener primero para no dejar el loop apuntando
+  // a un índice inexistente (causaba la "secuencia colgada").
+  if(SEQ.playing) seqStop();
   SEQ.frames.splice(SEQ.idx,1);
   SEQ.idx=Math.max(0,Math.min(SEQ.idx,SEQ.frames.length-1));
   seqSave();
@@ -1232,10 +1513,17 @@ function seqPlaySegment(seg){
     if(SEQ.loop){ seqPlaySegment(0); return; }
     seqStop(); seqApplyFrame(SEQ.frames.length-1); return;
   }
-  var dur=900/SEQ.speed, t0=performance.now();
+  // Guardas: si los frames se han modificado durante la reproducción (borrado,
+  // limpieza), evitamos NPE al interpolar a/b.
   var a=SEQ.frames[seg], b=SEQ.frames[seg+1];
+  if(!a||!b){ seqStop(); showToast('Reproducción interrumpida — frames modificados'); return; }
+  var dur=900/SEQ.speed, t0=performance.now();
   function step(now){
     if(!SEQ.playing) return;
+    // Re-validar en cada frame por si SEQ.frames cambió a mitad de animación.
+    if(!SEQ.frames[seg]||!SEQ.frames[seg+1]){
+      seqStop(); showToast('Reproducción interrumpida — frames modificados'); return;
+    }
     var k=Math.min(1,(now-t0)/dur);
     var e=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2; // easeInOutQuad
     a.players.forEach(function(ap){
@@ -1255,7 +1543,10 @@ function seqPlaySegment(seg){
 // ==================================================
 function openBoards(){ showScreen('boards-screen'); boardsRender(); }
 function boardsAll(){ try{ return JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; } }
-function boardsSet(a){ try{ localStorage.setItem('padel.boards', JSON.stringify(a)); }catch(e){} }
+function boardsSet(a){
+  try{ localStorage.setItem('padel.boards', JSON.stringify(a)); return true; }
+  catch(e){ if(isQuotaError(e)) showToast('No hay espacio para guardar — borra alguna pizarra antigua'); return false; }
+}
 function boardsSaveCurrent(){
   var inp=document.getElementById('board-name');
   var name=(inp.value||'').trim() || ('Jugada '+(boardsAll().length+1));
@@ -1272,8 +1563,16 @@ function boardsLoad(i){
   var a=boardsAll(), b=a[i]; if(!b) return;
   strokes=JSON.parse(JSON.stringify(b.strokes||[]));
   if(b.players) b.players.forEach(function(fp){ var p=PLAYERS.find(function(x){return x.id===fp.id;}); if(p){p.cx=fp.cx;p.cy=fp.cy;} });
-  if(b.court) Object.assign(courtConfig, b.court);
-  openBoard(); if(cv){ fitCourt(); draw(); } showToast('Pizarra "'+b.name+'" cargada');
+  var courtChanged=false;
+  if(b.court){
+    Object.assign(courtConfig, b.court);
+    // Persistir para que la configuración de pista no se pierda al reabrir.
+    saveCourtConfig();
+    courtChanged=true;
+  }
+  openBoard(); if(cv){ fitCourt(); draw(); }
+  if(courtChanged) showToast('Pizarra cargada — configuración de pista actualizada');
+  else showToast('Pizarra "'+b.name+'" cargada');
 }
 function boardsDelete(i){ var a=boardsAll(); a.splice(i,1); boardsSet(a); boardsRender(); showToast('Pizarra borrada'); }
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
@@ -1294,6 +1593,275 @@ function boardsRender(){
 
 // Service worker
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
+
+// ==================================================
+// TUTORIAL ONBOARDING (IIFE para no contaminar scope global)
+// ==================================================
+(function(){
+  var TUT_KEY='padel.tutDone';
+  var SLIDES=[
+    {
+      title:'Tu pizarra de p&aacute;del',
+      desc:'Dibuja jugadas, mueve fichas y planifica entrenos.',
+      mockup:
+        '<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+
+        '<rect x="60" y="20" width="160" height="240" rx="6" fill="#3042c8" stroke="#dff4ff" stroke-width="3"/>'+
+        '<line x1="60" y1="140" x2="220" y2="140" stroke="#fff" stroke-width="4"/>'+
+        '<line x1="60" y1="70" x2="220" y2="70" stroke="#fff" stroke-width="2"/>'+
+        '<line x1="60" y1="210" x2="220" y2="210" stroke="#fff" stroke-width="2"/>'+
+        '<line x1="140" y1="70" x2="140" y2="210" stroke="#fff" stroke-width="2"/>'+
+        '<circle cx="95" cy="50" r="14" fill="#2563eb" stroke="#fff" stroke-width="2"/>'+
+        '<circle cx="185" cy="50" r="14" fill="#2563eb" stroke="#fff" stroke-width="2"/>'+
+        '<circle cx="95" cy="230" r="14" fill="#dc2626" stroke="#fff" stroke-width="2"/>'+
+        '<circle cx="185" cy="230" r="14" fill="#dc2626" stroke="#fff" stroke-width="2"/>'+
+        '<text x="95" y="55" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="DM Sans">D</text>'+
+        '<text x="185" y="55" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="DM Sans">R</text>'+
+        '<text x="95" y="235" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="DM Sans">R</text>'+
+        '<text x="185" y="235" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="DM Sans">D</text>'+
+        '</svg>'
+    },
+    {
+      title:'Pinta libremente',
+      desc:'L&aacute;piz negro. Toca y arrastra para dibujar.',
+      mockup:
+        '<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+
+        '<rect x="60" y="20" width="160" height="240" rx="6" fill="#3042c8" stroke="#dff4ff" stroke-width="3"/>'+
+        '<line x1="60" y1="140" x2="220" y2="140" stroke="#fff" stroke-width="4"/>'+
+        '<line x1="140" y1="70" x2="140" y2="210" stroke="#fff" stroke-width="2"/>'+
+        '<path class="tut-anim-draw" style="--len:320;" d="M 80 220 Q 120 160 160 180 T 220 100" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round"/>'+
+        '<g class="tut-anim-cursor"><circle r="14" fill="rgba(0,229,160,.25)" stroke="#00e5a0" stroke-width="2"/><circle r="4" fill="#00e5a0"/></g>'+
+        '</svg>'
+    },
+    {
+      title:'Borra con 3 dedos',
+      desc:'Como en una pizarra de verdad: pasa 3 dedos para limpiar zona.',
+      mockup:
+        '<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+
+        '<defs><clipPath id="tutWipeClip"><rect class="tut-anim-wipe-mask" x="40" y="80" height="120" width="0" fill="#000"/></clipPath></defs>'+
+        '<rect x="60" y="20" width="160" height="240" rx="6" fill="#3042c8" stroke="#dff4ff" stroke-width="3"/>'+
+        '<line x1="60" y1="140" x2="220" y2="140" stroke="#fff" stroke-width="4"/>'+
+        '<g stroke="#facc15" stroke-width="4" stroke-linecap="round" fill="none">'+
+        '<path d="M 75 100 Q 110 120 145 110"/>'+
+        '<path d="M 80 160 L 200 170"/>'+
+        '<path d="M 90 200 Q 130 180 200 210"/>'+
+        '</g>'+
+        '<rect x="60" y="20" width="160" height="240" rx="6" fill="rgba(48,66,200,1)" clip-path="url(#tutWipeClip)"/>'+
+        '<g class="tut-anim-wipe">'+
+        '<ellipse cx="60" cy="120" rx="18" ry="32" fill="rgba(255,255,255,.85)"/>'+
+        '<ellipse cx="90" cy="130" rx="18" ry="32" fill="rgba(255,255,255,.85)"/>'+
+        '<ellipse cx="120" cy="120" rx="18" ry="32" fill="rgba(255,255,255,.85)"/>'+
+        '</g>'+
+        '</svg>'
+    },
+    {
+      title:'Ac&eacute;rcate con 2 dedos',
+      desc:'Pellizca para hacer zoom y precisar el detalle.',
+      mockup:
+        '<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+
+        '<g class="tut-anim-zoom" style="transform-origin:140px 140px;">'+
+        '<rect x="60" y="20" width="160" height="240" rx="6" fill="#3042c8" stroke="#dff4ff" stroke-width="3"/>'+
+        '<line x1="60" y1="140" x2="220" y2="140" stroke="#fff" stroke-width="4"/>'+
+        '<line x1="140" y1="70" x2="140" y2="210" stroke="#fff" stroke-width="2"/>'+
+        '<circle cx="95" cy="50" r="12" fill="#2563eb" stroke="#fff" stroke-width="2"/>'+
+        '<circle cx="185" cy="50" r="12" fill="#2563eb" stroke="#fff" stroke-width="2"/>'+
+        '<circle cx="95" cy="230" r="12" fill="#dc2626" stroke="#fff" stroke-width="2"/>'+
+        '<circle cx="185" cy="230" r="12" fill="#dc2626" stroke="#fff" stroke-width="2"/>'+
+        '</g>'+
+        '<g class="tut-anim-finger-l"><circle r="18" fill="rgba(0,229,160,.25)" stroke="#00e5a0" stroke-width="2"/><circle r="5" fill="#00e5a0"/></g>'+
+        '<g class="tut-anim-finger-r"><circle r="18" fill="rgba(0,229,160,.25)" stroke="#00e5a0" stroke-width="2"/><circle r="5" fill="#00e5a0"/></g>'+
+        '</svg>'
+    },
+    {
+      title:'Guarda la jugada',
+      desc:'Bot&oacute;n de c&aacute;mara para capturar PNG y compartir.',
+      mockup:
+        '<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+
+        '<rect x="40" y="80" width="200" height="140" rx="14" fill="#10131a" stroke="#1e222c" stroke-width="2"/>'+
+        '<g transform="translate(140 150)">'+
+        '<g class="tut-anim-flash"><rect x="-100" y="-70" width="200" height="140" rx="14" fill="#fff"/></g>'+
+        '<g stroke="#00e5a0" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">'+
+        '<path d="M -30 -20 L -22 -32 H 22 L 30 -20 H 38 a 6 6 0 0 1 6 6 V 28 a 6 6 0 0 1 -6 6 H -38 a 6 6 0 0 1 -6 -6 V -14 a 6 6 0 0 1 6 -6 Z"/>'+
+        '<circle cx="0" cy="4" r="14"/>'+
+        '</g>'+
+        '</g>'+
+        '<g class="tut-anim-fade-png" transform="translate(140 240)">'+
+        '<rect x="-36" y="-14" width="72" height="22" rx="6" fill="#00e5a0"/>'+
+        '<text x="0" y="2" text-anchor="middle" fill="#000" font-size="12" font-weight="700" font-family="DM Sans" dominant-baseline="middle">PNG</text>'+
+        '</g>'+
+        '</svg>'
+    }
+  ];
+  var TOTAL=SLIDES.length;
+  var idx=0, builtUI=false;
+  var overlay=null, track=null, dotsEl=null, pagesEl=null;
+  var btnBack=null, btnNext=null;
+  var touchStartX=null, touchStartY=null, touchDX=0, dragging=false;
+
+  function buildUI(){
+    if(builtUI) return;
+    overlay=document.createElement('div');
+    overlay.className='tut-overlay';
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-label','Tutorial de Pizarra Pádel');
+    overlay.setAttribute('tabindex','-1');
+
+    var slidesHTML='';
+    for(var i=0;i<TOTAL;i++){
+      var s=SLIDES[i];
+      slidesHTML+=
+        '<section class="tut-slide" data-i="'+i+'" data-active="'+(i===0?1:0)+'" aria-roledescription="slide" aria-label="'+(i+1)+' de '+TOTAL+'">'+
+          '<div class="tut-mockup" aria-hidden="true">'+s.mockup+'</div>'+
+          '<h2 class="tut-title">'+s.title+'</h2>'+
+          '<p class="tut-desc">'+s.desc+'</p>'+
+        '</section>';
+    }
+    var dotsHTML='';
+    for(var j=0;j<TOTAL;j++) dotsHTML+='<span class="tut-dot'+(j===0?' on':'')+'" data-d="'+j+'" aria-hidden="true"></span>';
+
+    overlay.innerHTML=
+      '<button class="tut-skip" type="button" data-act="skip" aria-label="Saltar tutorial">Saltar</button>'+
+      '<div class="tut-stage">'+
+        '<div class="tut-track">'+slidesHTML+'</div>'+
+      '</div>'+
+      '<div class="tut-foot">'+
+        '<div class="tut-pages" id="tutPages">1 / '+TOTAL+'</div>'+
+        '<div class="tut-dots" id="tutDots">'+dotsHTML+'</div>'+
+        '<div class="tut-nav">'+
+          '<button class="tut-btn tut-btn-ghost" type="button" data-act="back" aria-label="Anterior">Atr&aacute;s</button>'+
+          '<button class="tut-btn tut-btn-main" type="button" data-act="next" aria-label="Siguiente">Siguiente</button>'+
+        '</div>'+
+      '</div>';
+
+    document.body.appendChild(overlay);
+    track=overlay.querySelector('.tut-track');
+    dotsEl=overlay.querySelector('#tutDots');
+    pagesEl=overlay.querySelector('#tutPages');
+    btnBack=overlay.querySelector('[data-act="back"]');
+    btnNext=overlay.querySelector('[data-act="next"]');
+
+    overlay.addEventListener('click', function(e){
+      var act=e.target && e.target.getAttribute && e.target.getAttribute('data-act');
+      if(act==='skip') close();
+      else if(act==='back') goTo(idx-1);
+      else if(act==='next'){
+        if(idx>=TOTAL-1) close();
+        else goTo(idx+1);
+      }
+    });
+
+    var stage=overlay.querySelector('.tut-stage');
+    stage.addEventListener('pointerdown', onDown);
+    stage.addEventListener('pointermove', onMove);
+    stage.addEventListener('pointerup', onUp);
+    stage.addEventListener('pointercancel', onUp);
+
+    document.addEventListener('keydown', onKey);
+    builtUI=true;
+  }
+
+  function onKey(e){
+    if(!overlay || !overlay.classList.contains('on')) return;
+    if(e.key==='Escape'){ e.preventDefault(); close(); }
+    else if(e.key==='ArrowRight'){ e.preventDefault(); if(idx<TOTAL-1) goTo(idx+1); else close(); }
+    else if(e.key==='ArrowLeft'){ e.preventDefault(); if(idx>0) goTo(idx-1); }
+  }
+
+  function onDown(e){
+    if(e.target.closest && e.target.closest('button')) return;
+    touchStartX=e.clientX; touchStartY=e.clientY; touchDX=0; dragging=true;
+    track.style.transition='none';
+    try{ e.currentTarget.setPointerCapture(e.pointerId); }catch(_){}
+  }
+  function onMove(e){
+    if(!dragging || touchStartX===null) return;
+    var dx=e.clientX-touchStartX, dy=e.clientY-touchStartY;
+    // Si el gesto es vertical claro, cancelamos el drag (permite scroll si lo hubiera)
+    if(Math.abs(dy)>Math.abs(dx)*1.3 && Math.abs(dy)>16){ dragging=false; resetTransform(); return; }
+    touchDX=dx;
+    var w=overlay.clientWidth || window.innerWidth;
+    var pct=(idx*-100) + (dx/w*100);
+    track.style.transform='translateX('+pct+'%)';
+  }
+  function onUp(){
+    if(!dragging) return;
+    dragging=false;
+    track.style.transition='';
+    var w=overlay.clientWidth || window.innerWidth;
+    var threshold=Math.min(80, w*0.18);
+    if(touchDX<=-threshold && idx<TOTAL-1) goTo(idx+1);
+    else if(touchDX>=threshold && idx>0) goTo(idx-1);
+    else resetTransform();
+    touchStartX=null; touchStartY=null; touchDX=0;
+  }
+  function resetTransform(){
+    if(track) track.style.transform='translateX('+(idx*-100)+'%)';
+  }
+
+  function goTo(n){
+    n=Math.max(0,Math.min(TOTAL-1,n));
+    idx=n;
+    if(track) track.style.transform='translateX('+(idx*-100)+'%)';
+    // Active flag para reiniciar animaciones del slide visible
+    overlay.querySelectorAll('.tut-slide').forEach(function(el){
+      el.setAttribute('data-active', (+el.getAttribute('data-i')===idx)?'1':'0');
+    });
+    // Dots
+    dotsEl.querySelectorAll('.tut-dot').forEach(function(d){
+      d.classList.toggle('on', +d.getAttribute('data-d')===idx);
+    });
+    pagesEl.textContent=(idx+1)+' / '+TOTAL;
+    // Botones
+    btnBack.disabled = (idx===0);
+    btnNext.textContent = (idx===TOTAL-1) ? 'Empezar' : 'Siguiente';
+    btnNext.setAttribute('aria-label', (idx===TOTAL-1) ? 'Empezar a pintar' : 'Siguiente');
+  }
+
+  function open(){
+    buildUI();
+    idx=0;
+    track.style.transition='none';
+    track.style.transform='translateX(0%)';
+    // forzar reflow para que la primera transición funcione
+    void track.offsetWidth;
+    track.style.transition='';
+    overlay.querySelectorAll('.tut-slide').forEach(function(el){
+      el.setAttribute('data-active', (+el.getAttribute('data-i')===0)?'1':'0');
+    });
+    dotsEl.querySelectorAll('.tut-dot').forEach(function(d,k){
+      d.classList.toggle('on', k===0);
+    });
+    pagesEl.textContent='1 / '+TOTAL;
+    btnBack.disabled=true;
+    btnNext.textContent=(TOTAL===1)?'Empezar':'Siguiente';
+    overlay.classList.add('on');
+    setTimeout(function(){ try{ overlay.focus(); }catch(_){ } }, 30);
+  }
+
+  function close(){
+    if(!overlay) return;
+    overlay.classList.remove('on');
+    try{ localStorage.setItem(TUT_KEY,'1'); }catch(_){}
+  }
+
+  function auto(){
+    var done=false;
+    try{ done=localStorage.getItem(TUT_KEY)==='1'; }catch(_){}
+    if(done) return;
+    setTimeout(open, 600);
+  }
+
+  // Exponer solo lo mínimo
+  window.showTutorial = open;
+  window.tutorialAuto = auto;
+
+  // Arranque automático en primer carga
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', auto);
+  } else {
+    auto();
+  }
+})();
 
 </script>
 </body>
