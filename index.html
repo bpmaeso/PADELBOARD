@@ -485,7 +485,7 @@ body.is-pro .sep.pro-only{display:block!important;}
 </div>
 
 <!-- PRO MODAL -->
-<div id="pro-modal">
+<div id="pro-modal" onclick="proOverlayTap(event)">
   <div class="pro-sheet">
     <h2>Pizarra Pádel Pro &#10022;</h2>
     <p>Lleva tu análisis táctico al siguiente nivel desbloqueando todas las herramientas avanzadas.</p>
@@ -680,6 +680,10 @@ function openBoard(){
 }
 function showPro(){ document.getElementById('pro-modal').classList.add('open'); }
 function closePro(){ document.getElementById('pro-modal').classList.remove('open'); }
+// Bug #24: cerrar el modal Pro al tocar fuera (en el fondo oscuro). El listener
+// vive en el overlay; solo cierra si el target es el propio overlay, no si el
+// tap fue dentro de .pro-sheet (botones, texto, etc.).
+function proOverlayTap(e){ if(e && e.target && e.target.id==='pro-modal') closePro(); }
 
 // ==================================================
 // FREEMIUM GATE
