@@ -540,10 +540,13 @@ body.is-pro .sep.pro-only{display:block!important;}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
         </button>
       </div>
-      <!-- Derecha: Goma + Vaciar -->
+      <!-- Derecha: Goma + Reset fichas + Vaciar -->
       <div class="tgroup">
         <button class="tb" id="btn-eraser"  onclick="setTool('eraser')" title="Goma">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg>
+        </button>
+        <button class="tb" id="btn-reset-chips" onclick="boardResetChips()" title="Reiniciar fichas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/></svg>
         </button>
         <button class="tb" onclick="boardClearAll()" title="Vaciar" style="color:#ef4444;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
@@ -1292,6 +1295,23 @@ function setStroke(w){
   if(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
 }
 function boardClearAll(){strokes=[];live=null;if(cv)draw();showToast('Pizarra vaciada');}
+// Bug #23: devolver fichas a sus posiciones iniciales (mismo layout que el
+// PLAYERS por defecto). No toca strokes ni zoom/pan.
+function boardResetChips(){
+  var init=[
+    {id:'p1',cx:250,cy:170},
+    {id:'p2',cx:750,cy:170},
+    {id:'p3',cx:250,cy:1830},
+    {id:'p4',cx:750,cy:1830}
+  ];
+  init.forEach(function(o){
+    var p=PLAYERS.find(function(x){return x.id===o.id;});
+    if(p){ p.cx=o.cx; p.cy=o.cy; }
+  });
+  S.sel=null;
+  if(cv) draw();
+  showToast('Fichas reiniciadas');
+}
 
 // Screenshot: pista + paredes a resolución FIJA (lado largo 1920px),
 // independiente de SC y del tamaño actual del viewport. Así el PNG sale igual
