@@ -1213,7 +1213,7 @@ function eraseLine(px,py,cx,cy){
   if(dist<=step){ eraseAt(cx,cy); return; }
   var n=Math.ceil(dist/step);
   // Acumular cambios y dibujar una sola vez para no thrashear `draw()`.
-  var r2=r*r, before=strokes.length, snapshotted=false;
+  var r2=r*r, before=strokes.length;
   var work=strokes;
   for(var i=1;i<=n;i++){
     var t=i/n, x=px+dx*t, y=py+dy*t;
