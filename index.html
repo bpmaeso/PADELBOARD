@@ -81,6 +81,21 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   margin-top:14px;font-family:'DM Sans',sans-serif;letter-spacing:.5px;}
 .pro-btn-dev:active{background:rgba(255,255,255,.04);color:var(--text);}
 
+/* Banner de autosave (recuperar última jugada) en HOME. */
+.autosave-banner{margin:14px;padding:14px 16px;border-radius:14px;
+  background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.35);
+  display:flex;align-items:center;gap:12px;cursor:pointer;
+  color:var(--text);transition:background .12s;}
+.autosave-banner:hover,.autosave-banner:active{background:rgba(0,229,160,.14);}
+.autosave-banner .as-ic{font-size:22px;color:var(--accent);flex-shrink:0;line-height:1;}
+.autosave-banner .as-txt{flex:1;min-width:0;}
+.autosave-banner .as-title{font-size:14px;font-weight:600;line-height:1.2;}
+.autosave-banner .as-sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.3;}
+.autosave-banner .as-dismiss{flex-shrink:0;width:30px;height:30px;border-radius:50%;
+  border:none;background:transparent;color:var(--muted);font-size:18px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;line-height:1;padding:0;}
+.autosave-banner .as-dismiss:hover{color:var(--text);background:rgba(255,255,255,.06);}
+
 /* Banner Hacerse Pro en HOME */
 .unlock-pro{margin:14px;padding:16px 18px;border-radius:16px;
   background:linear-gradient(135deg,var(--gold) 0%,#fb923c 100%);
@@ -132,7 +147,8 @@ body.is-pro .sep.pro-only{display:block!important;}
 .gen-btn-main:focus-visible,.gen-btn-ghost:focus-visible,
 .board-act:focus-visible,.back-btn:focus-visible,
 .seqb:focus-visible,.seqmini:focus-visible,
-.feat-card:focus-visible,.unlock-pro:focus-visible{
+.feat-card:focus-visible,.unlock-pro:focus-visible,
+.autosave-banner:focus-visible{
   outline:2px solid #00e5a0;outline-offset:2px;
 }
 /* Botones de toolbar deshabilitados (undo/redo cuando no aplica). */
@@ -431,6 +447,19 @@ body.is-pro .sep.pro-only{display:block!important;}
       <span class="logo-name">Pizarra Pádel</span>
     </div>
     <div class="home-sub">Herramienta táctica para entrenadores y jugadores</div>
+  </div>
+
+  <!-- Banner de recuperación de autosave: solo visible si hay un autosave
+       reciente (< 24h). Se rellena/oculta en refreshAutoSaveBanner(). -->
+  <div id="autosave-banner" class="autosave-banner" style="display:none;" role="button" tabindex="0"
+       onclick="resumeAutoSave()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();resumeAutoSave();}">
+    <div class="as-ic" aria-hidden="true">&#8635;</div>
+    <div class="as-txt">
+      <div class="as-title">Recuperar &uacute;ltima jugada</div>
+      <div class="as-sub" id="autosave-meta">Trazos sin guardar</div>
+    </div>
+    <button class="as-dismiss" type="button" aria-label="Descartar autosave"
+            onclick="event.stopPropagation();dismissAutoSave();">&times;</button>
   </div>
 
   <div class="section-label">Gratis</div>
@@ -1455,6 +1484,87 @@ function showToast(msg){
   t.textContent=msg;t.classList.add('on');
   setTimeout(function(){t.classList.remove('on');},1800);
 }
+
+// ==================================================
+// AUTOSAVE de la pizarra actual
+// ==================================================
+// Debounce de 3 s tras el último cambio: guarda {strokes, players, court, ts}
+// en localStorage['padel.autosave']. Al volver al HOME mostramos un banner
+// "Recuperar última jugada" si el autosave es reciente (<24h).
+var AUTOSAVE_KEY='padel.autosave';
+var AUTOSAVE_MAX_AGE_MS=24*60*60*1000;     // 24 h
+var AUTOSAVE_DEBOUNCE_MS=3000;
+var _autoSaveTimer=null;
+function scheduleAutoSave(){
+  if(_autoSaveTimer) clearTimeout(_autoSaveTimer);
+  _autoSaveTimer=setTimeout(performAutoSave, AUTOSAVE_DEBOUNCE_MS);
+}
+function performAutoSave(){
+  _autoSaveTimer=null;
+  // Si no hay nada que guardar, limpiamos para no mostrar banner vacío.
+  if(!strokes.length){ try{ localStorage.removeItem(AUTOSAVE_KEY); }catch(e){} return; }
+  try{
+    var payload={
+      strokes:strokes,
+      players:PLAYERS.map(function(p){return {id:p.id,cx:p.cx,cy:p.cy};}),
+      court:JSON.parse(JSON.stringify(courtConfig)),
+      ts:Date.now()
+    };
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+  }catch(e){
+    // En caso de cuota agotada, no molestamos con toast (es operación de fondo).
+  }
+}
+function readAutoSave(){
+  try{
+    var raw=localStorage.getItem(AUTOSAVE_KEY);
+    if(!raw) return null;
+    var d=JSON.parse(raw);
+    if(!d||!d.ts||!Array.isArray(d.strokes)) return null;
+    if(Date.now()-d.ts > AUTOSAVE_MAX_AGE_MS) return null;
+    return d;
+  }catch(e){ return null; }
+}
+function refreshAutoSaveBanner(){
+  var el=document.getElementById('autosave-banner'); if(!el) return;
+  var d=readAutoSave();
+  if(!d){ el.style.display='none'; return; }
+  el.style.display='flex';
+  var meta=document.getElementById('autosave-meta');
+  if(meta){
+    var n=d.strokes.length;
+    var mins=Math.max(1, Math.round((Date.now()-d.ts)/60000));
+    var when = mins<60 ? ('hace '+mins+' min')
+             : mins<1440 ? ('hace '+Math.round(mins/60)+' h')
+             : ('hace '+Math.round(mins/1440)+' d');
+    meta.textContent = n+' trazo'+(n===1?'':'s')+' · '+when;
+  }
+}
+function resumeAutoSave(){
+  var d=readAutoSave(); if(!d){ refreshAutoSaveBanner(); return; }
+  strokes=JSON.parse(JSON.stringify(d.strokes||[]));
+  if(d.players) d.players.forEach(function(fp){ var p=PLAYERS.find(function(x){return x.id===fp.id;}); if(p){p.cx=fp.cx;p.cy=fp.cy;} });
+  if(d.court){ Object.assign(courtConfig, d.court); saveCourtConfig(); }
+  // Reseteamos el historial: el contexto cambia.
+  STROKE_HISTORY.past.length=0; STROKE_HISTORY.future.length=0; updateUndoUI();
+  openBoard(); if(cv){ fitCourt(); draw(); }
+  showToast('Jugada recuperada');
+}
+function dismissAutoSave(){
+  try{ localStorage.removeItem(AUTOSAVE_KEY); }catch(e){}
+  refreshAutoSaveBanner();
+}
+// Refrescamos el banner al cargar la HOME inicial y cada vez que se vuelve.
+document.addEventListener('DOMContentLoaded', refreshAutoSaveBanner);
+if(document.readyState!=='loading') refreshAutoSaveBanner();
+
+// Hook a goHome para refrescar el banner al volver desde la pizarra.
+(function(){
+  var orig=goHome;
+  goHome=function(){ orig(); refreshAutoSaveBanner(); };
+  // Re-exportamos a window para que los onclick="goHome()" del HTML lo usen.
+  window.goHome=goHome;
+})();
 
 // Resize / orientation
 window.addEventListener('resize',function(){if(currentScreen==='board-screen')resizeBoard();});
