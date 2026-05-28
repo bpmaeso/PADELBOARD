@@ -1545,7 +1545,14 @@ function seqPlaySegment(seg){
 // MIS PIZARRAS (guardar / cargar jugadas)
 // ==================================================
 function openBoards(){ showScreen('boards-screen'); boardsRender(); }
-function boardsAll(){ try{ return JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; } }
+function boardsAll(){
+  // Defensivo: aunque el JSON global parsee, una entrada corrupta (sin name o
+  // sin strokes) puede romper boardsRender o boardsLoad. Filtramos por contrato
+  // mínimo: name string y strokes array.
+  var raw; try{ raw=JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; }
+  if(!Array.isArray(raw)) return [];
+  return raw.filter(function(b){ return b && typeof b.name==='string' && Array.isArray(b.strokes); });
+}
 function boardsSet(a){
   try{ localStorage.setItem('padel.boards', JSON.stringify(a)); return true; }
   catch(e){ if(isQuotaError(e)) showToast('No hay espacio para guardar — borra alguna pizarra antigua'); return false; }
@@ -1584,13 +1591,24 @@ function boardsRender(){
   if(!el) return;
   if(!a.length){ el.innerHTML='<div class="boards-empty">A&uacute;n no has guardado ninguna pizarra.<br>Dibuja una jugada y pulsa &laquo;Guardar actual&raquo;.</div>'; return; }
   el.innerHTML=a.map(function(b,i){
-    var d=new Date(b.date);
-    var ds=d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-    return '<div class="board-item"><div class="board-meta">'+
-      '<div class="board-name">'+escapeHtml(b.name)+'</div>'+
-      '<div class="board-date">'+ds+' &middot; '+((b.strokes||[]).length)+' trazos</div></div>'+
-      '<button class="board-act" onclick="boardsLoad('+i+')">Cargar</button>'+
-      '<button class="board-act board-del" onclick="boardsDelete('+i+')">&times;</button></div>';
+    try{
+      var d=new Date(b.date);
+      var ds=d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      // Forzar a entero para evitar inyección si una entrada importada tiene
+      // strokes manipulado (p.ej. {length: '<script>'}).
+      var nStrokes=Number((b.strokes||[]).length)|0;
+      return '<div class="board-item"><div class="board-meta">'+
+        '<div class="board-name">'+escapeHtml(b.name)+'</div>'+
+        '<div class="board-date">'+ds+' &middot; '+nStrokes+' trazos</div></div>'+
+        '<button class="board-act" onclick="boardsLoad('+i+')">Cargar</button>'+
+        '<button class="board-act board-del" onclick="boardsDelete('+i+')">&times;</button></div>';
+    }catch(err){
+      // Una entrada corrupta no debe romper toda la lista.
+      return '<div class="board-item"><div class="board-meta">'+
+        '<div class="board-name">(pizarra corrupta)</div>'+
+        '<div class="board-date">No se pudo renderizar</div></div>'+
+        '<button class="board-act board-del" onclick="boardsDelete('+i+')">&times;</button></div>';
+    }
   }).join('');
 }
 
