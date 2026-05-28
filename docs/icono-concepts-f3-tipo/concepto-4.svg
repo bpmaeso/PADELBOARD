@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PADELBOARD - PP simetrico espejado con bola">
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B1F3A"/>
+      <stop offset="1" stop-color="#3A2A6E"/>
+    </linearGradient>
+    <radialGradient id="ball4" cx="0.4" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#FFFCA8"/>
+      <stop offset="1" stop-color="#D8E03A"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg4)"/>
+
+  <!-- Dos P espejadas, encarándose. Pizarra Pádel.
+       En el eje de simetría, una pelota amarilla. -->
+
+  <!-- P izquierda (orientación normal) -->
+  <g fill="#FFFFFF">
+    <rect x="88" y="104" width="56" height="304" rx="8"/>
+    <path d="M 144 104
+             H 210
+             A 68 68 0 0 1 210 240
+             H 144
+             Z"/>
+  </g>
+  <!-- Hueco interior P izquierda -->
+  <path d="M 144 144
+           H 200
+           A 30 30 0 0 1 200 200
+           H 144
+           Z" fill="url(#bg4)"/>
+
+  <!-- P derecha (espejada) -->
+  <g fill="#FFFFFF">
+    <rect x="368" y="104" width="56" height="304" rx="8"/>
+    <path d="M 368 104
+             H 302
+             A 68 68 0 0 0 302 240
+             H 368
+             Z"/>
+  </g>
+  <!-- Hueco interior P derecha -->
+  <path d="M 368 144
+           H 312
+           A 30 30 0 0 0 312 200
+           H 368
+           Z" fill="url(#bg4)"/>
+
+  <!-- Bola amarilla en el centro de simetria -->
+  <g>
+    <circle cx="256" cy="296" r="56" fill="url(#ball4)"/>
+    <path d="M 206 280 Q 256 256 306 280" stroke="#FFFFFF" stroke-width="4" fill="none" opacity="0.9"/>
+    <path d="M 206 312 Q 256 336 306 312" stroke="#FFFFFF" stroke-width="4" fill="none" opacity="0.9"/>
+  </g>
+</svg>
