@@ -117,7 +117,8 @@ body.is-pro .sep.pro-only{display:block!important;}
 .tb{display:flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;
   width:40px;height:40px;
   border-radius:8px;border:1.5px solid transparent;background:transparent;
-  color:#4a5060;cursor:pointer;flex-shrink:0;transition:all .12s;}
+  /* WCAG AA: #9aa3b8 sobre #10131a ≈ 6.0:1 (mejor que #4a5060 ≈ 3.0:1). */
+  color:#9aa3b8;cursor:pointer;flex-shrink:0;transition:all .12s;}
 /* En móviles MUY pequeños (≤380px) recortamos a 36px para que los 11 botones
    de la fila 1 quepan sin desbordar. Sigue por encima del mínimo HIG efectivo. */
 @media (max-width:380px){
