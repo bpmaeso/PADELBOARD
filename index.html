@@ -1161,9 +1161,12 @@ function boardEvents(){
   });
 
   cv.addEventListener('pointermove',function(e){
-    e.preventDefault();
     if(e.pointerId in S.ptrs) S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
     var plist=Object.values(S.ptrs);
+    // Solo bloquear el scroll/gesto del navegador cuando realmente interactuamos
+    // con la pista (dibujando, borrando, o con 2+ punteros). Hover sin botón no
+    // debe interferir con scroll de hover de páginas que embeban el canvas.
+    if(S.drawing||S.wipe||plist.length>=2) e.preventDefault();
     // Borrador ancho con 3+ dedos
     if(plist.length>=3){ S.wipe=true; S.pinchD=null; wipeFingers(plist); draw(); return; }
     // Transición wipe (3+ dedos) → pinch (2 dedos): salir del modo wipe y
