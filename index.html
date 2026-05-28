@@ -1304,7 +1304,13 @@ function boardEvents(){
       S.path.push(pos);
       live={type:S.tool,color:S.color,w:S.stroke,path:S.path.slice()};
     } else {
-      live={type:S.tool,color:S.color,w:S.stroke,x1:S.sx,y1:S.sy,x2:pos.x,y2:pos.y};
+      // Snap a 0/45/90° con Shift en line/arrow/rect (igual que Figma/Illustrator).
+      var ex=pos.x, ey=pos.y;
+      if(e.shiftKey && (S.tool==='line'||S.tool==='arrow'||S.tool==='rect')){
+        var sp=snapAngle(S.sx,S.sy,pos.x,pos.y);
+        ex=sp.x; ey=sp.y;
+      }
+      live={type:S.tool,color:S.color,w:S.stroke,x1:S.sx,y1:S.sy,x2:ex,y2:ey};
     }
     draw();
   });
@@ -1333,7 +1339,13 @@ function boardEvents(){
     } else if(S.tool==='cross'){
       pushHistory(); strokes.push({type:'cross',color:S.color,w:S.stroke,x1:S.sx,y1:S.sy}); added=true;
     } else {
-      pushHistory(); strokes.push({type:S.tool,color:S.color,w:S.stroke,x1:S.sx,y1:S.sy,x2:pos.x,y2:pos.y}); added=true;
+      // Mantener el snap al confirmar (Shift sigue pulsado en el pointerup).
+      var ex=pos.x, ey=pos.y;
+      if(e.shiftKey && (S.tool==='line'||S.tool==='arrow'||S.tool==='rect')){
+        var sp=snapAngle(S.sx,S.sy,pos.x,pos.y);
+        ex=sp.x; ey=sp.y;
+      }
+      pushHistory(); strokes.push({type:S.tool,color:S.color,w:S.stroke,x1:S.sx,y1:S.sy,x2:ex,y2:ey}); added=true;
     }
     live=null; draw();
     if(added && typeof scheduleAutoSave==='function') scheduleAutoSave();
@@ -1348,6 +1360,20 @@ function boardEvents(){
 
 function pd(p){var dx=p[0].x-p[1].x,dy=p[0].y-p[1].y;return Math.sqrt(dx*dx+dy*dy)||1;}
 function pm(p){return{x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};}
+
+// Snap a múltiplos de 45° (0, 45, 90, 135, 180...) con Shift pulsado.
+// Preserva la longitud del segmento (x1,y1)→(x2,y2) y solo reorienta su
+// dirección al ángulo más cercano. Usado en line/arrow/rect cuando
+// e.shiftKey es true durante el pointermove.
+function snapAngle(x1,y1,x2,y2){
+  var dx=x2-x1, dy=y2-y1;
+  var len=Math.sqrt(dx*dx+dy*dy);
+  if(len<1) return {x:x2,y:y2};
+  var step=Math.PI/4;                       // 45°
+  var a=Math.atan2(dy,dx);
+  var snapped=Math.round(a/step)*step;
+  return {x:x1+len*Math.cos(snapped), y:y1+len*Math.sin(snapped)};
+}
 
 // Tool controls
 var TMAP={pen:'btn-pen',pendash:'btn-pendash',line:'btn-line',arrow:'btn-arrow',
