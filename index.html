@@ -400,6 +400,145 @@ body.is-pro .sep.pro-only{display:block!important;}
   .tut-track,.tut-overlay{transition:none;}
   .tut-slide [class^="tut-anim-"]{animation:none!important;}
 }
+
+/* ── TUTORIAL-C TOUR INTERACTIVO ── */
+.tour-help-btn{
+  position:absolute;top:96px;right:18px;z-index:50;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(16,19,26,.7);border:1px solid var(--border);
+  color:var(--muted);font-size:12px;font-family:'DM Sans',sans-serif;
+  padding:7px 12px;border-radius:999px;cursor:pointer;
+  backdrop-filter:blur(6px);transition:all .15s;
+}
+.tour-help-btn:hover,.tour-help-btn:focus-visible{
+  color:var(--accent);border-color:var(--accent);outline:none;
+}
+.tour-help-btn svg{width:14px;height:14px;}
+
+.tour-overlay{
+  position:fixed;inset:0;z-index:10000;
+  display:none;pointer-events:none;
+  font-family:inherit;color:#fff;
+}
+.tour-overlay.on{display:block;}
+
+/* Capa de fondo oscuro con agujero (spotlight) usando box-shadow inset gigante */
+.tour-spot{
+  position:fixed;
+  box-shadow:0 0 0 9999px rgba(8,12,20,.72);
+  border-radius:12px;
+  pointer-events:none;
+  transition:top .25s ease,left .25s ease,width .25s ease,height .25s ease,border-radius .25s ease;
+  outline:2px solid rgba(0,229,160,.85);
+  outline-offset:2px;
+}
+.tour-spot.center{
+  /* Estado "tooltip centrado, sin spotlight": invisible pero mantiene la sombra */
+  width:0;height:0;border-radius:0;outline:none;
+  top:50%;left:50%;
+}
+.tour-spot.pulse::before{
+  content:"";position:absolute;inset:-6px;border-radius:inherit;
+  border:2px solid rgba(0,229,160,.55);
+  animation:tour-pulse 1.6s ease-out infinite;
+  pointer-events:none;
+}
+@keyframes tour-pulse{
+  0%{transform:scale(.96);opacity:.8;}
+  70%{transform:scale(1.08);opacity:0;}
+  100%{transform:scale(1.08);opacity:0;}
+}
+
+/* La capa overlay no intercepta clicks; solo el tooltip y el target real reciben input.
+   Para "click fuera para cerrar" habría que recortar al spotlight, lo cual entra en
+   conflicto con permitir pulsar el target. Preferimos: ESC, botón "Saltar tour" y
+   clicks en el target real para avanzar. */
+
+/* Tooltip */
+.tour-tip{
+  position:fixed;max-width:280px;min-width:220px;
+  background:#10141d;border:1px solid #2a3142;border-radius:14px;
+  padding:14px 16px 12px;
+  box-shadow:0 18px 42px rgba(0,0,0,.55);
+  pointer-events:auto;
+  transition:top .22s ease,left .22s ease,opacity .18s;
+  opacity:0;
+}
+.tour-tip.on{opacity:1;}
+.tour-tip-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:6px;
+}
+.tour-step{
+  font-size:11px;color:var(--accent);
+  letter-spacing:1.2px;font-weight:600;text-transform:uppercase;
+}
+.tour-skip{
+  background:transparent;border:0;color:var(--muted);
+  font-size:12px;cursor:pointer;padding:4px 6px;border-radius:6px;
+}
+.tour-skip:hover,.tour-skip:focus-visible{
+  color:var(--text);background:rgba(255,255,255,.06);outline:none;
+}
+.tour-tip-title{
+  font-size:15px;font-weight:600;color:#fff;margin:0 0 4px;
+  line-height:1.3;
+}
+.tour-tip-desc{
+  font-size:13px;color:#c5cad6;line-height:1.45;margin:0 0 12px;
+}
+.tour-tip-nav{
+  display:flex;align-items:center;gap:8px;justify-content:flex-end;
+}
+.tour-btn{
+  font-family:inherit;font-size:13px;font-weight:500;
+  padding:8px 14px;border-radius:8px;border:0;cursor:pointer;
+  transition:filter .15s,background .15s,color .15s,border-color .15s;
+}
+.tour-btn-ghost{
+  background:transparent;color:var(--muted);border:1px solid #2a3142;
+}
+.tour-btn-ghost:hover,.tour-btn-ghost:focus-visible{
+  color:var(--text);border-color:#3a4256;outline:none;
+}
+.tour-btn-ghost[disabled]{opacity:.35;cursor:not-allowed;}
+.tour-btn-main{
+  background:var(--accent);color:#0a1410;font-weight:600;
+}
+.tour-btn-main:hover,.tour-btn-main:focus-visible{filter:brightness(1.06);outline:none;}
+.tour-btn-main:active{transform:scale(.98);}
+
+/* Flecha del tooltip apuntando al spotlight */
+.tour-tip::before{
+  content:"";position:absolute;
+  width:12px;height:12px;
+  background:#10141d;
+  border:1px solid #2a3142;
+  transform:rotate(45deg);
+  pointer-events:none;
+}
+.tour-tip[data-arrow="top"]::before{
+  top:-7px;left:calc(var(--arrow-x,50%) - 6px);
+  border-right:0;border-bottom:0;
+}
+.tour-tip[data-arrow="bottom"]::before{
+  bottom:-7px;left:calc(var(--arrow-x,50%) - 6px);
+  border-left:0;border-top:0;
+}
+.tour-tip[data-arrow="left"]::before{
+  left:-7px;top:calc(var(--arrow-y,50%) - 6px);
+  border-right:0;border-top:0;
+}
+.tour-tip[data-arrow="right"]::before{
+  right:-7px;top:calc(var(--arrow-y,50%) - 6px);
+  border-left:0;border-bottom:0;
+}
+.tour-tip[data-arrow="none"]::before{display:none;}
+
+@media (prefers-reduced-motion: reduce){
+  .tour-spot,.tour-tip{transition:none;}
+  .tour-spot.pulse::before{animation:none;}
+}
 </style>
 </head>
 <body>
@@ -482,6 +621,10 @@ body.is-pro .sep.pro-only{display:block!important;}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.6-2.5 2-2.5 4"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
     &iquest;C&oacute;mo se usa?
   </button>
+  <button id="btnTour" class="tour-help-btn" type="button" aria-label="Tour guiado por la pizarra" onclick="window.startTour && window.startTour()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M3 12h4"/><path d="M17 12h4"/><path d="M12 3v4"/><path d="M12 17v4"/></svg>
+    Tour guiado
+  </button>
 </div>
 
 <!-- PRO MODAL -->
@@ -512,7 +655,7 @@ body.is-pro .sep.pro-only{display:block!important;}
         <button class="tb" onclick="goHome()" title="Inicio">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </button>
-        <button class="tb" onclick="boardScreenshot()" title="Captura" style="color:#00e5a0;">
+        <button class="tb" id="btn-capture" onclick="boardScreenshot()" title="Captura" style="color:#00e5a0;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </button>
       </div>
@@ -1861,6 +2004,330 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').cat
   } else {
     auto();
   }
+})();
+
+// TUTORIAL-C TOUR INTERACTIVO (IIFE separada, NO auto-arranca)
+(function(){
+  var TOUR_KEY='padel.tourDone';
+  var GAP=12;          // separación spotlight ↔ tooltip
+  var PAD=6;           // padding spotlight alrededor del elemento
+  var MARGIN=10;       // margen de seguridad respecto a borde de ventana
+
+  // 5 pasos
+  var STEPS=[
+    {
+      target:'#btn-pen',
+      title:'Lápiz',
+      desc:'Toca aquí y dibuja en la pista.',
+      advanceOn:'click',           // avanza al pulsar el target
+      nextLabel:'Siguiente',
+      ensureBoard:true
+    },
+    {
+      target:'#board-cv',
+      title:'Pista',
+      desc:'Arrastra para pintar una jugada.',
+      advanceOn:'timer',
+      timerMs:2500,
+      nextLabel:'Siguiente',
+      ensureBoard:true,
+      boxKind:'rect'               // rectángulo grande sobre la pista
+    },
+    {
+      target:'#btn-eraser',
+      title:'Goma',
+      desc:'Borra con goma o con 3 dedos a la vez.',
+      advanceOn:'click',
+      nextLabel:'Siguiente',
+      ensureBoard:true
+    },
+    {
+      target:null,                  // centrado, sin spotlight
+      title:'Zoom con dos dedos',
+      desc:'Pellizca con 2 dedos para ampliar.',
+      advanceOn:'manual',
+      nextLabel:'Siguiente',
+      ensureBoard:true
+    },
+    {
+      target:'#btn-capture',
+      title:'Captura',
+      desc:'Guarda tu jugada como imagen.',
+      advanceOn:'click',
+      nextLabel:'Empezar',
+      ensureBoard:true
+    }
+  ];
+
+  var overlay=null, spot=null, tip=null;
+  var idx=0, active=false;
+  var resizeRaf=0;
+  var stepTimer=null;
+  var advanceClickHandler=null;
+  var advanceClickEl=null;
+
+  function $(sel){ try{ return document.querySelector(sel); }catch(_){ return null; } }
+
+  function ensureNodes(){
+    if(overlay) return;
+    overlay=document.createElement('div');
+    overlay.className='tour-overlay';
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-label','Tour guiado de la pizarra');
+    overlay.innerHTML=
+      '<div class="tour-spot" aria-hidden="true"></div>'+
+      '<div class="tour-tip" role="document">'+
+        '<div class="tour-tip-head">'+
+          '<span class="tour-step" data-role="step">1 / '+STEPS.length+'</span>'+
+          '<button class="tour-skip" type="button" data-act="skip" aria-label="Saltar tour">Saltar tour</button>'+
+        '</div>'+
+        '<h2 class="tour-tip-title" data-role="title"></h2>'+
+        '<p class="tour-tip-desc" data-role="desc"></p>'+
+        '<div class="tour-tip-nav">'+
+          '<button class="tour-btn tour-btn-ghost" type="button" data-act="back">Anterior</button>'+
+          '<button class="tour-btn tour-btn-main" type="button" data-act="next">Siguiente</button>'+
+        '</div>'+
+      '</div>';
+    document.body.appendChild(overlay);
+    spot=overlay.querySelector('.tour-spot');
+    tip=overlay.querySelector('.tour-tip');
+
+    overlay.addEventListener('click', function(e){
+      var b=e.target.closest('[data-act]');
+      if(!b) return;
+      var act=b.getAttribute('data-act');
+      if(act==='skip'){ close(true); }
+      else if(act==='next'){ next(); }
+      else if(act==='back'){ prev(); }
+    });
+
+    document.addEventListener('keydown', onKey, true);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('scroll', onResize, true);
+  }
+
+  function onKey(e){
+    if(!active) return;
+    if(e.key==='Escape'){ close(true); e.preventDefault(); }
+    else if(e.key==='ArrowRight'){ next(); }
+    else if(e.key==='ArrowLeft'){ prev(); }
+  }
+
+  function onResize(){
+    if(!active) return;
+    if(resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf=requestAnimationFrame(function(){ resizeRaf=0; layout(); });
+  }
+
+  function clearStepTimer(){
+    if(stepTimer){ clearTimeout(stepTimer); stepTimer=null; }
+  }
+  function clearAdvanceClick(){
+    if(advanceClickEl && advanceClickHandler){
+      advanceClickEl.removeEventListener('click', advanceClickHandler, true);
+    }
+    advanceClickEl=null; advanceClickHandler=null;
+  }
+
+  function gotoBoardIfNeeded(){
+    // El tour se diseña sobre la pizarra 2D: si estamos en HOME, abrir la pizarra.
+    try{
+      var bs=document.getElementById('board-screen');
+      if(bs && !bs.classList.contains('active')){
+        if(typeof window.openBoard==='function') window.openBoard();
+      }
+    }catch(_){}
+  }
+
+  function open(){
+    ensureNodes();
+    idx=0; active=true;
+    overlay.classList.add('on');
+    // El tour habla del lápiz/pista/goma/captura → asegurar pizarra 2D
+    gotoBoardIfNeeded();
+    // Esperar a que la pizarra termine de renderizar (resizeBoard hace setTimeout 80)
+    setTimeout(render, 120);
+  }
+
+  function close(markDone){
+    if(!overlay) return;
+    active=false;
+    overlay.classList.remove('on');
+    tip.classList.remove('on');
+    clearStepTimer();
+    clearAdvanceClick();
+    if(markDone){
+      try{ localStorage.setItem(TOUR_KEY,'1'); }catch(_){}
+    }
+  }
+
+  function next(){
+    if(idx>=STEPS.length-1){ close(true); return; }
+    idx++; render();
+  }
+  function prev(){
+    if(idx<=0) return;
+    idx--; render();
+  }
+
+  function getRect(target, kind){
+    if(!target) return null;
+    var el=$(target); if(!el) return null;
+    var r=el.getBoundingClientRect();
+    if(kind==='rect'){
+      // Recorta al viewport visible para que el "agujero" sea cómodo
+      var top=Math.max(r.top, MARGIN);
+      var left=Math.max(r.left, MARGIN);
+      var right=Math.min(r.right, window.innerWidth-MARGIN);
+      var bottom=Math.min(r.bottom, window.innerHeight-MARGIN);
+      return {top:top,left:left,width:Math.max(20,right-left),height:Math.max(20,bottom-top)};
+    }
+    return {top:r.top,left:r.left,width:r.width,height:r.height};
+  }
+
+  function placeSpot(rect){
+    if(!rect){
+      spot.classList.add('center');
+      spot.classList.remove('pulse');
+      spot.style.top=''; spot.style.left='';
+      spot.style.width=''; spot.style.height='';
+      spot.style.borderRadius='';
+      return;
+    }
+    spot.classList.remove('center');
+    spot.classList.add('pulse');
+    spot.style.top=(rect.top-PAD)+'px';
+    spot.style.left=(rect.left-PAD)+'px';
+    spot.style.width=(rect.width+PAD*2)+'px';
+    spot.style.height=(rect.height+PAD*2)+'px';
+    // Forma: redondeado normal; para el canvas, radio menor
+    spot.style.borderRadius=(rect.width>120?'14px':'12px');
+  }
+
+  function placeTip(rect){
+    // Reset clases de flecha
+    tip.removeAttribute('data-arrow');
+    tip.style.setProperty('--arrow-x','50%');
+    tip.style.setProperty('--arrow-y','50%');
+
+    // Forzar layout para medir tooltip
+    tip.style.left='-9999px'; tip.style.top='-9999px';
+    tip.classList.add('on');
+    var tw=tip.offsetWidth, th=tip.offsetHeight;
+    var vw=window.innerWidth, vh=window.innerHeight;
+
+    if(!rect){
+      // Centrado
+      tip.setAttribute('data-arrow','none');
+      tip.style.left=Math.max(MARGIN,(vw-tw)/2)+'px';
+      tip.style.top=Math.max(MARGIN,(vh-th)/2)+'px';
+      return;
+    }
+
+    // Preferencia: debajo > arriba > derecha > izquierda
+    var spaceBelow=vh-(rect.top+rect.height)-GAP-MARGIN;
+    var spaceAbove=rect.top-GAP-MARGIN;
+    var spaceRight=vw-(rect.left+rect.width)-GAP-MARGIN;
+    var spaceLeft=rect.left-GAP-MARGIN;
+
+    var placement=null;
+    if(spaceBelow>=th)      placement='below';
+    else if(spaceAbove>=th) placement='above';
+    else if(spaceRight>=tw) placement='right';
+    else if(spaceLeft>=tw)  placement='left';
+    else {
+      // Ninguno cabe: el que tenga más espacio
+      var best=Math.max(spaceBelow,spaceAbove,spaceRight,spaceLeft);
+      placement = (best===spaceBelow?'below':best===spaceAbove?'above':best===spaceRight?'right':'left');
+    }
+
+    var top=0,left=0,arrow='top',ax=tw/2,ay=th/2;
+    var cx=rect.left+rect.width/2;
+    var cy=rect.top+rect.height/2;
+
+    if(placement==='below'){
+      top=rect.top+rect.height+GAP;
+      left=Math.min(Math.max(cx-tw/2,MARGIN), vw-tw-MARGIN);
+      arrow='top';
+      ax=Math.min(Math.max(cx-left, 18), tw-18);
+    } else if(placement==='above'){
+      top=rect.top-GAP-th;
+      left=Math.min(Math.max(cx-tw/2,MARGIN), vw-tw-MARGIN);
+      arrow='bottom';
+      ax=Math.min(Math.max(cx-left, 18), tw-18);
+    } else if(placement==='right'){
+      left=rect.left+rect.width+GAP;
+      top=Math.min(Math.max(cy-th/2,MARGIN), vh-th-MARGIN);
+      arrow='left';
+      ay=Math.min(Math.max(cy-top, 18), th-18);
+    } else { // left
+      left=rect.left-GAP-tw;
+      top=Math.min(Math.max(cy-th/2,MARGIN), vh-th-MARGIN);
+      arrow='right';
+      ay=Math.min(Math.max(cy-top, 18), th-18);
+    }
+
+    tip.setAttribute('data-arrow', arrow);
+    tip.style.setProperty('--arrow-x', ax+'px');
+    tip.style.setProperty('--arrow-y', ay+'px');
+    tip.style.left=Math.round(left)+'px';
+    tip.style.top=Math.round(top)+'px';
+  }
+
+  function layout(){
+    if(!active) return;
+    var step=STEPS[idx];
+    var rect = step.target ? getRect(step.target, step.boxKind) : null;
+    placeSpot(rect);
+    placeTip(rect);
+  }
+
+  function render(){
+    if(!active) return;
+    clearStepTimer();
+    clearAdvanceClick();
+    var step=STEPS[idx];
+
+    if(step.ensureBoard){ gotoBoardIfNeeded(); }
+
+    // Textos
+    tip.querySelector('[data-role="step"]').textContent=(idx+1)+' / '+STEPS.length;
+    tip.querySelector('[data-role="title"]').textContent=step.title;
+    tip.querySelector('[data-role="desc"]').textContent=step.desc;
+    // Botones
+    var backBtn=tip.querySelector('[data-act="back"]');
+    var nextBtn=tip.querySelector('[data-act="next"]');
+    backBtn.disabled = (idx===0);
+    nextBtn.textContent = step.nextLabel || (idx===STEPS.length-1 ? 'Empezar' : 'Siguiente');
+
+    // Esperar al siguiente frame para que la pizarra haya hecho su resize si toca
+    requestAnimationFrame(function(){
+      setTimeout(layout, 30);
+    });
+
+    // Mecanismo de avance automático
+    if(step.advanceOn==='timer'){
+      stepTimer=setTimeout(function(){ if(active) next(); }, step.timerMs||2500);
+    } else if(step.advanceOn==='click' && step.target){
+      var el=$(step.target);
+      if(el){
+        advanceClickEl=el;
+        advanceClickHandler=function(){
+          // Pequeño retardo para que la acción del usuario se vea reflejada
+          setTimeout(function(){ if(active) next(); }, 180);
+        };
+        el.addEventListener('click', advanceClickHandler, true);
+      }
+    }
+  }
+
+  function start(){ open(); }
+
+  // Exponer API
+  window.startTour = start;
+
+  // NO auto-arranque. El usuario debe pulsar el botón "Tour guiado".
 })();
 
 </script>
