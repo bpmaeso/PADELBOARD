@@ -7,7 +7,10 @@
 // v19: bump tras auditoría 2D (críticos #2/#3/#5, altos #4/#6/#8/#10,
 // safe-area-inset iOS, botones táctiles >=40px, QuotaExceededError)
 // + gate Pro + tema freemium gratis/Pro.
-const CACHE = 'pizarra-padel-v19';
+// v20: sprint nocturno — incluye además bugs medios (#12 #14-#18),
+// bugs bajos (#21-#24: seqSpeed live, doble-pinch, reset fichas, modal tap-fuera)
+// y mejoras UX (undo/redo, autosave, snap líneas, ARIA, foco visible, contraste).
+const CACHE = 'pizarra-padel-v20';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
