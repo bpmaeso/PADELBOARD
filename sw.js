@@ -10,15 +10,16 @@
 // v20: sprint nocturno — incluye además bugs medios (#12 #14-#18),
 // bugs bajos (#21-#24: seqSpeed live, doble-pinch, reset fichas, modal tap-fuera)
 // y mejoras UX (undo/redo, autosave, snap líneas, ARIA, foco visible, contraste).
-const CACHE = 'pizarra-padel-v20';
+// v21: rediseño HOME minimalista. Se quitan padel-3d.html, padel-board.html
+// y three.js del precache (la 3D y la pizarra legado dejan de promocionarse
+// desde el menú; los ficheros siguen en el repo pero no se precachean).
+const CACHE = 'pizarra-padel-v21';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
-// App shell local.
+// App shell local (solo lo realmente usado desde el menú actual).
 const CORE = [
   './',
   './index.html',
-  './padel-board.html',
-  './padel-3d.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -26,9 +27,6 @@ const CORE = [
 
 // URL EXACTA de Google Fonts que pide index.html (debe coincidir al carácter).
 const FONT_CSS = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bebas+Neue&display=swap';
-// Three.js (Pizarra 3D). Precache tolerante para que la 3D funcione offline
-// tras la primera carga con red.
-const THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -36,8 +34,7 @@ self.addEventListener('install', e => {
       caches.open(CACHE).then(c => c.addAll(CORE)),
       // Tolerante a fallo de red: si el primer install es offline, la fuente
       // caerá a sans-serif sin romper la instalación del resto del shell.
-      caches.open(FONT_CACHE).then(c => c.add(FONT_CSS).catch(() => {})),
-      caches.open(CACHE).then(c => c.add(THREE_URL).catch(() => {}))
+      caches.open(FONT_CACHE).then(c => c.add(FONT_CSS).catch(() => {}))
     ]).then(() => self.skipWaiting())
   );
 });

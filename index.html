@@ -433,6 +433,23 @@ body.is-pro .sep.pro-only{display:block!important;}
   .tut-track,.tut-overlay{transition:none;}
   .tut-slide [class^="tut-anim-"]{animation:none!important;}
 }
+
+/* ===== Pantalla de Configuración ===== */
+.cfg-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 40px;}
+.cfg-sec{margin-bottom:18px;}
+.cfg-h{margin:0 0 8px;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9aa3b8;}
+.cfg-row{display:flex;align-items:center;gap:12px;padding:14px;background:#161922;border:1px solid #232737;border-radius:14px;margin-bottom:8px;}
+.cfg-row-info{flex:1;min-width:0;}
+.cfg-row-title{font-size:15px;font-weight:600;color:#e6ebf2;}
+.cfg-row-sub{font-size:13px;color:#9aa3b8;margin-top:2px;line-height:1.35;}
+.cfg-btn{flex-shrink:0;background:#262b3b;color:#e6ebf2;border:1px solid #353a4d;border-radius:10px;padding:8px 14px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;}
+.cfg-btn:hover{background:#2d3346;}
+.cfg-btn:focus-visible{outline:2px solid #00e5a0;outline-offset:2px;}
+.cfg-btn-danger{color:#ef4444;border-color:#5a2530;background:#2a1418;}
+.cfg-btn-danger:hover{background:#3a1c22;}
+.cfg-btn-primary{background:linear-gradient(135deg,#00e5a0,#0099ff);color:#0a0b0e;border:0;font-weight:700;}
+.cfg-btn-primary:hover{filter:brightness(1.06);}
+
 </style>
 </head>
 <body>
@@ -482,45 +499,33 @@ body.is-pro .sep.pro-only{display:block!important;}
   <div id="unlock-pro" class="unlock-pro" onclick="showPro()" style="display:none;">
     <div class="up-ic">&#10022;</div>
     <div class="up-txt">
-      <div class="up-title">Desbloquear todo (Pro)</div>
-      <div class="up-sub">Pizarra 3D, generador de pista, secuencias y mucho más</div>
+      <div class="up-title">Suscribirse a Pro</div>
+      <div class="up-sub">Colores, herramientas avanzadas, grabador de secuencias y guardar tus jugadas</div>
     </div>
     <div class="up-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 18 15 12 9 6"/></svg></div>
   </div>
 
   <div class="section-label">Pro <span style="color:var(--gold)">&#10022;</span></div>
   <div class="cards">
-    <div class="feat-card" onclick="goPro3D()">
-      <div class="feat-icon blue">&#128311;</div>
-      <div class="feat-info">
-        <div class="feat-title">Pizarra 3D</div>
-        <div class="feat-desc">Vista tridimensional con rotación libre, cámaras y jugadores</div>
-      </div>
-      <div class="pro-tag" style="background:var(--accent)">PRO</div>
-    </div>
-    <div class="feat-card" onclick="requirePro(openGenerator)">
-      <div class="feat-icon purple">&#127967;</div>
-      <div class="feat-info">
-        <div class="feat-title">Generador de pista</div>
-        <div class="feat-desc">Diseña tu pista 2D con medidas oficiales y úsala en la pizarra</div>
-      </div>
-      <div class="pro-tag" style="background:var(--accent)">PRO</div>
-    </div>
-    <div class="feat-card" onclick="requirePro(openSequence)">
-      <div class="feat-icon orange">&#127916;</div>
-      <div class="feat-info">
-        <div class="feat-title">Generador de secuencias</div>
-        <div class="feat-desc">Captura frames de la jugada y reproduce la animación a pantalla completa</div>
-      </div>
-      <div class="pro-tag" style="background:var(--accent)">PRO</div>
-    </div>
     <div class="feat-card" onclick="requirePro(openBoards)">
       <div class="feat-icon green">&#128193;</div>
       <div class="feat-info">
-        <div class="feat-title">Guardar pizarras</div>
+        <div class="feat-title">Mis pizarras</div>
         <div class="feat-desc">Guarda tus jugadas con nombre y vuelve a cargarlas cuando quieras</div>
       </div>
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
+    </div>
+  </div>
+
+  <div class="section-label">Ajustes</div>
+  <div class="cards">
+    <div class="feat-card" onclick="openConfig()">
+      <div class="feat-icon" style="background:linear-gradient(135deg,#4b5563,#1f2937);">&#9881;</div>
+      <div class="feat-info">
+        <div class="feat-title">Configuraci&oacute;n</div>
+        <div class="feat-desc">Cuenta, tutorial, datos locales y acerca de la app</div>
+      </div>
+      <div class="feat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
   </div>
 
@@ -553,13 +558,17 @@ body.is-pro .sep.pro-only{display:block!important;}
 <div id="board-screen" class="screen">
   <div id="board-tb" role="toolbar" aria-label="Herramientas de pizarra">
     <div class="trow" id="board-r1">
-      <!-- Izquierda: Inicio + Captura -->
+      <!-- Izquierda: Inicio + Captura + REC (Pro) -->
       <div class="tgroup">
         <button class="tb" onclick="goHome()" title="Inicio" aria-label="Volver al inicio">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </button>
         <button class="tb" onclick="boardScreenshot()" title="Captura" aria-label="Descargar captura PNG de la pizarra" style="color:#00e5a0;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+        <!-- REC: grabador de secuencias (Pro). Abre el panel inferior con frames. -->
+        <button class="tb pro-only" id="btn-rec" onclick="openSequence()" title="Grabar secuencia" aria-label="Grabar secuencia de jugada" style="color:#ef4444;">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="6"/></svg>
         </button>
       </div>
       <!-- Centro: tipos de marcas -->
@@ -709,6 +718,71 @@ body.is-pro .sep.pro-only{display:block!important;}
       <button class="gen-btn-main" onclick="boardsSaveCurrent()">Guardar actual</button>
     </div>
     <div id="boards-list" class="boards-list"></div>
+  </div>
+</div>
+
+<!-- Pantalla de Configuración (genérica) -->
+<div id="config-screen" class="screen">
+  <div class="gen-tb">
+    <button class="back-btn" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Inicio
+    </button>
+    <span class="gen-title">Configuración</span>
+  </div>
+  <div class="cfg-body">
+    <!-- 1. Estado de cuenta -->
+    <section class="cfg-sec">
+      <h3 class="cfg-h">Tu cuenta</h3>
+      <div id="cfg-account" class="cfg-row">
+        <div class="cfg-row-info">
+          <div class="cfg-row-title" id="cfg-account-title">Cargando…</div>
+          <div class="cfg-row-sub" id="cfg-account-sub"></div>
+        </div>
+        <button id="cfg-account-cta" class="cfg-btn" onclick="cfgAccountAction()">…</button>
+      </div>
+    </section>
+
+    <!-- 2. Tutorial -->
+    <section class="cfg-sec">
+      <h3 class="cfg-h">Tutorial</h3>
+      <div class="cfg-row">
+        <div class="cfg-row-info">
+          <div class="cfg-row-title">Reiniciar tutorial</div>
+          <div class="cfg-row-sub">Vuelve a mostrar las 5 diapositivas la próxima vez que abras la app.</div>
+        </div>
+        <button class="cfg-btn" onclick="cfgResetTutorial()">Reiniciar</button>
+      </div>
+    </section>
+
+    <!-- 3. Datos locales -->
+    <section class="cfg-sec">
+      <h3 class="cfg-h">Datos locales</h3>
+      <div class="cfg-row">
+        <div class="cfg-row-info">
+          <div class="cfg-row-title">Borrar todo</div>
+          <div class="cfg-row-sub">Elimina autosave, pizarras guardadas y configuración de pista del dispositivo. No afecta a tu cuenta.</div>
+        </div>
+        <button class="cfg-btn cfg-btn-danger" onclick="cfgWipeLocal()">Borrar</button>
+      </div>
+    </section>
+
+    <!-- 4. Acerca de -->
+    <section class="cfg-sec">
+      <h3 class="cfg-h">Acerca de</h3>
+      <div class="cfg-row">
+        <div class="cfg-row-info">
+          <div class="cfg-row-title">Pizarra Pádel</div>
+          <div class="cfg-row-sub" id="cfg-about-sub">Versión —</div>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div class="cfg-row-info">
+          <div class="cfg-row-title">Contacto</div>
+          <div class="cfg-row-sub">bpmaeso@gmail.com</div>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -1890,6 +1964,74 @@ function seqPlaySegment(seg){
 // MIS PIZARRAS (guardar / cargar jugadas)
 // ==================================================
 function openBoards(){ showScreen('boards-screen'); boardsRender(); }
+
+// ==================================================
+// Pantalla de Configuración
+// ==================================================
+function openConfig(){
+  showScreen('config-screen');
+  refreshConfig();
+}
+
+function refreshConfig(){
+  // Estado de cuenta
+  var t=document.getElementById('cfg-account-title');
+  var s=document.getElementById('cfg-account-sub');
+  var b=document.getElementById('cfg-account-cta');
+  if(t&&s&&b){
+    if(isPro()){
+      t.textContent='Pro activo ✨';
+      s.textContent='Tienes acceso a todas las herramientas, secuencias y "Mis pizarras".';
+      b.textContent='Volver a Gratis';
+      b.className='cfg-btn';
+    } else {
+      t.textContent='Plan Gratis';
+      s.textContent='Lápiz negro, goma, captura y borrador de 3 dedos.';
+      b.textContent='Suscribirse a Pro';
+      b.className='cfg-btn cfg-btn-primary';
+    }
+  }
+  // Versión SW
+  var sub=document.getElementById('cfg-about-sub');
+  if(sub){
+    var ver='offline';
+    try{
+      if('serviceWorker' in navigator) ver='Service Worker activo';
+    }catch(e){}
+    sub.textContent='Versión PWA 2026-05-29 · '+ver;
+  }
+}
+
+function cfgAccountAction(){
+  if(isPro()){
+    if(confirm('¿Volver al plan Gratis?\nMantendrás tus pizarras guardadas para cuando reactives Pro.')){
+      setPro(false);
+      refreshConfig();
+      applyProUI();
+      showToast('Has vuelto al plan Gratis');
+    }
+  } else {
+    showPro();
+  }
+}
+
+function cfgResetTutorial(){
+  try{ localStorage.removeItem('padel.tutDone'); }catch(e){}
+  showToast('Tutorial reiniciado — verás las diapositivas al reabrir el inicio');
+}
+
+function cfgWipeLocal(){
+  if(!confirm('¿Borrar autosave, pizarras guardadas y configuración de pista de este dispositivo?\nEsta acción no se puede deshacer.')) return;
+  try{
+    localStorage.removeItem('padel.autosave');
+    localStorage.removeItem('padel.boards');
+    localStorage.removeItem('padel.courtConfig');
+    localStorage.removeItem('padel.seq');
+  }catch(e){}
+  // No tocamos padel.pro ni padel.tutDone (los gestiona el usuario aparte).
+  showToast('Datos locales borrados');
+  if(typeof refreshAutoSaveBanner==='function') refreshAutoSaveBanner();
+}
 function boardsAll(){
   // Defensivo: aunque el JSON global parsee, una entrada corrupta (sin name o
   // sin strokes) puede romper boardsRender o boardsLoad. Filtramos por contrato
