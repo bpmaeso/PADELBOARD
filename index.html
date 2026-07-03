@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Pizarra Pádel</title>
+<title>PADELBOARD · Pizarra de pádel</title>
 <meta name="description" content="Pizarra táctica de estrategia para pádel: dibuja jugadas, mueve fichas y planifica entrenamientos.">
 <link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Pizarra Pádel">
+<meta name="apple-mobile-web-app-title" content="PADELBOARD">
 <meta name="theme-color" content="#0a0b0e">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
   --bg:#0a0b0e; --card:#10131a; --border:#1e222c;
-  --accent:#00e5a0; --gold:#f59e0b;
+  --accent:#3d8bff; --gold:#f59e0b;
   --text:#e6edf3; --muted:#6b7280;
 }
 html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
@@ -31,10 +31,9 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 #home{overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);}
 .home-header{padding:56px 24px 20px;background:linear-gradient(180deg,#0d1220 0%,var(--bg) 100%);}
 .logo{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
-.logo-icon{width:44px;height:44px;border-radius:13px;
-  background:linear-gradient(135deg,var(--accent),#0099ff);
+.logo-icon{width:44px;height:44px;border-radius:13px;overflow:hidden;
   display:flex;align-items:center;justify-content:center;}
-.logo-icon svg{width:24px;height:24px;}
+.logo-icon svg{width:44px;height:44px;display:block;}
 .logo-name{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;}
 .home-sub{font-size:13px;color:var(--muted);line-height:1.5;}
 .section-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.5px;
@@ -46,7 +45,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 .feat-card:active{transform:scale(0.98);background:#161b24;}
 .feat-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;font-size:24px;}
-.feat-icon.green{background:rgba(0,229,160,.13);}
+.feat-icon.green{background:rgba(61,139,255,.13);}
 .feat-icon.blue{background:rgba(59,130,246,.13);}
 .feat-icon.purple{background:rgba(139,92,246,.13);}
 .feat-icon.orange{background:rgba(245,158,11,.13);}
@@ -72,7 +71,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 .pro-feat{display:flex;align-items:center;gap:10px;font-size:14px;}
 .pro-feat-ic{color:var(--accent);font-size:18px;width:24px;text-align:center;}
 .pro-btn-main{width:100%;padding:16px;border:none;border-radius:14px;
-  background:linear-gradient(135deg,var(--accent),#00b8ff);
+  background:linear-gradient(135deg,var(--accent),#1463d6);
   color:#000;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .pro-btn-cancel{width:100%;padding:12px;border:none;background:transparent;
   color:var(--muted);font-size:14px;cursor:pointer;margin-top:8px;font-family:'DM Sans',sans-serif;}
@@ -90,7 +89,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   border-radius:8px;border:1.5px solid transparent;background:transparent;
   color:#4a5060;cursor:pointer;flex-shrink:0;transition:all .12s;}
 .tb:hover,.tb:active{background:rgba(255,255,255,.06);color:#e6edf3;}
-.tb.active{background:#00e5a0;color:#000;border-color:#00e5a0;}
+.tb.active{background:#3d8bff;color:#000;border-color:#3d8bff;}
 .tb svg{width:16px;height:16px;pointer-events:none;}
 .back-btn{display:flex;align-items:center;gap:5px;padding:0 10px;height:34px;
   border-radius:8px;border:1px solid #1e222c;background:transparent;
@@ -99,15 +98,15 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 .csw{width:20px;height:20px;border-radius:50%;border:2.5px solid transparent;
   cursor:pointer;flex-shrink:0;transition:transform .1s,border-color .1s;}
 .csw:hover{transform:scale(1.15);}
-.csw.active{border-color:#00e5a0!important;transform:scale(1.22);}
+.csw.active{border-color:#3d8bff!important;transform:scale(1.22);}
 .swb{display:flex;align-items:center;justify-content:center;width:28px;height:28px;
   border-radius:7px;border:1.5px solid #1e222c;background:transparent;
   cursor:pointer;flex-shrink:0;transition:all .12s;}
-.swb.active{border-color:#00e5a0;background:rgba(0,229,160,.13);}
+.swb.active{border-color:#3d8bff;background:rgba(61,139,255,.13);}
 .sdot{background:#e6edf3;border-radius:50%;}
 #board-cv{position:absolute;top:0;left:0;z-index:1;touch-action:none;cursor:crosshair;display:block;}
 #board-toast{position:absolute;left:50%;transform:translateX(-50%) translateY(-6px);
-  background:rgba(0,229,160,.14);border:1px solid #00e5a0;color:#00e5a0;
+  background:rgba(61,139,255,.14);border:1px solid #3d8bff;color:#3d8bff;
   padding:6px 14px;border-radius:18px;font-size:11px;pointer-events:none;
   opacity:0;transition:opacity .25s,transform .25s;z-index:200;}
 #board-toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -134,7 +133,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 .gen-rng input[type=range]{width:100%;accent-color:var(--accent);}
 .gen-actions{display:flex;gap:10px;margin:2px 0 10px;}
 .gen-btn-main{flex:1;padding:14px;border:none;border-radius:12px;
-  background:linear-gradient(135deg,var(--accent),#00b8ff);color:#000;font-weight:700;
+  background:linear-gradient(135deg,var(--accent),#1463d6);color:#000;font-weight:700;
   font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;}
 .gen-btn-ghost{flex:1;padding:13px;border:1px solid var(--border);border-radius:12px;
   background:transparent;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;}
@@ -187,25 +186,44 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 .board-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .board-date{font-size:12px;color:var(--muted);margin-top:2px;}
 .board-act{flex:0 0 auto;padding:9px 13px;border-radius:10px;border:1px solid var(--accent);
-  background:rgba(0,229,160,.12);color:var(--accent);font-size:13px;font-weight:600;
+  background:rgba(61,139,255,.12);color:var(--accent);font-size:13px;font-weight:600;
   cursor:pointer;font-family:'DM Sans',sans-serif;}
 .board-act.board-del{border-color:#ef4444;background:rgba(239,68,68,.1);color:#ef4444;padding:9px 12px;}
+
+/* Gating Free/Pro: controles solo-Pro bloqueados (candado, sin interacción). */
+.locked{position:relative;opacity:.4;pointer-events:none;filter:grayscale(.35);}
+.tb.locked::after,.csw.locked::after,.swb.locked::after{content:"\1F512";position:absolute;
+  top:-4px;right:-4px;font-size:9px;line-height:1;filter:none;}
+.feat-card.locked{opacity:.55;}
+#dev-pro{position:fixed;left:10px;bottom:10px;z-index:600;display:none;
+  padding:7px 11px;border-radius:10px;border:1px solid var(--border);
+  background:rgba(16,19,26,.92);color:var(--text);font-size:12px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;}
 </style>
 </head>
 <body>
+
+<button id="dev-pro" onclick="setPro(!IS_PRO)">DEV &middot; Pro: OFF</button>
 
 <!-- HOME -->
 <div id="home" class="screen active">
   <div class="home-header">
     <div class="logo">
       <div class="logo-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
-          <rect x="2" y="3" width="20" height="18" rx="2"/>
-          <line x1="2" y1="12" x2="22" y2="12" stroke-width="2.5"/>
-          <line x1="12" y1="3" x2="12" y2="21"/>
+        <svg viewBox="0 0 512 512" aria-label="PADELBOARD">
+          <defs><radialGradient id="pblogo" cx="50%" cy="26%" r="92%">
+            <stop offset="0" stop-color="#2f6fd0"/><stop offset="0.55" stop-color="#154a9e"/><stop offset="1" stop-color="#07173a"/>
+          </radialGradient></defs>
+          <rect width="512" height="512" rx="96" fill="url(#pblogo)"/>
+          <g fill="none" stroke="#eef4ff" stroke-width="14" stroke-linejoin="round">
+            <rect x="163" y="70" width="186" height="372" rx="4"/>
+            <line x1="163" y1="256" x2="349" y2="256" stroke-width="22"/>
+            <line x1="256" y1="126" x2="256" y2="386"/>
+          </g>
+          <circle cx="209" cy="191" r="30" fill="#f7d83a" stroke="#0a2350" stroke-width="6"/>
         </svg>
       </div>
-      <span class="logo-name">Pizarra Pádel</span>
+      <span class="logo-name">PADELBOARD</span>
     </div>
     <div class="home-sub">Herramienta táctica para entrenadores y jugadores</div>
   </div>
@@ -224,15 +242,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 
   <div class="section-label">Pro <span style="color:var(--gold)">&#10022;</span></div>
   <div class="cards">
-    <div class="feat-card" onclick="location.href='padel-3d.html'">
-      <div class="feat-icon blue">&#128311;</div>
-      <div class="feat-info">
-        <div class="feat-title">Pizarra 3D</div>
-        <div class="feat-desc">Vista tridimensional con rotación libre, cámaras y jugadores</div>
-      </div>
-      <div class="pro-tag" style="background:var(--accent)">PRO</div>
-    </div>
-    <div class="feat-card" onclick="openGenerator()">
+    <div class="feat-card" data-pro="1" onclick="openGenerator()">
       <div class="feat-icon purple">&#127967;</div>
       <div class="feat-info">
         <div class="feat-title">Generador de pista</div>
@@ -240,7 +250,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
-    <div class="feat-card" onclick="openSequence()">
+    <div class="feat-card" data-pro="1" onclick="openSequence()">
       <div class="feat-icon orange">&#127916;</div>
       <div class="feat-info">
         <div class="feat-title">Generador de secuencias</div>
@@ -248,7 +258,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
-    <div class="feat-card" onclick="openBoards()">
+    <div class="feat-card" data-pro="1" onclick="openBoards()">
       <div class="feat-icon green">&#128193;</div>
       <div class="feat-info">
         <div class="feat-title">Guardar pizarras</div>
@@ -265,12 +275,11 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
     <h2>Pizarra Pádel Pro &#10022;</h2>
     <p>Lleva tu análisis táctico al siguiente nivel con las herramientas avanzadas.</p>
     <div class="pro-feats">
-      <div class="pro-feat"><span class="pro-feat-ic">&#128311;</span>Pizarra 3D con rotación libre y jugadores</div>
-      <div class="pro-feat"><span class="pro-feat-ic">&#127967;</span>Generador de pista personalizable 2D + 3D</div>
-      <div class="pro-feat"><span class="pro-feat-ic">&#127916;</span>Grabación y exportación de jugadas animadas</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#127912;</span>Todos los colores, grosores y herramientas de dibujo</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#127967;</span>Generador de pista 2D personalizable</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#127916;</span>Secuencias: anima la jugada frame a frame</div>
       <div class="pro-feat"><span class="pro-feat-ic">&#128193;</span>Guardar y cargar pizarras ilimitadas</div>
-      <div class="pro-feat"><span class="pro-feat-ic">&#127912;</span>Herramientas 3D avanzadas y parábolas</div>
-      <div class="pro-feat"><span class="pro-feat-ic">&#9729;</span>Sincronización en la nube</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#9729;</span>Tu cuenta Pro en todos tus dispositivos</div>
     </div>
     <button class="pro-btn-main" onclick="closePro()">Próximamente - Avísame</button>
     <button class="pro-btn-cancel" onclick="closePro()">Volver</button>
@@ -286,7 +295,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
         <button class="tb" onclick="goHome()" title="Inicio">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </button>
-        <button class="tb" onclick="boardScreenshot()" title="Captura" style="color:#00e5a0;">
+        <button class="tb" onclick="boardScreenshot()" title="Captura" style="color:#3d8bff;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </button>
       </div>
@@ -325,7 +334,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
     </div>
     <div class="trow" id="board-r2">
-      <div class="csw active" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')"></div>
+      <div class="csw" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')"></div>
       <div class="csw"        style="background:#facc15"                     data-c="#facc15" onclick="setColor('#facc15')"></div>
       <div class="csw"        style="background:#22c55e"                     data-c="#22c55e" onclick="setColor('#22c55e')"></div>
       <div class="csw"        style="background:#ef4444"                     data-c="#ef4444" onclick="setColor('#ef4444')"></div>
@@ -400,7 +409,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
         <label class="gen-row"><span>Superficie</span><input type="color" id="g-courtColor"></label>
         <label class="gen-row"><span>Cristal</span><input type="color" id="g-glassColor"></label>
         <label class="gen-row"><span>Reja</span><input type="color" id="g-meshColor"></label>
-        <label class="gen-row"><span>Líneas y red</span><input type="color" id="g-lineColor"></label>
+        <label class="gen-row"><span>Líneas</span><input type="color" id="g-lineColor"></label>
+        <label class="gen-row"><span>Red</span><input type="color" id="g-netColor"></label>
       </div>
       <div class="gen-group">
         <div class="gen-grp-title">Medidas</div>
@@ -443,6 +453,38 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 var currentScreen='home';
 var boardReady=false;
 
+// ── Estado Pro (provisional: local; luego vendrá del backend tras el pago único).
+var IS_PRO=false;
+try{ IS_PRO = localStorage.getItem('padel.pro')==='1'; }catch(e){}
+var PRO_TOOL_NAMES=['pendash','line','arrow','rect','dot','cross'];
+function setPro(v){
+  IS_PRO=!!v;
+  try{ localStorage.setItem('padel.pro', IS_PRO?'1':'0'); }catch(e){}
+  applyProGating();
+  if(typeof cv!=='undefined' && cv) draw();
+}
+// Bloquea (candado, sin interacción) los controles Pro cuando la cuenta es gratuita.
+function applyProGating(){
+  var pro=IS_PRO;
+  ['btn-pendash','btn-line','btn-arrow','btn-rect','btn-dot','btn-cross'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.classList.toggle('locked', !pro);
+  });
+  document.querySelectorAll('#board-r2 .csw').forEach(function(el){
+    el.classList.toggle('locked', !pro && el.dataset.c!=='#111111');
+  });
+  ['sw0','sw2'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.classList.toggle('locked', !pro);
+  });
+  document.querySelectorAll('[data-pro]').forEach(function(el){
+    el.classList.toggle('locked', !pro);
+  });
+  if(!pro && typeof S!=='undefined'){
+    if(PRO_TOOL_NAMES.indexOf(S.tool)>=0) setTool('pen');
+    setColor('#111111'); setStroke(3.5);
+  }
+  var dev=document.getElementById('dev-pro'); if(dev) dev.innerHTML='DEV · Pro: <b>'+(pro?'ON':'OFF')+'</b>';
+}
+
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   document.getElementById(id).classList.add('active');
@@ -471,26 +513,28 @@ var courtConfig={
   glassColor:'#dff4ff',   // cristal
   meshColor :'#3a3f47',   // reja (mallazo) — gris metálico, se distingue del fondo
   meshLine  :'#737b86',   // textura reja
-  lineColor :'#ffffff',   // líneas y red
+  lineColor :'#ffffff',   // líneas de la pista (perímetro, saque, central)
+  netColor  :'#ffffff',   // red (color independiente de las líneas)
   wall      :16,          // grosor pared en u (~0.16 m, engrosado para legibilidad)
   glassSide :400,         // cristal lateral desde cada vértice (4 m)
   meshSide  :495,         // reja lateral a continuación (4.95 m)
-  serviceOff:300          // línea de saque a 3 m del fondo
+  serviceOff:305          // línea de saque a 3,05 m del fondo (6,95 m desde la red) — oficial FIP
 };
 function courtMargin(){ return courtConfig.wall + 10; } // hueco exterior para las paredes
 // Valores de fábrica (para "Restablecer") y persistencia en el dispositivo.
 var COURT_DEFAULTS=JSON.parse(JSON.stringify(courtConfig));
 try{ var _cc=localStorage.getItem('padel.courtConfig'); if(_cc) Object.assign(courtConfig, JSON.parse(_cc)); }catch(e){}
 function saveCourtConfig(){ try{ localStorage.setItem('padel.courtConfig', JSON.stringify(courtConfig)); }catch(e){} }
-var S={tool:'pen',color:'#ffffff',stroke:3.5,drawing:false,sx:0,sy:0,path:[],
-  ptrs:{},pinchD:null,pinchM:null,sel:null,wipe:false,wipePts:null};
+var S={tool:'pen',color:'#111111',stroke:3.5,drawing:false,sx:0,sy:0,path:[],
+  ptrs:{},pinchD:null,pinchM:null,sel:null,wipe:false,wipePts:null,rightErase:false};
 var CHIP_R=64;
 var WIPE_R=150; // radio del borrador ancho (3+ dedos), en u (~1.5 m por dedo)
+// Posición por defecto: cada ficha pegada a su esquina, contra la línea de fondo.
 var PLAYERS=[
-  {id:'p1',label:'D',color:'#2563eb',cx:250,cy:400},
-  {id:'p2',label:'R',color:'#2563eb',cx:750,cy:400},
-  {id:'p3',label:'R',color:'#dc2626',cx:250,cy:1600},
-  {id:'p4',label:'D',color:'#dc2626',cx:750,cy:1600}
+  {id:'p1',label:'D',color:'#2563eb',cx:120,cy:120},
+  {id:'p2',label:'R',color:'#2563eb',cx:880,cy:120},
+  {id:'p3',label:'R',color:'#dc2626',cx:120,cy:1880},
+  {id:'p4',label:'D',color:'#dc2626',cx:880,cy:1880}
 ];
 
 // Is touch device?
@@ -593,6 +637,17 @@ function draw(){
 function drawCourt(){
   var cc=courtConfig;
   var W=CW,H=CH,net=H/2,svc=cc.serviceOff,lw=6;
+  // Pista gratuita: blanca con líneas negras (sin cristal ni reja). Pro = pista realista.
+  if(!IS_PRO){
+    ctx.setLineDash([]);
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='#111111'; ctx.lineWidth=lw; ctx.lineCap='square';
+    ctx.strokeRect(lw/2,lw/2,W-lw,H-lw);
+    ctx.beginPath(); ctx.moveTo(0,svc); ctx.lineTo(W,svc); ctx.moveTo(0,H-svc); ctx.lineTo(W,H-svc); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W/2,svc-20); ctx.lineTo(W/2,H-svc+20); ctx.stroke();
+    ctx.lineWidth=lw*2.5; ctx.beginPath(); ctx.moveTo(0,net); ctx.lineTo(W,net); ctx.stroke();
+    return;
+  }
   var g=cc.wall, gs=cc.glassSide, ms=cc.meshSide;
   // Clamp defensivo: cristal + reja nunca tapan la puerta (deja hueco mínimo junto a la red)
   var DOORGAP=70;
@@ -652,8 +707,10 @@ function drawCourt(){
   function vl(x,y1,y2){ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2);ctx.stroke();}
   ctx.strokeRect(lw/2,lw/2,W-lw,H-lw);          // perímetro
   hl(0,svc,W); hl(0,H-svc,W);                    // líneas de saque
-  vl(W/2,svc,H-svc);                             // línea central de saque
-  ctx.lineWidth=lw*2.5; hl(0,net,W);             // red
+  // Línea central de saque: se prolonga 20 cm (20 u) más allá de cada línea de
+  // saque hacia el fondo, según el reglamento FIP.
+  vl(W/2,svc-20,H-svc+20);
+  ctx.lineWidth=lw*2.5; ctx.strokeStyle=cc.netColor; hl(0,net,W);  // red (color propio)
 }
 
 function drawChips(land){
@@ -663,7 +720,7 @@ function drawChips(land){
   PLAYERS.forEach(function(p){
     ctx.beginPath(); ctx.arc(p.cx,p.cy,CHIP_R,0,Math.PI*2);
     ctx.fillStyle=p.color; ctx.fill();
-    ctx.strokeStyle=S.sel===p.id?'#00e5a0':'rgba(255,255,255,0.7)';
+    ctx.strokeStyle=S.sel===p.id?'#3d8bff':'rgba(255,255,255,0.7)';
     ctx.lineWidth=S.sel===p.id?3:2; ctx.setLineDash([]); ctx.stroke();
     ctx.save(); ctx.translate(p.cx,p.cy);
     if(rotL) ctx.rotate(Math.PI/2);
@@ -754,6 +811,13 @@ function chipHit(cx,cy){
 function boardEvents(){
   cv.addEventListener('pointerdown',function(e){
     e.preventDefault();
+    // Escritorio: botón derecho del ratón = borrador ancho (como 3 dedos en táctil).
+    if(e.pointerType==='mouse' && e.button===2){
+      S.rightErase=true; S.wipe=true; S.drawing=false; live=null; S.sel=null; S.pinchD=null;
+      wipeFingers([{x:e.clientX,y:e.clientY}]); draw();
+      try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+      return;
+    }
     S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
     var plist=Object.values(S.ptrs);
     // 3+ dedos: borrador ancho (estilo borrador de pizarra)
@@ -769,6 +833,12 @@ function boardEvents(){
 
   cv.addEventListener('pointermove',function(e){
     e.preventDefault();
+    // Arrastre con botón derecho pulsado: seguir borrando (borrador ancho).
+    if(S.rightErase){
+      if(e.buttons & 2){ wipeFingers([{x:e.clientX,y:e.clientY}]); draw(); }
+      else { S.rightErase=false; S.wipe=false; S.wipePts=null; draw(); }
+      return;
+    }
     if(e.pointerId in S.ptrs) S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
     var plist=Object.values(S.ptrs);
     // Borrador ancho con 3+ dedos
@@ -803,6 +873,12 @@ function boardEvents(){
 
   cv.addEventListener('pointerup',function(e){
     e.preventDefault();
+    // Fin del borrado con botón derecho.
+    if(S.rightErase){
+      S.rightErase=false; S.wipe=false; S.wipePts=null; draw();
+      try{ cv.releasePointerCapture(e.pointerId); }catch(_){}
+      return;
+    }
     delete S.ptrs[e.pointerId];
     // Salir del borrador ancho solo cuando se levantan todos los dedos
     if(S.wipe){ if(Object.keys(S.ptrs).length===0){ S.wipe=false; S.wipePts=null; draw(); } return; }
@@ -826,8 +902,12 @@ function boardEvents(){
   cv.addEventListener('pointercancel',function(e){
     delete S.ptrs[e.pointerId];
     if(Object.keys(S.ptrs).length===0){S.wipe=false;S.wipePts=null;}
+    S.rightErase=false;
     S.drawing=false;live=null;S.sel=null;draw();
   });
+
+  // Escritorio: evita el menú contextual del navegador para poder usar el clic derecho como borrador.
+  cv.addEventListener('contextmenu',function(e){ e.preventDefault(); });
 }
 
 function pd(p){var dx=p[0].x-p[1].x,dy=p[0].y-p[1].y;return Math.sqrt(dx*dx+dy*dy)||1;}
@@ -837,6 +917,7 @@ function pm(p){return{x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};}
 var TMAP={pen:'btn-pen',pendash:'btn-pendash',line:'btn-line',arrow:'btn-arrow',
   rect:'btn-rect',dot:'btn-dot',cross:'btn-cross',eraser:'btn-eraser'};
 function setTool(t){
+  if(!IS_PRO && PRO_TOOL_NAMES.indexOf(t)>=0) return;   // herramienta Pro bloqueada en gratis
   S.tool=t; S.sel=null;
   document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('active');});
   var el=document.getElementById(TMAP[t]); if(el)el.classList.add('active');
@@ -904,13 +985,14 @@ document.addEventListener('touchmove',function(e){
 // ==================================================
 var genReady=false, gcv;
 function openGenerator(){
+  if(!IS_PRO) return;                 // función Pro (bloqueada en gratis)
   showScreen('gen-screen');
   if(!genReady){ genReady=true; initGenerator(); }
   genSyncInputs(); genRender();
 }
 function initGenerator(){
   gcv=document.getElementById('gen-cv');
-  ['courtColor','glassColor','meshColor','lineColor'].forEach(function(k){
+  ['courtColor','glassColor','meshColor','lineColor','netColor'].forEach(function(k){
     document.getElementById('g-'+k).addEventListener('input',function(e){
       courtConfig[k]=e.target.value; genRender();
     });
@@ -927,7 +1009,7 @@ function genLabel(k){
   el.textContent=(courtConfig[k]/100).toFixed(2).replace(/0$/,'').replace(/\.$/,'')+' m';
 }
 function genSyncInputs(){
-  ['courtColor','glassColor','meshColor','lineColor'].forEach(function(k){
+  ['courtColor','glassColor','meshColor','lineColor','netColor'].forEach(function(k){
     document.getElementById('g-'+k).value=courtConfig[k];
   });
   ['wall','glassSide','meshSide','serviceOff'].forEach(function(k){
@@ -987,7 +1069,7 @@ function buildCourtSVG(){
   [[-g,gs+ms],[-g,H-gs-ms-jamb],[W,gs+ms],[W,H-gs-ms-jamb]].forEach(function(r){s+=R(r[0],r[1],g,jamb,cc.glassColor);});
   // líneas
   s+=RS(lw/2,lw/2,W-lw,H-lw,cc.lineColor,lw);
-  s+=L(0,svc,W,svc,lw)+L(0,H-svc,W,H-svc,lw)+L(W/2,svc,W/2,H-svc,lw)+L(0,H/2,W,H/2,lw*2.5);
+  s+=L(0,svc,W,svc,lw)+L(0,H-svc,W,H-svc,lw)+L(W/2,svc-20,W/2,H-svc+20,lw)+L(0,H/2,W,H/2,lw*2.5,cc.netColor);
   s+='</svg>';
   return s;
 }
@@ -1014,6 +1096,7 @@ function toggleImmersive(){ setImmersive(!immersive); }
 var SEQ={frames:[], idx:0, playing:false, speed:1, raf:null};
 
 function openSequence(){
+  if(!IS_PRO) return;                 // función Pro (bloqueada en gratis)
   showScreen('board-screen');
   if(!boardReady){ boardReady=true; initBoard(); }
   // cargar secuencia guardada
@@ -1103,7 +1186,7 @@ function seqPlaySegment(seg){
 // ==================================================
 // MIS PIZARRAS (guardar / cargar jugadas)
 // ==================================================
-function openBoards(){ showScreen('boards-screen'); boardsRender(); }
+function openBoards(){ if(!IS_PRO) return; showScreen('boards-screen'); boardsRender(); }
 function boardsAll(){ try{ return JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; } }
 function boardsSet(a){ try{ localStorage.setItem('padel.boards', JSON.stringify(a)); }catch(e){} }
 function boardsSaveCurrent(){
@@ -1144,6 +1227,21 @@ function boardsRender(){
 
 // Service worker
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
+
+// Deep-link: abrir una vista directamente por hash (#board, #gen, #boards).
+window.addEventListener('load',function(){
+  var h=(location.hash||'').replace('#','');
+  if(h==='board') openBoard();
+  else if(h==='gen') openGenerator();
+  else if(h==='boards') openBoards();
+  // Sincroniza swatches/grosor con el estado inicial y aplica el gating Free/Pro.
+  if(typeof S!=='undefined'){ setColor(S.color); setStroke(S.stroke); }
+  applyProGating();
+  // Interruptor de desarrollo (solo en local) para alternar Free/Pro.
+  if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
+    var d=document.getElementById('dev-pro'); if(d) d.style.display='block';
+  }
+});
 
 </script>
 </body>

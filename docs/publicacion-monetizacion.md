@@ -1,5 +1,12 @@
 # Plan de publicación y monetización — Pizarra Pádel
 
+> ⚠️ **ACTUALIZACIÓN 2026-07-03 — Decisión de Borja:** el modelo es **PAGO ÚNICO**
+> (una sola compra desbloquea Pro para siempre), **NO suscripción**. Todo lo que este
+> documento dice sobre suscripción mensual/anual, RevenueCat, renovaciones, *grace
+> periods* y `expires_at` queda **sustituido** por: un pago único (Stripe `mode: payment`
+> en web; **IAP no consumible** en tiendas) y un *entitlement* Pro booleano y permanente.
+> El resto (auth, verificación en servidor, arquitectura general) sigue válido. Precio por definir.
+
 > **Documento de consultoría técnica.** Plan para convertir la PWA "Pizarra Pádel"
 > (HTML/CSS/JS vanilla, desplegada en https://padel-jdlq10.mywire.org vía Caddy en VPS
 > Oracle) en una app **publicable en App Store / Play Store** y **monetizable** mediante

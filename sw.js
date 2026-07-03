@@ -1,10 +1,8 @@
 // Pizarra Pádel — service worker
-// v3 (2026-05-21): arregla el offline-first de las tipografías. Antes se
-// precacheaba una URL de Google Fonts distinta a la que pide index.html y
-// nunca se cacheaban los .woff2 de fonts.gstatic.com, así que offline la
-// fuente caía a sans-serif. Ahora el CSS se precachea con la URL real y
-// tanto el CSS como los .woff2 se sirven con stale-while-revalidate.
-const CACHE = 'pizarra-padel-v13';
+// v14 (2026-07-03): se archiva la Pizarra 3D. Se retira './padel-3d.html' del
+// app shell y el precache de Three.js (THREE_URL). El resto (offline-first de
+// tipografías con stale-while-revalidate) se mantiene igual que en v13.
+const CACHE = 'pizarra-padel-v14';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
@@ -12,7 +10,6 @@ const CORE = [
   './',
   './index.html',
   './padel-board.html',
-  './padel-3d.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -20,9 +17,6 @@ const CORE = [
 
 // URL EXACTA de Google Fonts que pide index.html (debe coincidir al carácter).
 const FONT_CSS = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bebas+Neue&display=swap';
-// Three.js (Pizarra 3D). Precache tolerante para que la 3D funcione offline
-// tras la primera carga con red.
-const THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -30,8 +24,7 @@ self.addEventListener('install', e => {
       caches.open(CACHE).then(c => c.addAll(CORE)),
       // Tolerante a fallo de red: si el primer install es offline, la fuente
       // caerá a sans-serif sin romper la instalación del resto del shell.
-      caches.open(FONT_CACHE).then(c => c.add(FONT_CSS).catch(() => {})),
-      caches.open(CACHE).then(c => c.add(THREE_URL).catch(() => {}))
+      caches.open(FONT_CACHE).then(c => c.add(FONT_CSS).catch(() => {}))
     ]).then(() => self.skipWaiting())
   );
 });
