@@ -15,7 +15,10 @@ routerAdd("POST", "/api/pro/checkout", (e) => {
   if (!sk) return e.json(500, { error: "Stripe no configurado" });
 
   const amount = "999"; // 9,99 € (placeholder — cambiar al precio definitivo)
-  const origin = "https://padel-jdlq10.mywire.org";
+  // Origen de retorno: lo envía el cliente; validado contra lista blanca.
+  const allowed = ["https://padel-jdlq10.mywire.org", "http://127.0.0.1:5500", "http://localhost:5500"];
+  let origin = allowed[0];
+  try { const b = e.requestInfo().body; if (b && b.origin && allowed.indexOf(b.origin) >= 0) origin = b.origin; } catch (_) {}
 
   const params = [
     "mode=payment",

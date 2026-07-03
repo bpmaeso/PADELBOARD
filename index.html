@@ -1319,7 +1319,7 @@ function startCheckout(){
   if(!isLogged()){ pendingCheckout=true; closePro(); openAccount(); return; }
   var btn=document.querySelector('#pro-modal .pro-btn-main');
   if(btn) btn.textContent='Abriendo pago…';
-  pbFetch('/pro/checkout',{method:'POST',body:'{}'})
+  pbFetch('/pro/checkout',{method:'POST',body:JSON.stringify({origin:location.origin})})
     .then(function(r){
       if(r.status===200 && r.body.url){ window.location.href=r.body.url; }
       else{ if(btn) btn.innerHTML='Comprar Pro &middot; pago &uacute;nico'; alert('No se pudo iniciar el pago. Inténtalo de nuevo.'); }
