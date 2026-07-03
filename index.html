@@ -152,9 +152,9 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   background:rgba(16,19,26,.97);border-top:1px solid var(--border);
   padding:5px 10px 6px;box-shadow:0 -6px 20px rgba(0,0,0,.45);}
 #seq-panel.on{display:flex;}
-.seq-row{display:flex;align-items:center;justify-content:center;gap:4px;}
+.seq-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;}
 .seq-label{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;}
-.seq-count{font-size:12px;color:var(--muted);margin-left:auto;margin-right:6px;}
+.seq-count{font-size:11px;color:var(--muted);min-width:16px;text-align:center;}
 .seqb{display:flex;align-items:center;justify-content:center;width:30px;height:34px;
   border-radius:8px;border:1px solid var(--border);background:#0c0f15;color:#e6edf3;cursor:pointer;flex-shrink:0;}
 .seqb svg{width:16px;height:16px;}
@@ -167,7 +167,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 .seqb.seq-x{width:28px;height:34px;border:none;background:transparent;color:var(--muted);}
 .seq-speedrow{gap:8px;}
 .seq-mini{font-size:11px;color:var(--muted);white-space:nowrap;}
-#seq-speed{flex:1;accent-color:var(--accent);}
+#seq-speed{flex:1;min-width:54px;max-width:120px;accent-color:var(--accent);}
 .seq-loop{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);white-space:nowrap;}
 .seq-loop input{accent-color:var(--accent);}
 
@@ -390,13 +390,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   <!-- Panel del generador de secuencias -->
   <div id="seq-panel">
     <div class="seq-row">
-      <span class="seq-label">Secuencia</span>
-      <span class="seq-count" id="seq-count">0 frames</span>
-      <button class="seqb seq-x" onclick="seqExit()" title="Cerrar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="seq-row">
       <button class="seqb" onclick="seqAddFrame()" title="Capturar frame">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       </button>
@@ -415,12 +408,13 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       <button class="seqb" id="seq-fs" onclick="toggleImmersive()" title="Pantalla completa">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
       </button>
-    </div>
-    <div class="seq-row seq-speedrow">
-      <span class="seq-mini">Velocidad</span>
-      <input type="range" id="seq-speed" min="0.5" max="3" step="0.5" value="1" oninput="seqSpeed()">
-      <span class="seq-mini" id="seq-speed-v">1×</span>
+      <span class="sep"></span>
+      <input type="range" id="seq-speed" min="0.5" max="3" step="0.5" value="1" oninput="seqSpeed()" title="Velocidad">
       <label class="seq-loop"><input type="checkbox" id="seq-loop"> Bucle</label>
+      <span class="seq-count" id="seq-count">0</span>
+      <button class="seqb seq-x" onclick="seqExit()" title="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
     </div>
   </div>
 </div>
@@ -1199,7 +1193,7 @@ function seqPrev(){ if(SEQ.frames.length) seqApplyFrame(Math.max(0,SEQ.idx-1)); 
 function seqNext(){ if(SEQ.frames.length) seqApplyFrame(Math.min(SEQ.frames.length-1,SEQ.idx+1)); }
 function seqSpeed(){
   SEQ.speed=+document.getElementById('seq-speed').value;
-  document.getElementById('seq-speed-v').textContent=SEQ.speed+'×';
+  var v=document.getElementById('seq-speed-v'); if(v) v.textContent=SEQ.speed+'×';
 }
 function seqStop(){
   SEQ.playing=false; if(SEQ.raf) cancelAnimationFrame(SEQ.raf); SEQ.raf=null;
