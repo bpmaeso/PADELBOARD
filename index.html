@@ -1256,6 +1256,7 @@ function boardsRender(){
 // CUENTAS + PRO (backend PocketBase en /api)
 // ==================================================
 var API_BASE='/api';
+var pendingCheckout=false;
 function accToken(){ try{ return localStorage.getItem('padel.token'); }catch(e){ return null; } }
 function accUid(){ try{ return localStorage.getItem('padel.uid'); }catch(e){ return null; } }
 function isLogged(){ return !!accToken(); }
@@ -1293,7 +1294,7 @@ function accountSubmit(){
       if(r.status!==200) throw new Error('No se pudo iniciar sesión');
       try{ localStorage.setItem('padel.token', r.body.token); localStorage.setItem('padel.uid', r.body.record.id); localStorage.setItem('padel.email', r.body.record.email); }catch(e){}
       closeAccount();
-      return refreshPro();
+      return refreshPro().then(function(){ if(pendingCheckout){ pendingCheckout=false; setTimeout(startCheckout, 150); } });
     })
     .catch(function(e){ err.textContent=e.message||'Error'; });
 }
@@ -1315,7 +1316,7 @@ function refreshPro(){
 
 // Botón "Comprar Pro": exige sesión y abre el pago de Stripe.
 function startCheckout(){
-  if(!isLogged()){ closePro(); openAccount(); return; }
+  if(!isLogged()){ pendingCheckout=true; closePro(); openAccount(); return; }
   var btn=document.querySelector('#pro-modal .pro-btn-main');
   if(btn) btn.textContent='Abriendo pago…';
   pbFetch('/pro/checkout',{method:'POST',body:'{}'})
