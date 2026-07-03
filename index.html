@@ -81,7 +81,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 #board-tb{position:absolute;top:0;left:0;right:0;z-index:100;
   background:#10131a;border-bottom:1px solid #1e222c;display:flex;flex-direction:column;}
 .trow{display:flex;align-items:center;gap:3px;padding:0 4px;height:44px;overflow:hidden;}
-#board-r1{justify-content:space-between;}      /* grupos: izq / centro / der */
+#board-r1{justify-content:flex-start;gap:1px;overflow:visible;padding:0 4px;}
 #board-r2{border-top:1px solid #1e222c;justify-content:center;gap:6px;}
 .tgroup{display:flex;align-items:center;gap:1px;}
 .sep{width:1px;height:22px;background:#1e222c;flex-shrink:0;margin:0 2px;}
@@ -104,6 +104,14 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   cursor:pointer;flex-shrink:0;transition:all .12s;}
 .swb.active{border-color:#3d8bff;background:rgba(61,139,255,.13);}
 .sdot{background:#e6edf3;border-radius:50%;}
+/* Desplegables de color y grosor */
+.dd{position:relative;display:inline-flex;flex-shrink:0;}
+.cur-dot{width:18px;height:18px;border-radius:50%;background:#111111;border:2px solid #3d8bff;display:block;}
+.cur-sdot{width:6px;height:6px;border-radius:50%;background:#e6edf3;display:block;}
+.dd-menu{position:absolute;top:calc(100% + 6px);right:0;display:none;gap:6px;
+  padding:9px 11px;border-radius:12px;background:#141820;border:1px solid var(--border);
+  box-shadow:0 10px 28px rgba(0,0,0,.55);z-index:210;}
+.dd.open .dd-menu{display:flex;}
 #board-cv{position:absolute;top:0;left:0;z-index:1;touch-action:none;cursor:crosshair;display:block;}
 #board-toast{position:absolute;left:50%;transform:translateX(-50%) translateY(-6px);
   background:rgba(61,139,255,.14);border:1px solid #3d8bff;color:#3d8bff;
@@ -139,10 +147,10 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   background:transparent;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;}
 
 /* ── GENERADOR DE SECUENCIAS ── */
-#seq-panel{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
-  z-index:150;display:none;flex-direction:column;gap:8px;width:min(94%,420px);
-  background:rgba(16,19,26,.94);border:1px solid var(--border);border-radius:16px;
-  padding:10px 12px;backdrop-filter:blur(6px);box-shadow:0 8px 28px rgba(0,0,0,.5);}
+#seq-panel{position:absolute;left:0;right:0;bottom:0;
+  z-index:150;display:none;flex-direction:column;gap:6px;width:100%;
+  background:rgba(16,19,26,.97);border-top:1px solid var(--border);
+  padding:8px 12px 10px;box-shadow:0 -6px 20px rgba(0,0,0,.45);}
 #seq-panel.on{display:flex;}
 .seq-row{display:flex;align-items:center;justify-content:space-between;gap:6px;}
 .seq-label{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;}
@@ -314,60 +322,61 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 <div id="board-screen" class="screen">
   <div id="board-tb">
     <div class="trow" id="board-r1">
-      <!-- Izquierda: Inicio + Captura -->
-      <div class="tgroup">
-        <button class="tb" onclick="goHome()" title="Inicio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </button>
-        <button class="tb" onclick="boardScreenshot()" title="Captura" style="color:#3d8bff;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </button>
+      <button class="tb" onclick="goHome()" title="Inicio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      <button class="tb" onclick="boardScreenshot()" title="Captura" style="color:#3d8bff;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+      <span class="sep"></span>
+      <button class="tb active" id="btn-pen" onclick="setTool('pen')" title="Lápiz">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </button>
+      <button class="tb" id="btn-pendash" onclick="setTool('pendash')" title="Lápiz discontinuo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2.5"><path d="M4 19 Q9 9 14 14 Q18 18 20 6"/></svg>
+      </button>
+      <button class="tb" id="btn-line" onclick="setTool('line')" title="Línea">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/></svg>
+      </button>
+      <button class="tb" id="btn-arrow" onclick="setTool('arrow')" title="Flecha">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9,5 19,5 19,15"/></svg>
+      </button>
+      <button class="tb" id="btn-rect" onclick="setTool('rect')" title="Rectángulo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
+      </button>
+      <button class="tb" id="btn-dot" onclick="setTool('dot')" title="Punto">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/></svg>
+      </button>
+      <button class="tb" id="btn-cross" onclick="setTool('cross')" title="Cruz">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+      <span class="sep"></span>
+      <div class="dd" id="dd-color">
+        <button class="tb dd-btn" onclick="toggleDD('color')" title="Color"><span class="cur-dot" id="cur-color-dot"></span></button>
+        <div class="dd-menu" id="dd-color-menu">
+          <div class="csw active" style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')"></div>
+          <div class="csw" style="background:#fff"    data-c="#ffffff" onclick="setColor('#ffffff')"></div>
+          <div class="csw" style="background:#facc15" data-c="#facc15" onclick="setColor('#facc15')"></div>
+          <div class="csw" style="background:#22c55e" data-c="#22c55e" onclick="setColor('#22c55e')"></div>
+          <div class="csw" style="background:#ef4444" data-c="#ef4444" onclick="setColor('#ef4444')"></div>
+          <div class="csw" style="background:#f97316" data-c="#f97316" onclick="setColor('#f97316')"></div>
+        </div>
       </div>
-      <!-- Centro: tipos de marcas -->
-      <div class="tgroup">
-        <button class="tb active" id="btn-pen"     onclick="setTool('pen')" title="Lápiz">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </button>
-        <button class="tb" id="btn-pendash" onclick="setTool('pendash')" title="Lápiz discontinuo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2.5"><path d="M4 19 Q9 9 14 14 Q18 18 20 6"/></svg>
-        </button>
-        <button class="tb" id="btn-line"    onclick="setTool('line')" title="Línea">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/></svg>
-        </button>
-        <button class="tb" id="btn-arrow"   onclick="setTool('arrow')" title="Flecha">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9,5 19,5 19,15"/></svg>
-        </button>
-        <button class="tb" id="btn-rect"    onclick="setTool('rect')" title="Rectángulo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
-        </button>
-        <button class="tb" id="btn-dot"     onclick="setTool('dot')" title="Punto">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/></svg>
-        </button>
-        <button class="tb" id="btn-cross"   onclick="setTool('cross')" title="Cruz">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
-        </button>
+      <div class="dd" id="dd-stroke">
+        <button class="tb dd-btn" onclick="toggleDD('stroke')" title="Grosor"><span class="cur-sdot" id="cur-stroke-dot"></span></button>
+        <div class="dd-menu" id="dd-stroke-menu">
+          <button class="swb" id="sw0" onclick="setStroke(2)"><div class="sdot" style="width:3px;height:3px"></div></button>
+          <button class="swb active" id="sw1" onclick="setStroke(3.5)"><div class="sdot" style="width:5px;height:5px"></div></button>
+          <button class="swb" id="sw2" onclick="setStroke(6)"><div class="sdot" style="width:8px;height:8px"></div></button>
+        </div>
       </div>
-      <!-- Derecha: Goma + Vaciar -->
-      <div class="tgroup">
-        <button class="tb" id="btn-eraser"  onclick="setTool('eraser')" title="Goma">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg>
-        </button>
-        <button class="tb" onclick="boardClearAll()" title="Vaciar" style="color:#ef4444;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        </button>
-      </div>
-    </div>
-    <div class="trow" id="board-r2">
-      <div class="csw" style="background:#fff"                        data-c="#ffffff" onclick="setColor('#ffffff')"></div>
-      <div class="csw"        style="background:#facc15"                     data-c="#facc15" onclick="setColor('#facc15')"></div>
-      <div class="csw"        style="background:#22c55e"                     data-c="#22c55e" onclick="setColor('#22c55e')"></div>
-      <div class="csw"        style="background:#ef4444"                     data-c="#ef4444" onclick="setColor('#ef4444')"></div>
-      <div class="csw"        style="background:#f97316"                     data-c="#f97316" onclick="setColor('#f97316')"></div>
-      <div class="csw"        style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')"></div>
-      <div class="sep"></div>
-      <button class="swb"        id="sw0" onclick="setStroke(2)"  ><div class="sdot" style="width:3px;height:3px"></div></button>
-      <button class="swb active" id="sw1" onclick="setStroke(3.5)"><div class="sdot" style="width:5px;height:5px"></div></button>
-      <button class="swb"        id="sw2" onclick="setStroke(6)"  ><div class="sdot" style="width:8px;height:8px"></div></button>
+      <span class="sep"></span>
+      <button class="tb" id="btn-eraser" onclick="setTool('eraser')" title="Goma">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg>
+      </button>
+      <button class="tb" onclick="boardClearAll()" title="Vaciar" style="color:#ef4444;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
     </div>
   </div>
   <canvas id="board-cv"></canvas>
@@ -493,7 +502,7 @@ function applyProGating(){
   ['btn-pendash','btn-line','btn-arrow','btn-rect','btn-dot','btn-cross'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.classList.toggle('locked', !pro);
   });
-  document.querySelectorAll('#board-r2 .csw').forEach(function(el){
+  document.querySelectorAll('#dd-color-menu .csw').forEach(function(el){
     el.classList.toggle('locked', !pro && el.dataset.c!=='#111111');
   });
   ['sw0','sw2'].forEach(function(id){
@@ -577,7 +586,9 @@ function deviceLandscape(){ return window.innerWidth>window.innerHeight; }
 
 // Toolbar height: always single row (44px) — action buttons go to row2 in portrait
 var immersive=false;                          // pista a pantalla completa
-function tbH(){ return immersive ? 0 : 88; }  // 2 filas (88) o 0 en inmersivo
+function tbH(){ return immersive ? 0 : 46; }  // 1 fila (46) o 0 en inmersivo
+// Alto reservado por la barra inferior de secuencias (para no tapar la pista).
+function bottomH(){ var p=document.getElementById('seq-panel'); return (p && p.classList.contains('on') && !immersive) ? p.offsetHeight : 0; }
 
 function initBoard(){
   cv=document.getElementById('board-cv');
@@ -588,7 +599,7 @@ function initBoard(){
 
 function resizeBoard(){
   if(!cv)return;
-  var th=tbH(), vw=window.innerWidth, vh=window.innerHeight-th;
+  var th=tbH(), vw=window.innerWidth, vh=window.innerHeight-th-bottomH();
   cv.width=vw; cv.height=vh; cv.style.top=th+'px';
   document.getElementById('board-tb').style.height=th+'px';
 
@@ -600,7 +611,7 @@ function resizeBoard(){
 
 // Ajusta SC/OX/OY para que pista + paredes quepan centradas. OX/OY = court(0,0).
 function fitCourt(){
-  var vw=window.innerWidth, vh=window.innerHeight-tbH();
+  var vw=window.innerWidth, vh=window.innerHeight-tbH()-bottomH();
   var land=courtLand(), M=courtMargin();
   var dimW=(land?CH:CW)+2*M, dimH=(land?CW:CH)+2*M;
   SC=Math.min(vw/dimW, vh/dimH);
@@ -953,6 +964,8 @@ function setTool(t){
 function setColor(c){
   S.color=c;
   document.querySelectorAll('.csw').forEach(function(s){s.classList.toggle('active',s.dataset.c===c);});
+  var cd=document.getElementById('cur-color-dot'); if(cd) cd.style.background=c;
+  closeDD();
 }
 function setStroke(w){
   S.stroke=w;
@@ -961,8 +974,19 @@ function setStroke(w){
   });
   var id={2:'sw0',3.5:'sw1',6:'sw2'}[w];
   if(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
+  var sd=document.getElementById('cur-stroke-dot'); if(sd){ var px={2:4,3.5:6,6:9}[w]||6; sd.style.width=px+'px'; sd.style.height=px+'px'; }
+  closeDD();
 }
 function boardClearAll(){strokes=[];live=null;if(cv)draw();showToast('Pizarra vaciada');}
+// Desplegables de la barra (color / grosor)
+function toggleDD(which){
+  var el=document.getElementById('dd-'+which);
+  var other=document.getElementById(which==='color'?'dd-stroke':'dd-color');
+  if(other) other.classList.remove('open');
+  if(el) el.classList.toggle('open');
+}
+function closeDD(){ ['dd-color','dd-stroke'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('open'); }); }
+document.addEventListener('click',function(e){ if(!(e.target.closest && e.target.closest('.dd'))) closeDD(); });
 
 // Screenshot: pista + paredes a escala base (ZM=1), sin márgenes negros.
 // Reutiliza drawCourt()/drawChips() intercambiando el ctx para no duplicar geometría.
@@ -1129,6 +1153,7 @@ function openSequence(){
   // cargar secuencia guardada
   try{ var s=localStorage.getItem('padel.seq'); if(s){ SEQ.frames=JSON.parse(s)||[]; SEQ.idx=Math.max(0,SEQ.frames.length-1); if(SEQ.frames.length) seqApplyFrame(SEQ.idx); } }catch(e){}
   document.getElementById('seq-panel').classList.add('on');
+  if(cv) resizeBoard();
   seqUpdateUI();
   showToast('Modo secuencia: coloca y captura frames');
 }
@@ -1136,6 +1161,7 @@ function seqExit(){
   seqStop();
   document.getElementById('seq-panel').classList.remove('on');
   if(immersive) setImmersive(false);
+  if(cv) resizeBoard();
 }
 function seqSave(){ try{ localStorage.setItem('padel.seq', JSON.stringify(SEQ.frames)); }catch(e){} }
 function seqUpdateUI(){
@@ -1335,6 +1361,7 @@ window.addEventListener('load',function(){
   if(h==='board') openBoard();
   else if(h==='gen') openGenerator();
   else if(h==='boards') openBoards();
+  else if(h==='seq') openSequence();
   // Sincroniza swatches/grosor con el estado inicial y aplica el gating Free/Pro.
   if(typeof S!=='undefined'){ setColor(S.color); setStroke(S.stroke); }
   applyProGating();
