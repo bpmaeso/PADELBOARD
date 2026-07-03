@@ -148,23 +148,23 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 
 /* ── GENERADOR DE SECUENCIAS ── */
 #seq-panel{position:absolute;left:0;right:0;bottom:0;
-  z-index:150;display:none;flex-direction:column;gap:6px;width:100%;
+  z-index:150;display:none;flex-direction:column;gap:4px;width:100%;
   background:rgba(16,19,26,.97);border-top:1px solid var(--border);
-  padding:8px 12px 10px;box-shadow:0 -6px 20px rgba(0,0,0,.45);}
+  padding:5px 10px 6px;box-shadow:0 -6px 20px rgba(0,0,0,.45);}
 #seq-panel.on{display:flex;}
-.seq-row{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.seq-row{display:flex;align-items:center;justify-content:center;gap:4px;}
 .seq-label{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;}
 .seq-count{font-size:12px;color:var(--muted);margin-left:auto;margin-right:6px;}
-.seqb{flex:1;display:flex;align-items:center;justify-content:center;height:42px;
-  border-radius:10px;border:1px solid var(--border);background:#0c0f15;color:#e6edf3;cursor:pointer;}
-.seqb svg{width:20px;height:20px;}
+.seqb{display:flex;align-items:center;justify-content:center;width:30px;height:34px;
+  border-radius:8px;border:1px solid var(--border);background:#0c0f15;color:#e6edf3;cursor:pointer;flex-shrink:0;}
+.seqb svg{width:16px;height:16px;}
 .seqb:active{background:#161b24;}
-.seqb.seq-play{background:var(--accent);color:#000;border-color:var(--accent);flex:1.4;}
+.seqb.seq-play{background:var(--accent);color:#000;border-color:var(--accent);}
 .seq-play .ic-pause{display:none;}
 .seq-play.playing .ic-play{display:none;}
 .seq-play.playing .ic-pause{display:inline;}
 .seqb.seq-del{color:#ef4444;}
-.seqb.seq-x{flex:0 0 34px;height:30px;border:none;background:transparent;color:var(--muted);}
+.seqb.seq-x{width:28px;height:34px;border:none;background:transparent;color:var(--muted);}
 .seq-speedrow{gap:8px;}
 .seq-mini{font-size:11px;color:var(--muted);white-space:nowrap;}
 #seq-speed{flex:1;accent-color:var(--accent);}
@@ -412,7 +412,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       <button class="seqb seq-del" onclick="seqDelFrame()" title="Borrar frame">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
       </button>
-      <button class="seqb" onclick="toggleImmersive()" title="Pantalla completa">
+      <button class="seqb" id="seq-fs" onclick="toggleImmersive()" title="Pantalla completa">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
       </button>
     </div>
@@ -595,6 +595,8 @@ function initBoard(){
   ctx=cv.getContext('2d');
   resizeBoard();
   boardEvents();
+  // Pantalla completa solo tiene sentido en PC; en táctil (móvil/tablet) se oculta.
+  if(isTouch()){ var fs=document.getElementById('seq-fs'); if(fs) fs.style.display='none'; }
 }
 
 function resizeBoard(){
@@ -1207,7 +1209,7 @@ function seqStop(){
 function seqTogglePlay(){
   if(SEQ.playing){ seqStop(); return; }
   if(SEQ.frames.length<2){ showToast('Captura al menos 2 frames'); return; }
-  if(!immersive) setImmersive(true);
+  if(!immersive && !isTouch()) setImmersive(true);
   SEQ.playing=true; document.getElementById('seq-play').classList.add('playing');
   var seg=(SEQ.idx>=SEQ.frames.length-1)?0:SEQ.idx;
   seqPlaySegment(seg);
@@ -1218,7 +1220,7 @@ function seqPlaySegment(seg){
     if(document.getElementById('seq-loop').checked){ seqPlaySegment(0); return; }
     seqStop(); seqApplyFrame(SEQ.frames.length-1); return;
   }
-  var dur=900/SEQ.speed, t0=performance.now();
+  var dur=1500/SEQ.speed, t0=performance.now();
   var a=SEQ.frames[seg], b=SEQ.frames[seg+1];
   function step(now){
     if(!SEQ.playing) return;
