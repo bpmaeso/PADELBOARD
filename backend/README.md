@@ -47,7 +47,16 @@ App (padel-jdlq10.mywire.org)
 - Modo **prueba** (claves `*_test_*`). Producto "PADELBOARD Pro" creado.
 - Webhook registrado: `https://padel-jdlq10.mywire.org/api/pro/webhook`
   (`checkout.session.completed`).
-- Precio actual: **placeholder 9,99 €** en el hook (`unit_amount=999`). Cambiar al definitivo.
+- **Firma del webhook verificada** (HMAC-SHA256 con `STRIPE_WEBHOOK_SECRET`): el hook
+  rechaza peticiones sin firma, con firma inválida, con cuerpo manipulado o con más de
+  5 min de antigüedad (anti-replay). Probado con la batería A–E.
+- **Precio parametrizable por entorno**: `PRO_PRICE_CENTS` (céntimos) y `PRO_CURRENCY`
+  en el `.env`. Por defecto `999` = 9,99 € si no se ponen. Cambiar el precio NO requiere
+  tocar código; basta editar el `.env` y **recrear** el contenedor.
+
+> ⚠️ **Gotcha operativo**: tras editar el `.env`, `docker restart` **no** recarga las
+> variables (solo se leen al crear el contenedor). Usar siempre:
+> `cd /opt/stacks/pocketbase && docker compose up -d --force-recreate`.
 
 ## Gestión
 
@@ -59,11 +68,12 @@ App (padel-jdlq10.mywire.org)
 
 ## Pendiente antes de producción (cobrar de verdad)
 
-- [ ] **Verificar la firma** del webhook (`Stripe-Signature` con `STRIPE_WEBHOOK_SECRET`).
-      Ahora el webhook acepta sin verificar (vale para pruebas, NO para real).
-- [ ] Fijar el **precio definitivo**.
+- [x] **Verificar la firma** del webhook (`Stripe-Signature` con `STRIPE_WEBHOOK_SECRET`).
+      ✅ Hecho: verificación HMAC-SHA256 inline + anti-replay. Probado (tests A–E).
+- [ ] Fijar el **precio definitivo** (ya parametrizado en `PRO_PRICE_CENTS`; falta decidir cifra).
 - [ ] Claves **de producción** de Stripe (nunca por chat; directas en el `.env` del VPS).
 - [ ] Activar la cuenta de Stripe (datos fiscales) + IVA (Stripe Tax) si aplica.
+- [ ] Registrar el **webhook de producción** (endpoint `live`) y poner su `whsec_` en el `.env`.
 - [ ] Acceso admin seguro si se quiere exponer la UI (`/_/`) con protección.
 
 ## Ficheros
