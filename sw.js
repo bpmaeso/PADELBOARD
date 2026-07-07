@@ -1,9 +1,10 @@
 // Pizarra Pádel — service worker
-// v15 (2026-07-08): iconos PWA regenerados con el logo real de la app; pista que
-// se tumba en horizontal, safe-areas de iOS en la toolbar y recomposición del
-// menú (guardar jugadas pasa a gratis; secuencias renombrado).
+// v16 (2026-07-08): menú Pro integrado (candado en la propia card, sin apartado
+// aparte; al comprar se integra todo); colores oficiales de pádel en el generador
+// de pista; safe-areas también en la barra inferior de secuencias.
+// v15: iconos con el logo real, pista tumbada en horizontal, safe-areas toolbar.
 // v14 (2026-07-03): se archivó la Pizarra 3D del app shell.
-const CACHE = 'pizarra-padel-v15';
+const CACHE = 'pizarra-padel-v16';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
