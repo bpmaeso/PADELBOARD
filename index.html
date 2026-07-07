@@ -78,7 +78,10 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 
 /* ── BOARD 2D ── */
 #board-screen{background:#181818;}
-#board-tb{position:absolute;top:0;left:0;right:0;z-index:100;
+#board-tb{position:absolute;top:0;left:0;right:0;z-index:100;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top);
+  padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);
+  min-height:calc(46px + env(safe-area-inset-top));
   background:#10131a;border-bottom:1px solid #1e222c;display:flex;flex-direction:column;}
 .trow{display:flex;align-items:center;gap:3px;padding:0 4px;height:44px;overflow:hidden;}
 #board-r1{justify-content:flex-start;gap:1px;overflow:visible;padding:0 4px;}
@@ -248,10 +251,31 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   <div class="section-label">Gratis</div>
   <div class="cards">
     <div class="feat-card" onclick="openBoard()">
-      <div class="feat-icon green">&#127919;</div>
+      <div class="feat-icon" style="background:transparent;overflow:hidden;">
+        <svg viewBox="0 0 512 512" style="width:48px;height:48px;display:block;" aria-label="PADELBOARD">
+          <defs><radialGradient id="pbcard" cx="50%" cy="26%" r="92%">
+            <stop offset="0" stop-color="#2f6fd0"/><stop offset="0.55" stop-color="#154a9e"/><stop offset="1" stop-color="#07173a"/>
+          </radialGradient></defs>
+          <rect width="512" height="512" rx="128" fill="url(#pbcard)"/>
+          <g fill="none" stroke="#eef4ff" stroke-width="14" stroke-linejoin="round">
+            <rect x="163" y="70" width="186" height="372" rx="4"/>
+            <line x1="163" y1="256" x2="349" y2="256" stroke-width="22"/>
+            <line x1="256" y1="126" x2="256" y2="386"/>
+          </g>
+          <circle cx="209" cy="191" r="30" fill="#f7d83a" stroke="#0a2350" stroke-width="6"/>
+        </svg>
+      </div>
       <div class="feat-info">
         <div class="feat-title">Pizarra 2D</div>
         <div class="feat-desc">Dibuja jugadas, mueve fichas y anota estrategias sobre la pista</div>
+      </div>
+      <div class="feat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div class="feat-card" onclick="openBoards()">
+      <div class="feat-icon green">&#128193;</div>
+      <div class="feat-info">
+        <div class="feat-title">Guardar jugadas</div>
+        <div class="feat-desc">Guarda tus jugadas con nombre y vuelve a cargarlas cuando quieras</div>
       </div>
       <div class="feat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
@@ -270,16 +294,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
     <div class="feat-card" data-pro="1" onclick="openSequence()">
       <div class="feat-icon orange">&#127916;</div>
       <div class="feat-info">
-        <div class="feat-title">Generador de secuencias</div>
+        <div class="feat-title">Secuencias</div>
         <div class="feat-desc">Captura frames de la jugada y reproduce la animación a pantalla completa</div>
-      </div>
-      <div class="pro-tag" style="background:var(--accent)">PRO</div>
-    </div>
-    <div class="feat-card" data-pro="1" onclick="openBoards()">
-      <div class="feat-icon green">&#128193;</div>
-      <div class="feat-info">
-        <div class="feat-title">Guardar pizarras</div>
-        <div class="feat-desc">Guarda tus jugadas con nombre y vuelve a cargarlas cuando quieras</div>
       </div>
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
@@ -297,7 +313,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       <div class="pro-feat"><span class="pro-feat-ic">&#127912;</span>Todos los colores, grosores y herramientas de dibujo</div>
       <div class="pro-feat"><span class="pro-feat-ic">&#127967;</span>Generador de pista 2D personalizable</div>
       <div class="pro-feat"><span class="pro-feat-ic">&#127916;</span>Secuencias: anima la jugada frame a frame</div>
-      <div class="pro-feat"><span class="pro-feat-ic">&#128193;</span>Guardar y cargar pizarras ilimitadas</div>
       <div class="pro-feat"><span class="pro-feat-ic">&#9729;</span>Tu cuenta Pro en todos tus dispositivos</div>
     </div>
     <button class="pro-btn-main" onclick="proBuy()">Comprar Pro &middot; pago &uacute;nico</button>
@@ -570,17 +585,34 @@ var PLAYERS=[
 // Is touch device?
 function isTouch(){ return ('ontouchstart' in window || navigator.maxTouchPoints>0); }
 
-// Orientación de la pista: SIEMPRE vertical (no se reorienta al girar el móvil).
-// Así las posiciones de fichas y marcas se mantienen estables.
-function courtLand(){ return false; }
+// Orientación de la pista: en HORIZONTAL se tumba 90° para llenar la pantalla;
+// los trazos y las fichas se mantienen solidarios a la pista (no se descolocan)
+// y solo las letras D/R se enderezan (ver drawChips). En vertical, pista vertical.
+function courtLand(){ return deviceLandscape(); }
 
 // Orientación física del dispositivo: solo se usa para rotar las letras D/R
 // de las fichas y que se lean bien si se sostiene el móvil en horizontal.
 function deviceLandscape(){ return window.innerWidth>window.innerHeight; }
 
-// Toolbar height: always single row (44px) — action buttons go to row2 in portrait
+// Safe-area insets del dispositivo (barra de estado / notch / home indicator).
+// Se miden en px con un elemento sonda; en escritorio dan 0.
+var _INS={top:0,bottom:0,left:0,right:0};
+function measureInsets(){
+  function probe(side){
+    var vert=(side==='top'||side==='bottom');
+    var d=document.createElement('div');
+    d.style.cssText='position:fixed;visibility:hidden;pointer-events:none;'+side+':0;'+
+      (vert?'left:0;right:0;height:':'top:0;bottom:0;width:')+'env(safe-area-inset-'+side+');';
+    document.body.appendChild(d);
+    var v=vert?d.offsetHeight:d.offsetWidth;
+    document.body.removeChild(d); return v||0;
+  }
+  _INS={top:probe('top'),bottom:probe('bottom'),left:probe('left'),right:probe('right')};
+}
+
+// Toolbar height: 1 fila (46) + safe-area superior; 0 en inmersivo.
 var immersive=false;                          // pista a pantalla completa
-function tbH(){ return immersive ? 0 : 46; }  // 1 fila (46) o 0 en inmersivo
+function tbH(){ return immersive ? 0 : 46+_INS.top; }
 // Alto reservado por la barra inferior de secuencias (para no tapar la pista).
 function bottomH(){ var p=document.getElementById('seq-panel'); return (p && p.classList.contains('on') && !immersive) ? p.offsetHeight : 0; }
 
@@ -595,9 +627,9 @@ function initBoard(){
 
 function resizeBoard(){
   if(!cv)return;
-  var th=tbH(), vw=window.innerWidth, vh=window.innerHeight-th-bottomH();
+  measureInsets();
+  var th=tbH(), vw=window.innerWidth, vh=window.innerHeight-th-bottomH()-_INS.bottom;
   cv.width=vw; cv.height=vh; cv.style.top=th+'px';
-  document.getElementById('board-tb').style.height=th+'px';
 
   fitCourt();
   // Reset zoom/pan on resize but keep ZM at minimum 1
@@ -607,11 +639,11 @@ function resizeBoard(){
 
 // Ajusta SC/OX/OY para que pista + paredes quepan centradas. OX/OY = court(0,0).
 function fitCourt(){
-  var vw=window.innerWidth, vh=window.innerHeight-tbH()-bottomH();
+  var vw=window.innerWidth-_INS.left-_INS.right, vh=window.innerHeight-tbH()-bottomH()-_INS.bottom;
   var land=courtLand(), M=courtMargin();
   var dimW=(land?CH:CW)+2*M, dimH=(land?CW:CH)+2*M;
   SC=Math.min(vw/dimW, vh/dimH);
-  OX=(vw-dimW*SC)/2 + M*SC;
+  OX=_INS.left+(vw-dimW*SC)/2 + M*SC;
   OY=(vh-dimH*SC)/2 + M*SC;
 }
 
@@ -1019,8 +1051,11 @@ function showToast(msg){
 // Resize / orientation
 window.addEventListener('resize',function(){if(currentScreen==='board-screen')resizeBoard();});
 window.addEventListener('orientationchange',function(){
-  setTimeout(function(){if(currentScreen==='board-screen')resizeBoard();},80);
+  // iOS reporta innerWidth/Height con valores viejos justo tras el evento;
+  // recalculamos varias veces escalonadas hasta que el viewport se estabiliza.
+  [60,180,360].forEach(function(t){ setTimeout(function(){ if(currentScreen==='board-screen') resizeBoard(); }, t); });
 });
+if(window.visualViewport){ window.visualViewport.addEventListener('resize',function(){ if(currentScreen==='board-screen') resizeBoard(); }); }
 // Bloquear scroll/zoom global SOLO mientras la pizarra esté activa.
 // Si lo hacíamos siempre, rompía el scroll vertical del HOME en táctil.
 document.addEventListener('touchmove',function(e){
@@ -1235,7 +1270,7 @@ function seqPlaySegment(seg){
 // ==================================================
 // MIS PIZARRAS (guardar / cargar jugadas)
 // ==================================================
-function openBoards(){ if(!IS_PRO) return; showScreen('boards-screen'); boardsRender(); }
+function openBoards(){ showScreen('boards-screen'); boardsRender(); }
 function boardsAll(){ try{ return JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; } }
 function boardsSet(a){ try{ localStorage.setItem('padel.boards', JSON.stringify(a)); }catch(e){} }
 function boardsSaveCurrent(){

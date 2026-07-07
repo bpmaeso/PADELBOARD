@@ -1,8 +1,9 @@
 // Pizarra Pádel — service worker
-// v14 (2026-07-03): se archiva la Pizarra 3D. Se retira './padel-3d.html' del
-// app shell y el precache de Three.js (THREE_URL). El resto (offline-first de
-// tipografías con stale-while-revalidate) se mantiene igual que en v13.
-const CACHE = 'pizarra-padel-v14';
+// v15 (2026-07-08): iconos PWA regenerados con el logo real de la app; pista que
+// se tumba en horizontal, safe-areas de iOS en la toolbar y recomposición del
+// menú (guardar jugadas pasa a gratis; secuencias renombrado).
+// v14 (2026-07-03): se archivó la Pizarra 3D del app shell.
+const CACHE = 'pizarra-padel-v15';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
