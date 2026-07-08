@@ -1,10 +1,10 @@
 // Pizarra Pádel — service worker
-// v16 (2026-07-08): menú Pro integrado (candado en la propia card, sin apartado
-// aparte; al comprar se integra todo); colores oficiales de pádel en el generador
-// de pista; safe-areas también en la barra inferior de secuencias.
+// v17 (2026-07-08): control de dispositivos Pro (máx 3 por cuenta) con pantalla
+// "Mis dispositivos" y email de soporte; el acceso Pro ahora depende de que el
+// dispositivo esté dentro del cupo verificado por el servidor.
+// v16: menú Pro integrado, colores oficiales de pista, safe-areas en secuencias.
 // v15: iconos con el logo real, pista tumbada en horizontal, safe-areas toolbar.
-// v14 (2026-07-03): se archivó la Pizarra 3D del app shell.
-const CACHE = 'pizarra-padel-v16';
+const CACHE = 'pizarra-padel-v17';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.

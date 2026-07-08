@@ -222,6 +222,36 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   border-radius:16px;cursor:pointer;color:#04122e;font-family:'DM Sans',sans-serif;font-weight:700;
   font-size:16px;text-align:center;background:linear-gradient(135deg,var(--accent),#1463d6);}
 .home-cta span{display:block;font-size:11px;font-weight:600;opacity:.75;margin-top:2px;}
+.home-link{display:block;width:calc(100% - 32px);margin:-8px 16px 30px;padding:12px;border:1px solid var(--border);
+  border-radius:12px;background:transparent;color:var(--muted);font-size:13.5px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.home-link:active{background:#161b24;}
+/* ── MIS DISPOSITIVOS ── */
+#devices-screen{background:var(--bg);}
+.sub-tb{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#0d1220,var(--bg));
+  padding:calc(14px + env(safe-area-inset-top)) 16px 12px;}
+.sub-title{font-weight:600;font-size:16px;}
+.devices-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px 16px calc(30px + env(safe-area-inset-bottom));}
+.dev-account{font-size:14px;color:var(--muted);margin-bottom:14px;}
+.dev-account b{color:var(--text);}
+.dev-warn{background:rgba(245,158,11,.12);border:1px solid var(--gold);color:var(--gold);
+  border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.45;margin-bottom:14px;}
+.dev-list{display:flex;flex-direction:column;gap:10px;}
+.dev-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:14px;}
+.dev-ico{width:34px;height:34px;color:var(--accent);flex-shrink:0;}
+.dev-ico svg{width:34px;height:34px;}
+.dev-meta{flex:1;min-width:0;}
+.dev-name{font-size:15px;font-weight:600;}
+.dev-current{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;}
+.dev-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.dev-free{padding:8px 13px;border-radius:10px;border:1px solid #ef4444;background:rgba(239,68,68,.1);
+  color:#ef4444;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;}
+.dev-empty{color:var(--muted);font-size:14px;text-align:center;padding:30px 12px;}
+.dev-foot{margin-top:22px;display:flex;flex-direction:column;gap:16px;}
+.dev-foot .gen-btn-ghost{width:100%;}
+.dev-support{font-size:12.5px;color:var(--muted);text-align:center;}
+.dev-support a{color:var(--accent);text-decoration:none;}
 #account-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:520;display:none;align-items:flex-end;justify-content:center;}
 #account-modal.open{display:flex;}
 .acc-input{width:100%;padding:13px;margin-bottom:10px;border-radius:12px;border:1px solid var(--border);
@@ -305,6 +335,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   </div>
 
   <button id="go-pro" class="home-cta" onclick="showPro()">Hazte Pro &#10022;<span>un pago, para siempre</span></button>
+  <button id="go-devices" class="home-link" onclick="openDevices()" style="display:none">Mi cuenta y dispositivos</button>
 </div>
 
 <!-- PRO MODAL -->
@@ -499,6 +530,23 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   </div>
 </div>
 
+<!-- MIS DISPOSITIVOS -->
+<div id="devices-screen" class="screen">
+  <div class="sub-tb">
+    <button class="back-btn" onclick="showScreen('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Inicio</button>
+    <span class="sub-title">Mis dispositivos</span>
+  </div>
+  <div class="devices-body">
+    <div id="dev-account" class="dev-account"></div>
+    <div id="dev-limitwarn" class="dev-warn" style="display:none"></div>
+    <div id="dev-list" class="dev-list"></div>
+    <div class="dev-foot">
+      <button class="gen-btn-ghost" type="button" onclick="accountLogoutUI()">Cerrar sesión</button>
+      <p class="dev-support">¿Incidencias? Escríbenos a <a id="dev-support-link" href="#"></a></p>
+    </div>
+  </div>
+</div>
+
 <script>
 // ==================================================
 // NAVIGATION
@@ -540,6 +588,7 @@ function applyProGating(){
   }
   var dev=document.getElementById('dev-pro'); if(dev) dev.innerHTML='DEV · Pro: <b>'+(pro?'ON':'OFF')+'</b>';
   var goPro=document.getElementById('go-pro'); if(goPro) goPro.style.display=pro?'none':'block';
+  var goDev=document.getElementById('go-devices'); if(goDev) goDev.style.display=isLogged()?'block':'none';
 }
 
 function showScreen(id){
@@ -1081,7 +1130,7 @@ document.addEventListener('touchmove',function(e){
 // ==================================================
 var genReady=false, gcv;
 function openGenerator(){
-  if(!IS_PRO){ showPro(); return; }   // función Pro: al pulsarla, ofrecer la compra
+  if(!IS_PRO){ proUpsell(); return; } // Pro: comprar o, si ya pagó, liberar dispositivo
   showScreen('gen-screen');
   if(!genReady){ genReady=true; initGenerator(); }
   genSyncInputs(); genRender();
@@ -1208,7 +1257,7 @@ function toggleImmersive(){ setImmersive(!immersive); }
 var SEQ={frames:[], idx:0, playing:false, speed:1, raf:null};
 
 function openSequence(){
-  if(!IS_PRO){ showPro(); return; }   // función Pro: al pulsarla, ofrecer la compra
+  if(!IS_PRO){ proUpsell(); return; } // Pro: comprar o, si ya pagó, liberar dispositivo
   showScreen('board-screen');
   if(!boardReady){ boardReady=true; initBoard(); }
   // cargar secuencia guardada
@@ -1388,18 +1437,120 @@ function accountSubmit(){
 
 function accountLogout(){ try{ localStorage.removeItem('padel.token'); localStorage.removeItem('padel.uid'); localStorage.removeItem('padel.email'); }catch(e){} setPro(false); }
 
-// Consulta al servidor si esta cuenta es Pro y ajusta el gating.
+// ── Dispositivos (límite de la cuenta Pro) ──────────────────────────────
+var DEVICE_LIMIT=3;            // máximo de dispositivos por cuenta
+var proBlockedByLimit=false;   // pagó, pero este dispositivo está fuera del cupo
+var SUPPORT_EMAIL='padelboard.soporte@outlook.com'; // email de contacto de incidencias
+
+// Identificador anónimo y estable de este dispositivo (se guarda aquí, no viaja el hardware).
+function getDeviceId(){
+  var k='padel.device_id', v=null;
+  try{ v=localStorage.getItem(k); }catch(e){}
+  if(!v){
+    v=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():('d-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10));
+    try{ localStorage.setItem(k,v); }catch(e){}
+  }
+  return v;
+}
+function deviceType(){
+  var ua=navigator.userAgent||'';
+  if(/iPad/i.test(ua) || (/Android/i.test(ua)&&!/Mobile/i.test(ua)) || /Tablet|PlayBook|Silk/i.test(ua)) return 'tablet';
+  if(/Mobi|iPhone|iPod|Android.*Mobile|Windows Phone/i.test(ua)) return 'movil';
+  return 'pc';
+}
+function deviceName(){
+  var ua=navigator.userAgent||'', os='Dispositivo', br='';
+  if(/iPhone/i.test(ua))os='iPhone'; else if(/iPad/i.test(ua))os='iPad'; else if(/Android/i.test(ua))os='Android';
+  else if(/Windows/i.test(ua))os='Windows'; else if(/Macintosh|Mac OS/i.test(ua))os='Mac'; else if(/Linux/i.test(ua))os='Linux';
+  if(/Edg/i.test(ua))br='Edge'; else if(/CriOS|Chrome/i.test(ua))br='Chrome'; else if(/FxiOS|Firefox/i.test(ua))br='Firefox'; else if(/Safari/i.test(ua))br='Safari';
+  return br?(br+' · '+os):os;
+}
+// Registra este dispositivo bajo la cuenta y devuelve si está dentro del cupo.
+function deviceSync(){
+  return pbFetch('/pro/device/sync',{method:'POST',body:JSON.stringify({device_id:getDeviceId(),name:deviceName(),dtype:deviceType()})})
+    .then(function(r){ return (r.status===200)?r.body:{pro:false,active:false}; })
+    .catch(function(){ return {pro:false,active:false}; });
+}
+
+// Consulta al servidor si esta cuenta pagó y si ESTE dispositivo puede usar Pro.
 function refreshPro(){
-  if(!isLogged()){ if(!isLocalDev()){ IS_PRO=false; applyProGating(); if(typeof cv!=='undefined'&&cv) draw(); } return Promise.resolve(false); }
+  if(!isLogged()){
+    if(!isLocalDev()){ IS_PRO=false; proBlockedByLimit=false; applyProGating(); if(typeof cv!=='undefined'&&cv) draw(); }
+    return Promise.resolve(false);
+  }
   return pbFetch('/collections/entitlements/records?filter='+encodeURIComponent("user='"+accUid()+"'"))
     .then(function(r){
-      var pro=false;
-      if(r.status===200 && r.body.items){ pro=r.body.items.some(function(it){ return it.pro===true; }); }
-      IS_PRO=pro; try{ localStorage.setItem('padel.pro', pro?'1':'0'); }catch(e){}
-      applyProGating(); if(typeof cv!=='undefined'&&cv) draw();
-      return pro;
+      var paid=false;
+      if(r.status===200 && r.body.items){ paid=r.body.items.some(function(it){ return it.pro===true; }); }
+      if(!paid){
+        IS_PRO=false; proBlockedByLimit=false;
+        try{ localStorage.setItem('padel.pro','0'); }catch(e){}
+        applyProGating(); if(typeof cv!=='undefined'&&cv) draw();
+        return false;
+      }
+      // Pagó: comprobar el cupo de dispositivos en el servidor.
+      return deviceSync().then(function(res){
+        var active=!!(res&&res.active);
+        IS_PRO=active;
+        proBlockedByLimit = paid && !active;
+        try{ localStorage.setItem('padel.pro', active?'1':'0'); }catch(e){}
+        applyProGating(); if(typeof cv!=='undefined'&&cv) draw();
+        return active;
+      });
     }).catch(function(){ return false; });
 }
+
+// Al pulsar una función Pro bloqueada: si ya pagó pero superó el cupo, lo llevamos
+// a "Mis dispositivos" para liberar uno; si no ha pagado, ofrecemos la compra.
+function proUpsell(){ if(proBlockedByLimit){ openDevices(); } else { showPro(); } }
+
+// ── Pantalla "Mis dispositivos" ──
+function openDevices(){
+  if(!isLogged()){ openAccount(); return; }
+  showScreen('devices-screen');
+  devicesRender();
+}
+function devTypeLabel(t){ return t==='movil'?'Móvil':t==='tablet'?'Tablet':'Ordenador'; }
+function devIcon(t){
+  if(t==='tablet') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/></svg>';
+  if(t==='movil')  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/></svg>';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function devicesRender(){
+  var email=''; try{ email=localStorage.getItem('padel.email')||''; }catch(e){}
+  var acc=document.getElementById('dev-account'); if(acc) acc.innerHTML='Cuenta: <b>'+esc(email||'—')+'</b>';
+  var link=document.getElementById('dev-support-link');
+  if(link){ link.textContent=SUPPORT_EMAIL; link.href='mailto:'+SUPPORT_EMAIL+'?subject=Soporte%20PADELBOARD'; }
+  var warn=document.getElementById('dev-limitwarn');
+  if(warn){ warn.style.display=proBlockedByLimit?'block':'none';
+    warn.textContent='Has alcanzado el máximo de '+DEVICE_LIMIT+' dispositivos. Libera uno para activar Pro en este dispositivo.'; }
+  var list=document.getElementById('dev-list'); if(!list) return;
+  list.innerHTML='<div class="dev-empty">Cargando…</div>';
+  var me=getDeviceId();
+  pbFetch('/collections/devices/records?perPage=50&sort=-last_seen&filter='+encodeURIComponent("user='"+accUid()+"'"))
+    .then(function(r){
+      var items=(r.status===200&&r.body.items)?r.body.items:[];
+      if(!items.length){ list.innerHTML='<div class="dev-empty">No hay dispositivos activos todavía.</div>'; return; }
+      list.innerHTML='';
+      items.forEach(function(it){
+        var cur=it.device_id===me;
+        var div=document.createElement('div'); div.className='dev-item';
+        div.innerHTML='<div class="dev-ico">'+devIcon(it.dtype)+'</div>'+
+          '<div class="dev-meta"><div class="dev-name">'+esc(it.name||'Dispositivo')+(cur?' <span class="dev-current">· este</span>':'')+'</div>'+
+          '<div class="dev-sub">'+devTypeLabel(it.dtype)+'</div></div>'+
+          '<button class="dev-free" type="button">Liberar</button>';
+        div.querySelector('.dev-free').addEventListener('click',function(){ devicesFree(it.id); });
+        list.appendChild(div);
+      });
+    });
+}
+function devicesFree(id){
+  pbFetch('/collections/devices/records/'+id,{method:'DELETE'}).then(function(){
+    refreshPro().then(function(){ devicesRender(); });
+  });
+}
+function accountLogoutUI(){ accountLogout(); proBlockedByLimit=false; showScreen('home'); }
 
 // Botón "Comprar Pro": exige sesión y abre el pago de Stripe.
 function startCheckout(){

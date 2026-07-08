@@ -135,3 +135,55 @@ routerAdd("POST", "/api/pro/webhook", (e) => {
   }
   return e.json(200, { received: true });
 });
+
+// POST /api/pro/device/sync  (requiere sesión) — registra este dispositivo bajo la
+// cuenta y aplica el límite de dispositivos Pro. Devuelve:
+//   { pro:false }                        -> la cuenta no es Pro
+//   { pro:true, active:true }            -> dispositivo dentro del cupo (usa Pro)
+//   { pro:true, active:false, reason }   -> límite alcanzado (debe liberar uno)
+// El alta/actualización va INLINE (los helpers top-level no están en scope aquí).
+routerAdd("POST", "/api/pro/device/sync", (e) => {
+  const user = e.auth;
+  if (!user) return e.json(401, { error: "no auth" });
+
+  let body = {};
+  try { body = e.requestInfo().body || {}; } catch (_) {}
+  const did = (body.device_id || "").toString().slice(0, 64);
+  const name = (body.name || "").toString().slice(0, 80);
+  const dtype = (body.dtype || "").toString().slice(0, 16);
+  if (!did) return e.json(400, { error: "device_id requerido" });
+
+  // ¿la cuenta es Pro?
+  let pro = false;
+  try {
+    const ent = $app.findFirstRecordByFilter("entitlements", "user = {:u}", { u: user.id });
+    pro = !!(ent && ent.getBool("pro"));
+  } catch (_) { pro = false; }
+  if (!pro) return e.json(200, { pro: false, active: false });
+
+  const LIMIT = 3;
+
+  // ¿este dispositivo ya está registrado? -> refresca y sigue activo
+  let rec = null;
+  try { rec = $app.findFirstRecordByFilter("devices", "user = {:u} && device_id = {:d}", { u: user.id, d: did }); } catch (_) { rec = null; }
+  if (rec) {
+    try { rec.set("name", name); rec.set("dtype", dtype); $app.save(rec); } catch (_) {}
+    return e.json(200, { pro: true, active: true });
+  }
+
+  // dispositivo nuevo: contar los existentes de la cuenta
+  let count = 0;
+  try { count = $app.findRecordsByFilter("devices", "user = {:u}", "", 100, 0, { u: user.id }).length; } catch (_) { count = 0; }
+  if (count >= LIMIT) {
+    return e.json(200, { pro: true, active: false, reason: "limit", limit: LIMIT });
+  }
+
+  // dentro del cupo: registrar
+  try {
+    const col = $app.findCollectionByNameOrId("devices");
+    const d = new Record(col);
+    d.set("user", user.id); d.set("device_id", did); d.set("name", name); d.set("dtype", dtype);
+    $app.save(d);
+  } catch (err) { console.log("device create error:", err); return e.json(200, { pro: true, active: false, reason: "error" }); }
+  return e.json(200, { pro: true, active: true });
+}, $apis.requireAuth());
