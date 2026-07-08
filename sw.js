@@ -4,7 +4,7 @@
 // dispositivo esté dentro del cupo verificado por el servidor.
 // v16: menú Pro integrado, colores oficiales de pista, safe-areas en secuencias.
 // v15: iconos con el logo real, pista tumbada en horizontal, safe-areas toolbar.
-const CACHE = 'pizarra-padel-v17';
+const CACHE = 'pizarra-padel-v18';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
