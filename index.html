@@ -197,6 +197,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   background:rgba(61,139,255,.12);color:var(--accent);font-size:13px;font-weight:600;
   cursor:pointer;font-family:'DM Sans',sans-serif;}
 .board-act.board-del{border-color:#ef4444;background:rgba(239,68,68,.1);color:#ef4444;padding:9px 12px;}
+.board-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(245,158,11,.16);
+  color:var(--gold);letter-spacing:.5px;text-transform:uppercase;vertical-align:middle;margin-left:6px;}
 
 /* Gating Free/Pro: controles solo-Pro bloqueados (candado, sin interacción). */
 .locked{position:relative;opacity:.4;pointer-events:none;filter:grayscale(.35);}
@@ -242,16 +244,35 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <span class="logo-name">PADELBOARD</span>
     </div>
-    <div class="home-sub">Herramienta táctica para entrenadores y jugadores</div>
   </div>
 
-  <div class="section-label">Gratis</div>
-  <div class="cards">
+  <div class="cards" style="padding-top:12px">
     <div class="feat-card" onclick="openBoard()">
-      <div class="feat-icon green">&#127919;</div>
+      <div class="feat-icon" style="background:transparent;padding:0;overflow:hidden">
+        <svg viewBox="0 0 512 512" style="width:48px;height:48px;border-radius:14px;display:block">
+          <defs><radialGradient id="pbc" cx="50%" cy="26%" r="92%">
+            <stop offset="0" stop-color="#2f6fd0"/><stop offset="0.55" stop-color="#154a9e"/><stop offset="1" stop-color="#07173a"/>
+          </radialGradient></defs>
+          <rect width="512" height="512" rx="96" fill="url(#pbc)"/>
+          <g fill="none" stroke="#eef4ff" stroke-width="14" stroke-linejoin="round">
+            <rect x="163" y="70" width="186" height="372" rx="4"/>
+            <line x1="163" y1="256" x2="349" y2="256" stroke-width="22"/>
+            <line x1="256" y1="126" x2="256" y2="386"/>
+          </g>
+          <circle cx="209" cy="191" r="30" fill="#f7d83a" stroke="#0a2350" stroke-width="6"/>
+        </svg>
+      </div>
       <div class="feat-info">
         <div class="feat-title">Pizarra 2D</div>
         <div class="feat-desc">Dibuja jugadas, mueve fichas y anota estrategias sobre la pista</div>
+      </div>
+      <div class="feat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div class="feat-card" onclick="openBoards()">
+      <div class="feat-icon green">&#128193;</div>
+      <div class="feat-info">
+        <div class="feat-title">Pizarras guardadas</div>
+        <div class="feat-desc">Tus jugadas y capturas guardadas: cárgalas, renómbralas o descárgalas</div>
       </div>
       <div class="feat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
@@ -275,14 +296,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       </div>
       <div class="pro-tag" style="background:var(--accent)">PRO</div>
     </div>
-    <div class="feat-card" data-pro="1" onclick="openBoards()">
-      <div class="feat-icon green">&#128193;</div>
-      <div class="feat-info">
-        <div class="feat-title">Guardar pizarras</div>
-        <div class="feat-desc">Guarda tus jugadas con nombre y vuelve a cargarlas cuando quieras</div>
-      </div>
-      <div class="pro-tag" style="background:var(--accent)">PRO</div>
-    </div>
   </div>
 
   <button id="go-pro" class="home-cta" onclick="showPro()">Hazte Pro &#10022;<span>un pago, para siempre</span></button>
@@ -296,8 +309,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
     <div class="pro-feats">
       <div class="pro-feat"><span class="pro-feat-ic">&#127912;</span>Todos los colores, grosores y herramientas de dibujo</div>
       <div class="pro-feat"><span class="pro-feat-ic">&#127967;</span>Generador de pista 2D personalizable</div>
-      <div class="pro-feat"><span class="pro-feat-ic">&#127916;</span>Secuencias: anima la jugada frame a frame</div>
-      <div class="pro-feat"><span class="pro-feat-ic">&#128193;</span>Guardar y cargar pizarras ilimitadas</div>
+      <div class="pro-feat"><span class="pro-feat-ic">&#127916;</span>Secuencias: anima la jugada frame a frame y expórtalas a vídeo</div>
       <div class="pro-feat"><span class="pro-feat-ic">&#9729;</span>Tu cuenta Pro en todos tus dispositivos</div>
     </div>
     <button class="pro-btn-main" onclick="proBuy()">Comprar Pro &middot; pago &uacute;nico</button>
@@ -408,6 +420,9 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       <button class="seqb" id="seq-fs" onclick="toggleImmersive()" title="Pantalla completa">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
       </button>
+      <button class="seqb" onclick="seqSaveToBoards()" title="Guardar secuencia en Pizarras guardadas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      </button>
       <span class="sep"></span>
       <input type="range" id="seq-speed" min="0.5" max="3" step="0.5" value="1" oninput="seqSpeed()" title="Velocidad">
       <label class="seq-loop"><input type="checkbox" id="seq-loop"> Bucle</label>
@@ -462,7 +477,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
       Inicio
     </button>
-    <span class="gen-title">Mis pizarras</span>
+    <span class="gen-title">Pizarras guardadas</span>
   </div>
   <div class="boards-body">
     <div class="boards-save">
@@ -984,30 +999,57 @@ function toggleDD(which){
 function closeDD(){ ['dd-color','dd-stroke'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('open'); }); }
 document.addEventListener('click',function(e){ if(!(e.target.closest && e.target.closest('.dd'))) closeDD(); });
 
-// Screenshot: pista + paredes a escala base (ZM=1), sin márgenes negros.
-// Reutiliza drawCourt()/drawChips() intercambiando el ctx para no duplicar geometría.
-function boardScreenshot(){
-  if(!cv)return;
-  var land=courtLand(), M=courtMargin();
-  var totW=((land?CH:CW)+2*M)*SC, totH=((land?CW:CH)+2*M)*SC;
-  var off=document.createElement('canvas');
-  off.width=Math.round(totW); off.height=Math.round(totH);
-  var oc=off.getContext('2d');
-
-  oc.fillStyle='#181818'; oc.fillRect(0,0,off.width,off.height); // fondo exterior
-  if(!land){ oc.translate(M*SC, M*SC); oc.scale(SC,SC); }
-  else     { oc.translate(M*SC, M*SC+CW*SC); oc.rotate(-Math.PI/2); oc.scale(SC,SC); }
-
+// Dibuja la pista + trazos + fichas en un contexto externo a la escala dada.
+// Reutiliza drawCourt()/drawStroke()/drawChips() intercambiando el ctx global.
+function drawStateTo(octx, scale, land){
+  var M=courtMargin();
+  octx.setTransform(1,0,0,1,0,0);
+  octx.fillStyle='#181818'; octx.fillRect(0,0,octx.canvas.width,octx.canvas.height);
+  if(!land){ octx.translate(M*scale, M*scale); octx.scale(scale,scale); }
+  else     { octx.translate(M*scale, M*scale+CW*scale); octx.rotate(-Math.PI/2); octx.scale(scale,scale); }
   var savedCtx=ctx, savedSel=S.sel;
-  ctx=oc; S.sel=null;                 // sin resaltado de selección en la captura
+  ctx=octx; S.sel=null;               // sin resaltado de selección en la captura
   drawCourt();
   strokes.forEach(function(st){drawStroke(st);});
   drawChips(land);
   ctx=savedCtx; S.sel=savedSel;
-
-  var a=document.createElement('a');
-  a.href=off.toDataURL('image/png'); a.download='pizarra-padel-2d.png'; a.click();
-  showToast('Captura guardada');
+}
+// Botón de captura: guarda la jugada actual en "Pizarras guardadas" (mismo sitio que
+// "Guardar actual"), con nombre automático. Así todo queda en un único apartado.
+function boardScreenshot(){
+  if(!cv) return;
+  var d=new Date();
+  var name='Captura '+d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  var a=boardsAll();
+  a.unshift({
+    name:name, date:Date.now(),
+    strokes:JSON.parse(JSON.stringify(strokes)),
+    players:PLAYERS.map(function(p){return {id:p.id,cx:p.cx,cy:p.cy};}),
+    court:JSON.parse(JSON.stringify(courtConfig))
+  });
+  boardsSet(a);
+  showToast('Guardada en Pizarras guardadas');
+}
+// Descarga una pizarra guardada como imagen PNG (render a escala fija, sin depender del zoom).
+function boardsDownloadPNG(i){
+  var a=boardsAll(), b=a[i]; if(!b) return;
+  // En secuencias se exporta el primer frame como imagen.
+  var srcStrokes = b.kind==='seq' ? ((b.frames&&b.frames[0]&&b.frames[0].strokes)||[]) : (b.strokes||[]);
+  var srcPlayers = b.kind==='seq' ? (b.frames&&b.frames[0]&&b.frames[0].players) : b.players;
+  var savedStrokes=strokes, savedCourt=JSON.parse(JSON.stringify(courtConfig));
+  var savedPlayers=PLAYERS.map(function(p){return {id:p.id,cx:p.cx,cy:p.cy};});
+  strokes=JSON.parse(JSON.stringify(srcStrokes));
+  if(b.court) Object.assign(courtConfig, b.court);
+  if(srcPlayers) srcPlayers.forEach(function(fp){ var p=PLAYERS.find(function(x){return x.id===fp.id;}); if(p){p.cx=fp.cx;p.cy=fp.cy;} });
+  var land=courtLand(), M=courtMargin(), ES=0.7;
+  var off=document.createElement('canvas');
+  off.width=Math.round(((land?CH:CW)+2*M)*ES);
+  off.height=Math.round(((land?CW:CH)+2*M)*ES);
+  drawStateTo(off.getContext('2d'), ES, land);
+  strokes=savedStrokes; Object.assign(courtConfig, savedCourt);
+  savedPlayers.forEach(function(sp){ var p=PLAYERS.find(function(x){return x.id===sp.id;}); if(p){p.cx=sp.cx;p.cy=sp.cy;} });
+  var lnk=document.createElement('a'); lnk.href=off.toDataURL('image/png');
+  lnk.download=(b.name||'pizarra')+'.png'; lnk.click();
 }
 
 function showToast(msg){
@@ -1160,6 +1202,21 @@ function seqExit(){
   if(cv) resizeBoard();
 }
 function seqSave(){ try{ localStorage.setItem('padel.seq', JSON.stringify(SEQ.frames)); }catch(e){} }
+// Guarda la secuencia actual en "Pizarras guardadas" (mismo apartado que las capturas).
+function seqSaveToBoards(){
+  if(!SEQ.frames.length){ showToast('No hay frames que guardar'); return; }
+  var d=new Date();
+  var def='Secuencia '+d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  var nm=prompt('Nombre de la secuencia:', def); if(nm===null) return;
+  var a=boardsAll();
+  a.unshift({
+    kind:'seq', name:(nm||'').trim()||def, date:Date.now(),
+    frames:JSON.parse(JSON.stringify(SEQ.frames)),
+    court:JSON.parse(JSON.stringify(courtConfig))
+  });
+  boardsSet(a);
+  showToast('Secuencia guardada en Pizarras guardadas');
+}
 function seqUpdateUI(){
   var n=SEQ.frames.length, el=document.getElementById('seq-count');
   if(el) el.textContent = n ? ((Math.min(SEQ.idx,n-1)+1)+' / '+n) : '0 frames';
@@ -1235,7 +1292,7 @@ function seqPlaySegment(seg){
 // ==================================================
 // MIS PIZARRAS (guardar / cargar jugadas)
 // ==================================================
-function openBoards(){ if(!IS_PRO) return; showScreen('boards-screen'); boardsRender(); }
+function openBoards(){ showScreen('boards-screen'); boardsRender(); }
 function boardsAll(){ try{ return JSON.parse(localStorage.getItem('padel.boards')||'[]'); }catch(e){ return []; } }
 function boardsSet(a){ try{ localStorage.setItem('padel.boards', JSON.stringify(a)); }catch(e){} }
 function boardsSaveCurrent(){
@@ -1252,12 +1309,26 @@ function boardsSaveCurrent(){
 }
 function boardsLoad(i){
   var a=boardsAll(), b=a[i]; if(!b) return;
+  if(b.kind==='seq'){
+    if(!IS_PRO){ showPro(); return; }               // reproducir/editar secuencias es Pro
+    SEQ.frames=JSON.parse(JSON.stringify(b.frames||[]));
+    if(b.court) Object.assign(courtConfig, b.court);
+    SEQ.idx=Math.max(0,SEQ.frames.length-1);
+    showScreen('board-screen'); if(!boardReady){ boardReady=true; initBoard(); }
+    document.getElementById('seq-panel').classList.add('on');
+    if(cv){ fitCourt(); }
+    if(SEQ.frames.length) seqApplyFrame(SEQ.idx); else if(cv) draw();
+    if(cv) resizeBoard(); seqUpdateUI();
+    showToast('Secuencia "'+b.name+'" cargada');
+    return;
+  }
   strokes=JSON.parse(JSON.stringify(b.strokes||[]));
   if(b.players) b.players.forEach(function(fp){ var p=PLAYERS.find(function(x){return x.id===fp.id;}); if(p){p.cx=fp.cx;p.cy=fp.cy;} });
   if(b.court) Object.assign(courtConfig, b.court);
   openBoard(); if(cv){ fitCourt(); draw(); } showToast('Pizarra "'+b.name+'" cargada');
 }
 function boardsDelete(i){ var a=boardsAll(); a.splice(i,1); boardsSet(a); boardsRender(); showToast('Pizarra borrada'); }
+function boardsRename(i){ var a=boardsAll(), b=a[i]; if(!b) return; var n=prompt('Nuevo nombre:', b.name); if(n===null) return; b.name=(n||'').trim()||b.name; boardsSet(a); boardsRender(); }
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function boardsRender(){
   var a=boardsAll(), el=document.getElementById('boards-list');
@@ -1266,10 +1337,15 @@ function boardsRender(){
   el.innerHTML=a.map(function(b,i){
     var d=new Date(b.date);
     var ds=d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    var isSeq=b.kind==='seq';
+    var sub=isSeq ? ((b.frames||[]).length+' frames') : (((b.strokes||[]).length)+' trazos');
+    var tag=isSeq ? ' <span class="board-tag">Secuencia</span>' : '';
     return '<div class="board-item"><div class="board-meta">'+
-      '<div class="board-name">'+escapeHtml(b.name)+'</div>'+
-      '<div class="board-date">'+ds+' &middot; '+((b.strokes||[]).length)+' trazos</div></div>'+
-      '<button class="board-act" onclick="boardsLoad('+i+')">Cargar</button>'+
+      '<div class="board-name">'+escapeHtml(b.name)+tag+'</div>'+
+      '<div class="board-date">'+ds+' &middot; '+sub+'</div></div>'+
+      '<button class="board-act" onclick="boardsLoad('+i+')">'+(isSeq?'Abrir':'Cargar')+'</button>'+
+      '<button class="board-act" onclick="boardsDownloadPNG('+i+')" title="Descargar imagen">&#8681;</button>'+
+      '<button class="board-act" onclick="boardsRename('+i+')" title="Renombrar">&#9998;</button>'+
       '<button class="board-act board-del" onclick="boardsDelete('+i+')">&times;</button></div>';
   }).join('');
 }
