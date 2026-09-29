@@ -5,7 +5,9 @@
 // v22 (2026-09-29): versión unificada (mayo + julio). Las llamadas a /api/
 // (cuentas y Pro) nunca se cachean.
 // v24 (2026-09-30): goma que borra por donde pasa e icono con la bola amarilla.
-const CACHE = 'padelboard-v24';
+// v25 (2026-09-30): la página va a red primero; antes un despliegue tardaba dos
+// aperturas en verse. Los iconos y el manifest siguen cache-first.
+const CACHE = 'padelboard-v25';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
@@ -70,13 +72,28 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Resto: cache-first con fallback a index.html para navegaciones.
+  // La página: RED PRIMERO, caché de respaldo. Con cache-first, tras un despliegue
+  // hacía falta abrir la app DOS veces para ver los cambios — la primera servía el
+  // index viejo mientras el SW nuevo se instalaba por detrás — y parecía que el
+  // despliegue no había entrado (le pasó a Borja el 30-09-2026 con la goma nueva).
+  // Offline sigue igual: si no hay red, sale el index cacheado.
+  const esPagina = e.request.mode === 'navigate' ||
+                   (e.request.headers.get('accept') || '').includes('text/html');
+  if (esPagina) {
+    e.respondWith(
+      fetch(e.request).then(resp => {
+        if (resp && resp.status === 200) {
+          const copia = resp.clone();
+          caches.open(CACHE).then(c => c.put('./index.html', copia)).catch(() => {});
+        }
+        return resp;
+      }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Resto de ficheros del shell (iconos, manifest): caché primero.
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => {
-      if (e.request.mode === 'navigate' || (e.request.headers.get('accept') || '').includes('text/html')) {
-        return caches.match('./index.html');
-      }
-      return Response.error();
-    }))
+    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => Response.error()))
   );
 });
