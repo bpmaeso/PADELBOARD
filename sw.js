@@ -4,7 +4,7 @@
 // tipografías con stale-while-revalidate) se mantiene igual que en v13.
 // v22 (2026-09-29): versión unificada (mayo + julio). Las llamadas a /api/
 // (cuentas y Pro) nunca se cachean.
-const CACHE = 'padelboard-v22';
+const CACHE = 'padelboard-v23';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
