@@ -1140,6 +1140,11 @@ function draw(){
   strokes.forEach(function(st){drawStroke(st);});
   if(live) drawStroke(live);
   drawChips(land);
+  // Indicador de la goma: mientras se borra, se ve por dónde y con qué tamaño.
+  if(S.tool==='eraser'&&S.lastErase&&!S.wipe){
+    ctx.fillStyle='rgba(255,255,255,0.10)'; ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(S.lastErase.x,S.lastErase.y,50/ZM,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  }
   // Indicador del borrador ancho (3+ dedos)
   if(S.wipe&&S.wipePts){
     ctx.fillStyle='rgba(255,255,255,0.13)'; ctx.strokeStyle='rgba(255,255,255,0.55)'; ctx.lineWidth=3;
@@ -1277,12 +1282,43 @@ function drawStroke(s){
 }
 
 // Eraser
-// Borrador de verdad: limpia por donde pasa (raster-like sobre modelo vectorial).
-// Los trazos de lápiz se PARTEN quitando solo los puntos bajo la goma; las formas
-// geométricas y marcas se borran por objeto (borrar media flecha no tiene sentido).
+// Borrador de verdad: limpia por donde pasa, como la goma sobre el lápiz. Se parte
+// TODO —lápiz, líneas, flechas, rectángulos y aspas—: se quitan solo los puntos que
+// pasan bajo la goma y lo que queda sigue dibujado. Nada desaparece entero por ser
+// una figura (decisión de Borja, 30-09-2026: hasta entonces una flecha se iba de un
+// toque). El punto relleno es la única excepción: no se puede partir.
 // Deshacer: una sola copia del historial por pasada de goma o de 3 dedos.
 var _eraseDirty=false;
 function eraseSnapshotOnce(){ if(!_eraseDirty){ pushHistory(); _eraseDirty=true; } }
+
+// Trocea un segmento en puntos separados `paso`, para poder partirlo con precisión.
+function _densificar(p1,p2,paso,out,incluirPrimero){
+  var dx=p2.x-p1.x, dy=p2.y-p1.y, d=Math.sqrt(dx*dx+dy*dy);
+  var n=Math.max(1,Math.ceil(d/paso));
+  if(incluirPrimero) out.push({x:p1.x,y:p1.y});
+  for(var i=1;i<=n;i++) out.push({x:p1.x+dx*i/n, y:p1.y+dy*i/n});
+}
+// Cualquier trazo visto como una o más polilíneas densas, que es lo único que la goma
+// sabe partir. Devuelve [] para lo que no se puede trocear (el punto relleno).
+function _polilineas(s,paso){
+  var res=[],i;
+  if((s.type==='pen'||s.type==='pendash')&&s.path&&s.path.length>1){
+    var a=[]; for(i=0;i<s.path.length-1;i++) _densificar(s.path[i],s.path[i+1],paso,a,i===0);
+    res.push(a);
+  } else if(s.type==='line'||s.type==='arrow'){
+    var b=[]; _densificar({x:s.x1,y:s.y1},{x:s.x2,y:s.y2},paso,b,true); res.push(b);
+  } else if(s.type==='rect'){
+    var q=[{x:s.x1,y:s.y1},{x:s.x2,y:s.y1},{x:s.x2,y:s.y2},{x:s.x1,y:s.y2},{x:s.x1,y:s.y1}], c=[];
+    for(i=0;i<4;i++) _densificar(q[i],q[i+1],paso,c,i===0);
+    res.push(c);
+  } else if(s.type==='cross'){
+    var z=s.w*8, d1=[], d2=[];
+    _densificar({x:s.x1-z,y:s.y1-z},{x:s.x1+z,y:s.y1+z},paso,d1,true);
+    _densificar({x:s.x1+z,y:s.y1-z},{x:s.x1-z,y:s.y1+z},paso,d2,true);
+    res.push(d1); res.push(d2);
+  }
+  return res;
+}
 function eraseAt(cx,cy){
   var r=50/ZM, r2=r*r;
   // Puntos de borrado: interpola desde el último para no dejar huecos al mover rápido.
@@ -1297,21 +1333,50 @@ function eraseAt(cx,cy){
     for(var i=0;i<epts.length;i++){ var ex=px-epts[i].x, ey=py-epts[i].y; if(ex*ex+ey*ey<=r2) return true; }
     return false;
   }
-  var out=[], changed=false;
+  // Caja de la pasada de goma: lo que no la toca ni se trocea (en una pizarra llena,
+  // densificar cada trazo en cada movimiento del dedo se notaría).
+  var bx1=1e9,by1=1e9,bx2=-1e9,by2=-1e9;
+  epts.forEach(function(e){ if(e.x<bx1)bx1=e.x; if(e.x>bx2)bx2=e.x; if(e.y<by1)by1=e.y; if(e.y>by2)by2=e.y; });
+  bx1-=r; by1-=r; bx2+=r; by2+=r;
+  function lejos(s){
+    var ax1,ay1,ax2,ay2;
+    if(s.path&&s.path.length){
+      ax1=ay1=1e9; ax2=ay2=-1e9;
+      for(var i=0;i<s.path.length;i++){ var p=s.path[i];
+        if(p.x<ax1)ax1=p.x; if(p.x>ax2)ax2=p.x; if(p.y<ay1)ay1=p.y; if(p.y>ay2)ay2=p.y; }
+    } else if(s.x1!==undefined){
+      var m=(s.type==='cross'||s.type==='dot')?s.w*8:0;
+      ax1=Math.min(s.x1,s.x2===undefined?s.x1:s.x2)-m; ax2=Math.max(s.x1,s.x2===undefined?s.x1:s.x2)+m;
+      ay1=Math.min(s.y1,s.y2===undefined?s.y1:s.y2)-m; ay2=Math.max(s.y1,s.y2===undefined?s.y1:s.y2)+m;
+    } else return false;
+    return ax2<bx1||ax1>bx2||ay2<by1||ay1>by2;
+  }
+  var out=[], changed=false, paso=r*0.4;
   strokes.forEach(function(s){
-    if((s.type==='pen'||s.type==='pendash') && s.path && s.path.length>1){
-      var kept=[], seg=[];
-      for(var i=0;i<s.path.length;i++){
-        var p=s.path[i];
-        if(erased(p.x,p.y)){ if(seg.length>1) kept.push(seg); seg=[]; }
-        else seg.push(p);
+    if(lejos(s)){ out.push(s); return; }
+    // El punto relleno no se puede partir: o está bajo la goma o no.
+    if(s.type==='dot'){ if(erased(s.x1,s.y1)) changed=true; else out.push(s); return; }
+    var lineas=_polilineas(s,paso);
+    if(!lineas.length){ out.push(s); return; }
+    var intacto=true, piezas=[];
+    lineas.forEach(function(ln){
+      var seg=[];
+      for(var i=0;i<ln.length;i++){
+        if(erased(ln[i].x,ln[i].y)){ intacto=false; if(seg.length>1) piezas.push(seg); seg=[]; }
+        else seg.push(ln[i]);
       }
-      if(seg.length>1) kept.push(seg);
-      if(kept.length===1 && kept[0].length===s.path.length){ out.push(s); }        // intacto
-      else { changed=true; kept.forEach(function(pp){ out.push({type:s.type,color:s.color,w:s.w,path:pp}); }); }
-    } else {
-      if(pts(s).some(function(p){return erased(p.x,p.y);})) changed=true; else out.push(s);
+      if(seg.length>1) piezas.push(seg); else if(seg.length===1) intacto=false;
+    });
+    if(intacto){ out.push(s); return; }
+    changed=true;
+    // La punta de la flecha es una figura rellena: sobrevive entera con el último
+    // trozo del asta si la punta no ha pasado por debajo de la goma.
+    if(s.type==='arrow' && piezas.length && !erased(s.x2,s.y2)){
+      var fin=piezas.pop();
+      out.push({type:'arrow',color:s.color,w:s.w,x1:fin[0].x,y1:fin[0].y,x2:s.x2,y2:s.y2});
     }
+    var tipo=(s.type==='pendash')?'pendash':'pen';
+    piezas.forEach(function(pp){ out.push({type:tipo,color:s.color,w:s.w,path:pp}); });
   });
   if(changed){ eraseSnapshotOnce(); strokes=out; draw(); }
 }
