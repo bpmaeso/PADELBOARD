@@ -2,6 +2,8 @@
 
 > Última actualización: 2026-05-21. Refleja la app con todas las funciones Pro operativas (SW v13).
 
+> **Nota 2026-05-29**: pivote a modelo freemium 2D, ver `roadmap.md`.
+
 ## Repo
 
 - **GitHub**: `bpmaeso/PADELBOARD` (rama principal: `main`). **Fuente de verdad del código.**
