@@ -81,7 +81,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 #board-tb{position:absolute;top:0;left:0;right:0;z-index:100;
   background:#10131a;border-bottom:1px solid #1e222c;display:flex;flex-direction:column;}
 .trow{display:flex;align-items:center;gap:3px;padding:0 4px;height:44px;overflow:hidden;}
-#board-r1{justify-content:flex-start;gap:1px;overflow:visible;padding:0 4px;}
+#board-r1{justify-content:flex-start;gap:1px;overflow:visible;padding:0 4px;flex-wrap:wrap;height:auto;}
 #board-r2{border-top:1px solid #1e222c;justify-content:center;gap:6px;}
 .tgroup{display:flex;align-items:center;gap:1px;}
 .sep{width:1px;height:22px;background:#1e222c;flex-shrink:0;margin:0 2px;}
@@ -595,7 +595,12 @@ function deviceLandscape(){ return window.innerWidth>window.innerHeight; }
 
 // Toolbar height: always single row (44px) — action buttons go to row2 in portrait
 var immersive=false;                          // pista a pantalla completa
-function tbH(){ return immersive ? 0 : 46; }  // 1 fila (46) o 0 en inmersivo
+function tbH(){                                // altura real de la barra (1 o 2 filas), 0 en inmersivo
+  if(immersive) return 0;
+  var tb=document.getElementById('board-tb');
+  var h=tb?Math.round(tb.getBoundingClientRect().height):0;
+  return h||46;                               // fallback si aún no está renderizada
+}
 // Alto reservado por la barra inferior de secuencias (para no tapar la pista).
 function bottomH(){ var p=document.getElementById('seq-panel'); return (p && p.classList.contains('on') && !immersive) ? p.offsetHeight : 0; }
 
@@ -610,9 +615,10 @@ function initBoard(){
 
 function resizeBoard(){
   if(!cv)return;
+  var tb=document.getElementById('board-tb');
+  if(tb) tb.style.height='';                    // que la altura la marque el contenido (wrap a 2 filas si hace falta)
   var th=tbH(), vw=window.innerWidth, vh=window.innerHeight-th-bottomH();
   cv.width=vw; cv.height=vh; cv.style.top=th+'px';
-  document.getElementById('board-tb').style.height=th+'px';
 
   fitCourt();
   // Reset zoom/pan on resize but keep ZM at minimum 1
@@ -812,10 +818,40 @@ function drawStroke(s){
 }
 
 // Eraser
+// Borrador de verdad: limpia por donde pasa (raster-like sobre modelo vectorial).
+// Los trazos de lápiz se PARTEN quitando solo los puntos bajo la goma; las formas
+// geométricas y marcas se borran por objeto (borrar media flecha no tiene sentido).
 function eraseAt(cx,cy){
-  var r2=(50/ZM)*(50/ZM),n=strokes.length;
-  strokes=strokes.filter(function(s){return !hitTest(s,cx,cy,r2);});
-  if(strokes.length!==n) draw();
+  var r=50/ZM, r2=r*r;
+  // Puntos de borrado: interpola desde el último para no dejar huecos al mover rápido.
+  var epts=[{x:cx,y:cy}];
+  if(S.lastErase){
+    var lx=S.lastErase.x, ly=S.lastErase.y, dx=cx-lx, dy=cy-ly;
+    var dist=Math.sqrt(dx*dx+dy*dy), step=r*0.5;
+    if(dist>step){ var m=Math.ceil(dist/step); for(var k=1;k<m;k++) epts.push({x:lx+dx*k/m, y:ly+dy*k/m}); }
+  }
+  S.lastErase={x:cx,y:cy};
+  function erased(px,py){
+    for(var i=0;i<epts.length;i++){ var ex=px-epts[i].x, ey=py-epts[i].y; if(ex*ex+ey*ey<=r2) return true; }
+    return false;
+  }
+  var out=[], changed=false;
+  strokes.forEach(function(s){
+    if((s.type==='pen'||s.type==='pendash') && s.path && s.path.length>1){
+      var kept=[], seg=[];
+      for(var i=0;i<s.path.length;i++){
+        var p=s.path[i];
+        if(erased(p.x,p.y)){ if(seg.length>1) kept.push(seg); seg=[]; }
+        else seg.push(p);
+      }
+      if(seg.length>1) kept.push(seg);
+      if(kept.length===1 && kept[0].length===s.path.length){ out.push(s); }        // intacto
+      else { changed=true; kept.forEach(function(pp){ out.push({type:s.type,color:s.color,w:s.w,path:pp}); }); }
+    } else {
+      if(pts(s).some(function(p){return erased(p.x,p.y);})) changed=true; else out.push(s);
+    }
+  });
+  if(changed){ strokes=out; draw(); }
 }
 // Borrador ancho: arrastrar con 3+ dedos borra todo bajo el área de los dedos
 function wipeFingers(plist){
@@ -877,7 +913,7 @@ function boardEvents(){
     if(chip){S.sel=chip.id;S.drawing=false;draw();cv.setPointerCapture(e.pointerId);return;}
     S.sel=null; S.drawing=true; S.sx=pos.x; S.sy=pos.y; S.path=[{x:pos.x,y:pos.y}];
     cv.setPointerCapture(e.pointerId);
-    if(S.tool==='eraser') eraseAt(pos.x,pos.y);
+    if(S.tool==='eraser'){ S.lastErase=null; eraseAt(pos.x,pos.y); }
   });
 
   cv.addEventListener('pointermove',function(e){
@@ -934,7 +970,7 @@ function boardEvents(){
     if(S.sel){S.sel=null;draw();}
     if(!S.drawing){S.pinchD=null;S.pinchM=null;return;}
     S.drawing=false;
-    if(S.tool==='eraser'){live=null;return;}
+    if(S.tool==='eraser'){live=null;S.lastErase=null;return;}
     var pos=ptr(e);
     if(S.tool==='pen'||S.tool==='pendash'){
       if(S.path.length>1) strokes.push({type:S.tool,color:S.color,w:S.stroke,path:S.path.concat([pos])});
