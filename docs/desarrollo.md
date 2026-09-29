@@ -49,9 +49,18 @@ Eso es lo único imprescindible. El resto de esta guía son matices.
 ```bash
 ssh -i <clave_jdlq10> ubuntu@143.47.33.174 "
   sudo git -C /opt/stacks/padel-pwa/app pull --ff-only origin main &&
-  sudo rsync -a --delete --exclude='.git' --exclude='.claude' --exclude='docs' --exclude='CLAUDE.md' \
+  sudo rsync -a --delete --delete-excluded \
+    --exclude='.git' --exclude='.gitignore' --exclude='.claude' --exclude='docs' --exclude='CLAUDE.md' \
+    --exclude='_archive' --exclude='backend' --exclude='README.md' \
     /opt/stacks/padel-pwa/app/ /opt/stacks/caddy/static/padel/"
 ```
+
+⚠ **`--delete-excluded` y las exclusiones nuevas no son opcionales** (corregido el 30-09-2026). La versión anterior
+del comando dejaba en la carpeta servida todo lo que excluía —rsync protege de borrado lo excluido—, así que
+`https://padel-jdlq10.mywire.org/.git/config` **se descargaba desde mayo**, junto a dos `.bak` del index y del SW y
+un `padel-3d.html` archivado. Y las carpetas `_archive/` y `backend/` llegaron con la rama de julio: sin excluirlas
+se publicarían la configuración de PocketBase y los hooks del backend. Comprobado tras el despliegue del 30-09:
+`/.git/config` responde 404.
 
 Caddy sirve los estáticos al vuelo (no hay que reiniciarlo). Verifica:
 
