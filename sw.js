@@ -1,15 +1,16 @@
-// Pizarra Pádel — service worker
+// PADELBOARD — service worker
 // v14 (2026-07-03): se archiva la Pizarra 3D. Se retira './padel-3d.html' del
 // app shell y el precache de Three.js (THREE_URL). El resto (offline-first de
 // tipografías con stale-while-revalidate) se mantiene igual que en v13.
-const CACHE = 'pizarra-padel-v14';
+// v22 (2026-09-29): versión unificada (mayo + julio). Las llamadas a /api/
+// (cuentas y Pro) nunca se cachean.
+const CACHE = 'padelboard-v22';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
 const CORE = [
   './',
   './index.html',
-  './padel-board.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -47,6 +48,8 @@ self.addEventListener('fetch', e => {
   // Solo gestionamos GET; deja pasar POST/PUT etc. al navegador.
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
+  // Cuentas y estado Pro: siempre a red, nunca desde caché.
+  if (url.pathname.startsWith('/api/')) return;
 
   // Google Fonts (CSS + .woff2): stale-while-revalidate en cache propia.
   // El CSS ya viene precacheado; los .woff2 se cachean en la primera carga
