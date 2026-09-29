@@ -11,7 +11,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PADELBOARD">
 <meta name="theme-color" content="#0a0b0e">
-<link rel="apple-touch-icon" href="icon-192.png">
+<!-- iOS usa apple-touch-icon para «Añadir a pantalla de inicio» (ignora el manifest) y le aplica
+     su propia máscara redondeada, así que icon-180 va a sangre y sin esquinas redondeadas. -->
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
