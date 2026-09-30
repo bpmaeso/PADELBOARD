@@ -13,8 +13,8 @@
 <meta name="theme-color" content="#0a0b0e">
 <!-- iOS usa apple-touch-icon para «Añadir a pantalla de inicio» (ignora el manifest) y le aplica
      su propia máscara redondeada, así que icon-180 va a sangre y sin esquinas redondeadas. -->
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -1332,6 +1332,13 @@ function eraseAt(cx,cy){
     if(dist>step){ var m=Math.ceil(dist/step); for(var k=1;k<m;k++) epts.push({x:lx+dx*k/m, y:ly+dy*k/m}); }
   }
   S.lastErase={x:cx,y:cy};
+  return eraseCircles(epts, r);
+}
+// Borra solo lo que queda dentro de los círculos (centro en epts, radio r):
+// los trazos se parten y lo de fuera se conserva. Lo usan la goma y el borrador
+// ancho (3 dedos o botón derecho).
+function eraseCircles(epts, r){
+  var r2=r*r;
   function erased(px,py){
     for(var i=0;i<epts.length;i++){ var ex=px-epts[i].x, ey=py-epts[i].y; if(ex*ex+ey*ey<=r2) return true; }
     return false;
@@ -1382,25 +1389,25 @@ function eraseAt(cx,cy){
     piezas.forEach(function(pp){ out.push({type:tipo,color:s.color,w:s.w,path:pp}); });
   });
   if(changed){ eraseSnapshotOnce(); strokes=out; draw(); }
+  return changed;
 }
 // Borrador ancho: arrastrar con 3+ dedos borra todo bajo el área de los dedos
 function wipeFingers(plist){
-  var th=tbH(), R2=WIPE_R*WIPE_R;
+  var th=tbH();
   var cps=plist.map(function(p){ return toCourt(p.x, p.y-th); });
+  var prev=S.wipePts, pts2=cps.slice();
+  // Rellena el recorrido de cada dedo para no dejar huecos si se mueve rápido.
+  if(prev && prev.length===cps.length){
+    cps.forEach(function(c,k){
+      var a=prev[k], dx=c.x-a.x, dy=c.y-a.y, d=Math.sqrt(dx*dx+dy*dy), st=WIPE_R*0.5;
+      if(d>st){ var m=Math.ceil(d/st); for(var q=1;q<m;q++) pts2.push({x:a.x+dx*q/m, y:a.y+dy*q/m}); }
+    });
+  }
   S.wipePts=cps;
   if(!strokes.length) return false;
-  var n=strokes.length;
-  var next=strokes.filter(function(s){
-    var pp=pts(s);
-    for(var i=0;i<cps.length;i++) for(var j=0;j<pp.length;j++){
-      var dx=pp[j].x-cps[i].x, dy=pp[j].y-cps[i].y;
-      if(dx*dx+dy*dy<=R2) return false;
-    }
-    return true;
-  });
-  if(next.length===n) return false;
-  eraseSnapshotOnce(); strokes=next; scheduleAutoSave();
-  return true;
+  var changed=eraseCircles(pts2, WIPE_R);
+  if(changed) scheduleAutoSave();
+  return changed;
 }
 function hitTest(s,cx,cy,r2){
   return pts(s).some(function(p){return (p.x-cx)*(p.x-cx)+(p.y-cy)*(p.y-cy)<=r2;});

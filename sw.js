@@ -10,7 +10,7 @@
 // v26 (2026-09-30): los iconos pasan a ser el logo de la app (el mismo de la
 // portada). icon-180 para «Añadir a pantalla de inicio» de iOS y un maskable
 // aparte para Android, que recorta a círculo.
-const CACHE = 'padelboard-v26';
+const CACHE = 'padelboard-v27';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
@@ -18,10 +18,10 @@ const CORE = [
   './',
   './index.html',
   './manifest.json',
-  './icon-180.png',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-512.png'
+  './icon-180.png?v=2',
+  './icon-192.png?v=2',
+  './icon-512.png?v=2',
+  './icon-maskable-512.png?v=2'
 ];
 
 // URL EXACTA de Google Fonts que pide index.html (debe coincidir al carácter).
