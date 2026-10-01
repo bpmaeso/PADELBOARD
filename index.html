@@ -27,7 +27,20 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
   font-family:'DM Sans',sans-serif;overflow:hidden;touch-action:manipulation;}
 
 /* SCREENS */
-.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden;}
+.screen{position:fixed;top:0;left:0;right:0;height:100vh;display:none;flex-direction:column;overflow:hidden;}
+/* iOS en modo app recorta a veces el alto de inset:0/100% y deja una franja abajo:
+   100lvh es el alto completo de la pantalla. */
+@supports (height:100lvh){ .screen{height:100lvh;} }
+.screen.active{display:flex;animation:scr-in .22s ease-out;}
+@keyframes scr-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+/* Al girar el dispositivo, la pista y la barra entran con un fundido en vez de saltar. */
+#board-cv,#board-r1{transition:opacity .28s ease-out,transform .28s ease-out;}
+#board-screen.turning #board-cv{opacity:0;transform:scale(.97);transition:none;}
+#board-screen.turning #board-r1{opacity:0;transition:none;}
+@media (prefers-reduced-motion:reduce){
+  .screen.active{animation:none;}
+  #board-cv,#board-r1{transition:none;}
+}
 .screen.active{display:flex;}
 
 /* ── HOME ── */
@@ -106,6 +119,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 
 /* ── BOARD 2D ── */
 #board-screen{background:#181818;}
+html{background:#181818;}
 /* Barra de la pizarra: SIEMPRE una sola fila, para que la pista ocupe el máximo
    de pantalla. En móvil las herramientas de dibujo y las acciones se pliegan en
    desplegables; con más ancho se despliegan en línea (ver media queries abajo). */
@@ -1021,8 +1035,28 @@ function isTouch(){ return ('ontouchstart' in window || navigator.maxTouchPoints
 // Orientación de la pista: el lado largo de la pista sigue al lado largo de la
 // pantalla, para que ocupe el máximo espacio. Trazos y fichas se guardan en
 // coordenadas de pista, así que girar el dispositivo no mueve nada: solo gira la vista.
-function deviceLandscape(){ return window.innerWidth>window.innerHeight; }
+function deviceLandscape(){ var v=vpSize(); return v.w>v.h; }
 function courtLand(){ return deviceLandscape(); }
+// Sentido del giro en horizontal: +1 = girado a la izquierda (antihorario),
+// -1 = girado a la derecha (horario). La pista gira con el móvil: con las rojas
+// abajo, al girar a la derecha quedan a la izquierda, y al revés.
+function landDir(){
+  var a=null;
+  try{ if(screen.orientation && typeof screen.orientation.angle==='number') a=screen.orientation.angle; }catch(e){}
+  if(a===null && typeof window.orientation==='number') a=window.orientation;
+  if(a===null) return 1;
+  a=((a%360)+360)%360;
+  return a===270 ? -1 : 1;
+}
+function viewKey(){ return courtLand() ? (landDir()>0?'L':'R') : 'P'; }
+// Tamaño útil de la pantalla. Se mide en #board-screen (alto completo, ver CSS)
+// porque en iOS en modo app window.innerHeight puede venir corto.
+function vpSize(){
+  var el=document.getElementById('board-screen'), w=window.innerWidth, h=window.innerHeight;
+  if(el && el.classList.contains('active')){ var r=el.getBoundingClientRect(); if(r.width>0) w=r.width; if(r.height>h) h=r.height; }
+  return {w:Math.round(w), h:Math.round(h)};
+}
+var CVW=0, CVH=0, DPR=1;                       // tamaño del lienzo en px CSS y densidad
 
 // Alto real de la barra (una fila + safe-area del notch). Se mide en resizeBoard()
 // y se cachea: tbH() se llama en cada pointermove y no debe forzar reflows.
@@ -1070,25 +1104,35 @@ function initBoard(){
 function resizeBoard(keepZoom){
   if(!cv)return;
   tbMeasure();
-  var th=tbH(), vw=window.innerWidth, vh=window.innerHeight-th-bottomH();
+  var v=vpSize(), th=tbH(), vw=v.w, vh=v.h-th-bottomH();
   if(vh<0) vh=0;
-  cv.width=vw; cv.height=vh; cv.style.top=th+'px';
+  // Lienzo a la resolución real de la pantalla (nítido en retina), dibujando en px CSS.
+  DPR=Math.min(window.devicePixelRatio||1, 3);
+  CVW=vw; CVH=vh;
+  cv.width=Math.round(vw*DPR); cv.height=Math.round(vh*DPR);
+  cv.style.width=vw+'px'; cv.style.height=vh+'px'; cv.style.top=th+'px';
   // Un trazo a medias durante un giro se cancela (el sistema no manda pointerup).
   if(S && S.drawing){
     S.drawing=false; S.path=[]; live=null; cv.classList.remove('cv-drawing');
     if(keepZoom) showToast('Pantalla girada: trazo cancelado');
   }
-  var wasLand=_lastLand; _lastLand=courtLand();
+  var wasKey=_lastLand; _lastLand=viewKey();
   fitCourt();
-  if(keepZoom && wasLand===_lastLand) clampPan();
+  if(keepZoom && wasKey===_lastLand) clampPan();
   else { PX=0;PY=0;ZM=1; }
   draw();
+  // Cambio de orientación: fundido de entrada en vez del salto.
+  if(wasKey!==null && wasKey!==_lastLand){
+    var bs=document.getElementById('board-screen');
+    bs.classList.add('turning');
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ bs.classList.remove('turning'); }); });
+  }
 }
 var _lastLand=null;
 
 // Ajusta SC/OX/OY para que pista + paredes quepan centradas. OX/OY = court(0,0).
 function fitCourt(){
-  var vw=window.innerWidth, vh=window.innerHeight-tbH()-bottomH();
+  var vw=CVW, vh=CVH;
   if(vw<=0||vh<=0) return;                     // viewport colapsado (teclado, segundo plano)
   var land=courtLand(), M=courtMargin();
   var dimW=(land?CH:CW)+2*M, dimH=(land?CW:CH)+2*M;
@@ -1104,7 +1148,7 @@ function clampPan(){
   var s=SC*ZM, land=courtLand(), M=courtMargin();
   var left0=OX-M*s, top0=OY-M*s;                       // borde exterior con PX=PY=0
   var cW=((land?CH:CW)+2*M)*s, cH=((land?CW:CH)+2*M)*s; // tamaño en pantalla
-  var vw=cv.width, vh=cv.height;
+  var vw=CVW, vh=CVH;
   if(cW>=vw){ PX=Math.max(vw-(left0+cW), Math.min(-left0, PX)); } else { PX=(vw-cW)/2-left0; }
   if(cH>=vh){ PY=Math.max(vh-(top0+cH), Math.min(-top0, PY)); } else { PY=(vh-cH)/2-top0; }
 }
@@ -1114,7 +1158,8 @@ function toScreen(cx,cy){
   var land=courtLand();
   var s=SC*ZM;
   if(!land) return{x:OX+PX+cx*s,y:OY+PY+cy*s};
-  return{x:OX+PX+cy*s,y:OY+PY+(CW-cx)*s};
+  if(landDir()>0) return{x:OX+PX+cy*s,y:OY+PY+(CW-cx)*s};
+  return{x:OX+PX+(CH-cy)*s,y:OY+PY+cx*s};
 }
 function toCourt(px,py){
   var s=SC*ZM;
@@ -1122,7 +1167,8 @@ function toCourt(px,py){
   var rx=(px-OX-PX)/s, ry=(py-OY-PY)/s;
   var land=courtLand();
   if(!land) return{x:rx,y:ry};
-  return{x:CW-ry,y:rx};
+  if(landDir()>0) return{x:CW-ry,y:rx};
+  return{x:ry,y:CH-rx};
 }
 function ptr(e){
   var th=tbH();
@@ -1133,12 +1179,15 @@ function ptr(e){
 // Draw everything
 function draw(){
   if(!ctx)return;
+  ctx.setTransform(1,0,0,1,0,0);
   ctx.clearRect(0,0,cv.width,cv.height);
   ctx.fillStyle='#181818'; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.setTransform(DPR,0,0,DPR,0,0);           // a partir de aquí, px CSS
   var land=courtLand(), s=SC*ZM;
   ctx.save();
   if(!land){ ctx.translate(OX+PX,OY+PY); ctx.scale(s,s); }
-  else      { ctx.translate(OX+PX,OY+PY+CW*s); ctx.rotate(-Math.PI/2); ctx.scale(s,s); }
+  else if(landDir()>0){ ctx.translate(OX+PX,OY+PY+CW*s); ctx.rotate(-Math.PI/2); ctx.scale(s,s); }
+  else { ctx.translate(OX+PX+CH*s,OY+PY); ctx.rotate(Math.PI/2); ctx.scale(s,s); }
   drawCourt();
   strokes.forEach(function(st){drawStroke(st);});
   if(live) drawStroke(live);
@@ -1238,14 +1287,14 @@ function drawCourt(){
 function drawChips(land){
   // Con la pista tumbada (land) el lienzo está girado -90°: las letras se
   // contragiran para leerse siempre derechas.
-  var rotL=!!land;
+  var rotL=land ? (landDir()>0 ? Math.PI/2 : -Math.PI/2) : 0;
   PLAYERS.forEach(function(p){
     ctx.beginPath(); ctx.arc(p.cx,p.cy,CHIP_R,0,Math.PI*2);
     ctx.fillStyle=p.color; ctx.fill();
     ctx.strokeStyle=S.sel===p.id?'#3d8bff':'rgba(255,255,255,0.7)';
     ctx.lineWidth=S.sel===p.id?3:2; ctx.setLineDash([]); ctx.stroke();
     ctx.save(); ctx.translate(p.cx,p.cy);
-    if(rotL) ctx.rotate(Math.PI/2);
+    if(rotL) ctx.rotate(rotL);
     ctx.fillStyle='#fff';
     ctx.font='bold '+CHIP_R+'px "Bebas Neue",sans-serif';
     ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -1706,6 +1755,9 @@ window.addEventListener('resize',function(){if(currentScreen==='board-screen')re
 window.addEventListener('orientationchange',function(){
   setTimeout(function(){if(currentScreen==='board-screen')resizeBoard();},80);
 });
+try{ if(screen.orientation) screen.orientation.addEventListener('change',function(){
+  setTimeout(function(){if(currentScreen==='board-screen')resizeBoard();},60);
+}); }catch(e){}
 // Bloquear scroll/zoom global SOLO mientras la pizarra esté activa.
 // Si lo hacíamos siempre, rompía el scroll vertical del HOME en táctil.
 // Y solo bloqueamos el gesto si el touch ocurre sobre el canvas — un input
