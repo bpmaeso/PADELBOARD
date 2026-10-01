@@ -33,14 +33,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 @supports (height:100lvh){ .screen{height:100lvh;} }
 .screen.active{display:flex;animation:scr-in .22s ease-out;}
 @keyframes scr-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-/* Al girar el dispositivo, la pista y la barra entran con un fundido en vez de saltar. */
-#board-cv,#board-r1{transition:opacity .28s ease-out,transform .28s ease-out;}
-#board-screen.turning #board-cv{opacity:0;transform:scale(.97);transition:none;}
-#board-screen.turning #board-r1{opacity:0;transition:none;}
-@media (prefers-reduced-motion:reduce){
-  .screen.active{animation:none;}
-  #board-cv,#board-r1{transition:none;}
-}
+@media (prefers-reduced-motion:reduce){ .screen.active{animation:none;} }
 .screen.active{display:flex;}
 
 /* ── HOME ── */
@@ -127,7 +120,7 @@ html{background:#181818;}
    desplegables; con más ancho se despliegan en línea (ver media queries abajo). */
 #board-tb{position:absolute;top:0;left:0;right:0;z-index:100;
   background:#10131a;border-bottom:1px solid #1e222c;
-  padding-top:var(--sat,env(safe-area-inset-top,0px));}
+  padding-top:env(safe-area-inset-top,0px);}
 .trow{display:flex;align-items:center;flex-wrap:nowrap;gap:2px;height:44px;
   padding:0 max(4px,env(safe-area-inset-right,0px)) 0 max(4px,env(safe-area-inset-left,0px));}
 .tgrow{flex:1 1 auto;min-width:0;}
@@ -145,21 +138,20 @@ html{background:#181818;}
 .tb:disabled{opacity:.35;cursor:default;}
 .tb:disabled:hover{background:transparent;color:#9aa3b8;}
 .tb svg{width:18px;height:18px;pointer-events:none;}
-/* Pista fija: cuando el sistema no gira la pantalla (bloqueo de rotación o app
-   instalada en vertical), los iconos giran según cómo se sostiene el móvil. */
+/* PIZARRA FIJA (táctil): la pista ocupa toda la pantalla y nunca se mueve, como
+   un salvapantallas. La barra flota semitransparente encima, siempre en el lado
+   que queda arriba para quien sostiene el móvil. */
+body.board-overlay #board-tb{background:rgba(16,19,26,.55);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+body.board-overlay #seq-panel{background:rgba(16,19,26,.86);}
+/* Si la pantalla no la gira el sistema (app instalada en vertical en Android),
+   la barra entera se va al lado que queda arriba, con el mismo ritmo que las
+   letras de las fichas (ROT_MS). */
+:root{--vw-px:100vw;--vh-px:100vh;}
+#board-tb{transform-origin:0 0;transition:transform .32s cubic-bezier(.42,0,.58,1);}
+#board-tb.tb-l{right:auto;width:var(--vh-px);transform:translate(0,var(--vh-px)) rotate(-90deg);}
+#board-tb.tb-r{right:auto;width:var(--vh-px);transform:translate(var(--vw-px),0) rotate(90deg);}
 :root{--ui-rot:0deg;}
-/* Misma curva y duración que el giro de las letras de las fichas (ver ROT_MS). */
-.tb svg,.seqb svg{transform:rotate(var(--ui-rot));transition:transform .32s cubic-bezier(.42,0,.58,1);}
-/* Con el móvil en horizontal, el menú «Más» se queda solo con iconos (los textos irían de lado). */
-html.ui-rotated #dd-more-menu{min-width:0;}
-html.ui-rotated #dd-more-menu .tb{width:40px;padding:0;justify-content:center;}
-html.ui-rotated #dd-more-menu .tb .lbl{display:none;}
-/* Pizarra fija respecto al móvil: si el sistema gira la pantalla, la app
-   contragira la pizarra entera para que no se mueva (sin tocar ajustes del móvil). */
-#board-screen.counter{top:50%;left:50%;right:auto;transform:translate(-50%,-50%) rotate(var(--counter-rot,0deg));}
-#board-screen.counter.active{animation:none;}
-#board-screen.cr-l{--sat:env(safe-area-inset-left,0px);}
-#board-screen.cr-r{--sat:env(safe-area-inset-right,0px);}
 .tb .lbl{display:none;}
 /* Foco visible solo con teclado. */
 .tb:focus-visible,.csw:focus-visible,.swb:focus-visible,.seqb:focus-visible,
@@ -258,7 +250,6 @@ body.ui-rot #board-toast.on{transform:translate(-50%,-50%) rotate(var(--ui-rot))
 .seqb{display:flex;align-items:center;justify-content:center;width:30px;height:34px;
   border-radius:8px;border:1px solid var(--border);background:#0c0f15;color:#e6edf3;cursor:pointer;flex-shrink:0;}
 .seqb svg{width:16px;height:16px;}
-#seq-panel .seq-count,#seq-panel .seq-loop{display:inline-block;transform:rotate(var(--ui-rot));transition:transform .32s cubic-bezier(.42,0,.58,1);}
 .seqb:active{background:#161b24;}
 .seqb.seq-play{background:var(--accent);color:#000;border-color:var(--accent);}
 .seq-play .ic-pause{display:none;}
@@ -1076,42 +1067,28 @@ function viewKey(){ return courtLand() ? (landDir()>0?'L':'R') : 'P'; }
 function vpSize(){
   var el=document.getElementById('board-screen'), w=window.innerWidth, h=window.innerHeight;
   if(el && el.classList.contains('active') && el.offsetWidth>0){
-    // offsetWidth/Height: tamaño sin transformar (con contragiro, el de la pizarra en vertical).
     w=el.offsetWidth;
-    h=COUNTER ? el.offsetHeight : Math.max(el.offsetHeight, h);
+    h=Math.max(el.offsetHeight, h);
   }
   return {w:Math.round(w), h:Math.round(h)};
 }
 
-// ── Contragiro: en táctil la pizarra se queda fija respecto al móvil.
-// Si el sistema gira la pantalla a horizontal, #board-screen se gira al revés y
-// se dimensiona en vertical; así la pista, las marcas y la barra (pegada al lado
-// de la cámara) no se mueven. Solo giran letras e iconos para leerse derechos.
-var COUNTER=0, COUNTER_PREV=0;                 // grados aplicados a #board-screen: 0, -90 o 90
-function boardFixed(){ return isTouch(); }    // en escritorio, la pista se tumba como antes
-function applyCounter(){
-  var el=document.getElementById('board-screen'); if(!el) return;
-  var de=document.documentElement;
-  var W=Math.max(window.innerWidth, de.clientWidth), H=Math.max(window.innerHeight, de.clientHeight);
-  var rot=0;
-  if(boardFixed() && W>H) rot = landDir()>0 ? -90 : 90;   // girado a la izquierda → -90
-  COUNTER=rot;
-  el.classList.toggle('counter', rot!==0);
-  el.classList.toggle('cr-l', rot===-90);      // la cámara queda a la izquierda de la pantalla
-  el.classList.toggle('cr-r', rot===90);
-  if(rot){ el.style.width=H+'px'; el.style.height=W+'px'; el.style.setProperty('--counter-rot', rot+'deg'); }
-  else { el.style.width=''; el.style.height=''; }
-  var was=COUNTER_PREV; COUNTER_PREV=rot;
-  if(rot) setUiRot(-rot);                      // móvil a la izquierda → letras e iconos +90
-  else if(was || !_motionOn) setUiRot(0);      // de vuelta a vertical (el sensor reajusta si hace falta)
-}
-// Coordenadas del puntero en el sistema de la pizarra (deshace el contragiro).
-function evXY(e){
-  if(!COUNTER) return {x:e.clientX, y:e.clientY};
-  var el=document.getElementById('board-screen'), W=el.offsetWidth, H=el.offsetHeight;
-  var dx=e.clientX-window.innerWidth/2, dy=e.clientY-window.innerHeight/2;
-  var a=-COUNTER*Math.PI/180, c=Math.cos(a), sn=Math.sin(a);
-  return {x:dx*c-dy*sn+W/2, y:dx*sn+dy*c+H/2};
+// ── Pizarra fija (táctil): la pista se calcula UNA vez en el marco del móvil en
+// vertical (pantalla completa, con hueco arriba para la barra y el notch) y se
+// dibuja girada según cómo esté la pantalla, de modo que nunca cambia de tamaño
+// ni de sitio respecto al móvil. La barra flota encima en el lado de arriba.
+function boardOverlay(){ return isTouch(); }  // en escritorio: barra fija arriba, como siempre
+var CVTOP=0;                                   // posición del lienzo bajo la barra (0 en táctil)
+function evXY(e){ return {x:e.clientX, y:e.clientY}; }
+var _safe=null;                                // márgenes del notch (env(safe-area-inset-*))
+function safeInsets(){
+  if(_safe) return _safe;
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);';
+  document.body.appendChild(d);
+  var cs=getComputedStyle(d);
+  var r={t:parseFloat(cs.paddingTop)||0, r:parseFloat(cs.paddingRight)||0, b:parseFloat(cs.paddingBottom)||0, l:parseFloat(cs.paddingLeft)||0};
+  d.remove(); return r;
 }
 var CVW=0, CVH=0, DPR=1;                       // tamaño del lienzo en px CSS y densidad
 
@@ -1134,9 +1111,9 @@ function setUiRot(r){
   if(r===UI_ROT) return;
   UI_ROT=r;
   document.documentElement.style.setProperty('--ui-rot', r+'deg');
-  document.documentElement.classList.toggle('ui-rotated', r!==0);
-  // El aviso solo se gira a mano si la pantalla no la gira nadie (modo sensor).
-  document.body.classList.toggle('ui-rot', r!==0 && COUNTER===0);
+  document.body.classList.toggle('ui-rot', r!==0);   // el aviso se lee girado
+  var tb=document.getElementById('board-tb');
+  if(tb){ tb.classList.toggle('tb-l', r===-90); tb.classList.toggle('tb-r', r===90); }
   var from=ROT_SHOWN, t0=performance.now();
   if(_rotAnim) cancelAnimationFrame(_rotAnim);
   (function step(now){
@@ -1149,7 +1126,7 @@ function setUiRot(r){
 function onMotion(e){
   var g=e.accelerationIncludingGravity; if(!g || g.x==null) return;
   // Si el sistema ha girado la pantalla, manda el contragiro, no el sensor.
-  if(COUNTER || window.innerWidth>window.innerHeight) return;
+  if(window.innerWidth>window.innerHeight) return;
   var x=g.x, y=g.y;
   if(IS_IOS){ x=-x*9.81; y=-y*9.81; }          // iOS da g e invierte el signo respecto a Android
   var ax=Math.abs(x), ay=Math.abs(y);
@@ -1159,8 +1136,11 @@ function onMotion(e){
 }
 var _motionOn=false;
 function startMotion(){
-  // En iOS la pantalla siempre gira y el contragiro ya sabe hacia dónde: sin sensor ni permisos.
-  if(_motionOn || IS_IOS || !('DeviceMotionEvent' in window)) return;
+  // Solo hace falta cuando el sistema NO gira la pantalla: la app instalada en
+  // Android (manifest en vertical). En iOS y en el navegador gira el sistema.
+  var instalada=false;
+  try{ instalada=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches; }catch(e){}
+  if(_motionOn || IS_IOS || !instalada || !('DeviceMotionEvent' in window)) return;
   var go=function(){ _motionOn=true; window.addEventListener('devicemotion', onMotion); };
   // iOS pide permiso, y solo se puede pedir tras un toque del usuario.
   if(typeof DeviceMotionEvent.requestPermission==='function'){
@@ -1213,9 +1193,13 @@ function initBoard(){
 // keepZoom: al girar el dispositivo se conserva el zoom y solo se reencuadra.
 function resizeBoard(keepZoom){
   if(!cv)return;
-  applyCounter();
   tbMeasure();
-  var v=vpSize(), th=tbH(), vw=v.w, vh=v.h-th-bottomH();
+  var ov=boardOverlay();
+  document.body.classList.toggle('board-overlay', ov);
+  var v=vpSize(), th=ov?0:tbH(), vw=v.w, vh=v.h-th-(ov?0:bottomH());
+  CVTOP=th;
+  document.documentElement.style.setProperty('--vw-px', v.w+'px');
+  document.documentElement.style.setProperty('--vh-px', v.h+'px');
   if(vh<0) vh=0;
   // Lienzo a la resolución real de la pantalla (nítido en retina), dibujando en px CSS.
   DPR=Math.min(window.devicePixelRatio||1, 3);
@@ -1232,12 +1216,6 @@ function resizeBoard(keepZoom){
   if(keepZoom && wasKey===_lastLand) clampPan();
   else { PX=0;PY=0;ZM=1; }
   draw();
-  // Cambio de orientación: fundido de entrada en vez del salto.
-  if(wasKey!==null && wasKey!==_lastLand){
-    var bs=document.getElementById('board-screen');
-    bs.classList.add('turning');
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){ bs.classList.remove('turning'); }); });
-  }
 }
 var _lastLand=null;
 
@@ -1246,6 +1224,20 @@ function fitCourt(){
   var vw=CVW, vh=CVH;
   if(vw<=0||vh<=0) return;                     // viewport colapsado (teclado, segundo plano)
   var land=courtLand(), M=courtMargin();
+  if(boardOverlay()){
+    // Marco del móvil en vertical: ancho = lado corto, alto = lado largo. Arriba se
+    // reserva la barra (45 px) más el notch, que en vertical queda arriba y en
+    // horizontal en un lateral: por eso se toma el mayor de los tres márgenes.
+    var si=safeInsets(), Wd=Math.min(vw,vh), Hd=Math.max(vw,vh);
+    var top=45+Math.max(si.t,si.l,si.r), bot=8, Ha=Math.max(1,Hd-top-bot);
+    var dW=CW+2*M, dH=CH+2*M;
+    SC=Math.max(Math.min(Wd/dW, Ha/dH), 0.01);
+    var ox=(Wd-dW*SC)/2+M*SC, oy=top+(Ha-dH*SC)/2+M*SC;   // origen de la pista en ese marco
+    if(!land){ OX=ox; OY=oy; }
+    else if(landDir()>0){ OX=oy; OY=Wd-ox-CW*SC; }          // móvil girado a la izquierda
+    else { OX=Hd-oy-CH*SC; OY=ox; }                        // móvil girado a la derecha
+    return;
+  }
   var dimW=(land?CH:CW)+2*M, dimH=(land?CW:CH)+2*M;
   SC=Math.max(Math.min(vw/dimW, vh/dimH), 0.01);
   OX=(vw-dimW*SC)/2 + M*SC;
@@ -1260,8 +1252,10 @@ function clampPan(){
   var left0=OX-M*s, top0=OY-M*s;                       // borde exterior con PX=PY=0
   var cW=((land?CH:CW)+2*M)*s, cH=((land?CW:CH)+2*M)*s; // tamaño en pantalla
   var vw=CVW, vh=CVH;
-  if(cW>=vw){ PX=Math.max(vw-(left0+cW), Math.min(-left0, PX)); } else { PX=(vw-cW)/2-left0; }
-  if(cH>=vh){ PY=Math.max(vh-(top0+cH), Math.min(-top0, PY)); } else { PY=(vh-cH)/2-top0; }
+  // Más grande que la pantalla: sin bordes vacíos. Más pequeña: entera a la vista,
+  // sin recentrarla (en táctil su sitio de base está pensado para la barra).
+  if(cW>=vw){ PX=Math.max(vw-(left0+cW), Math.min(-left0, PX)); } else { PX=Math.min(vw-cW-left0, Math.max(-left0, PX)); }
+  if(cH>=vh){ PY=Math.max(vh-(top0+cH), Math.min(-top0, PY)); } else { PY=Math.min(vh-cH-top0, Math.max(-top0, PY)); }
 }
 
 // Coordinate helpers
@@ -1282,8 +1276,7 @@ function toCourt(px,py){
   return{x:ry,y:CH-rx};
 }
 function ptr(e){
-  var th=tbH();
-  var q=evXY(e), r=toCourt(q.x, q.y-th);
+  var q=evXY(e), r=toCourt(q.x, q.y-CVTOP);
   return{x:Math.max(0,Math.min(CW,r.x)),y:Math.max(0,Math.min(CH,r.y))};
 }
 
@@ -1553,8 +1546,7 @@ function eraseCircles(epts, r){
 }
 // Borrador ancho: arrastrar con 3+ dedos borra todo bajo el área de los dedos
 function wipeFingers(plist){
-  var th=tbH();
-  var cps=plist.map(function(p){ return toCourt(p.x, p.y-th); });
+  var cps=plist.map(function(p){ return toCourt(p.x, p.y-CVTOP); });
   var prev=S.wipePts, pts2=cps.slice();
   // Rellena el recorrido de cada dedo para no dejar huecos si se mueve rápido.
   if(prev && prev.length===cps.length){
@@ -1653,7 +1645,7 @@ function boardEvents(){
     if(plist.length===2&&S.pinchD!==null){
       var nd=pd(plist),nm=pm(plist);
       var nz=Math.max(1,Math.min(8,ZM*nd/S.pinchD));
-      var th=tbH(),mx=nm.x,my=nm.y-th;
+      var mx=nm.x,my=nm.y-CVTOP;
       PX=mx-OX-(mx-OX-PX)*(nz/ZM); PY=my-OY-(my-OY-PY)*(nz/ZM);
       PX+=nm.x-S.pinchM.x; PY+=nm.y-S.pinchM.y;
       ZM=nz;S.pinchD=nd;S.pinchM=nm;clampPan();draw();return;
