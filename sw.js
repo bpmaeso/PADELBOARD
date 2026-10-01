@@ -10,7 +10,7 @@
 // v26 (2026-09-30): los iconos pasan a ser el logo de la app (el mismo de la
 // portada). icon-180 para «Añadir a pantalla de inicio» de iOS y un maskable
 // aparte para Android, que recorta a círculo.
-const CACHE = 'padelboard-v28';
+const CACHE = 'padelboard-v29';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.

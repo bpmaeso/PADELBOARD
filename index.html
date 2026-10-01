@@ -143,6 +143,10 @@ html{background:#181818;}
 .tb:disabled{opacity:.35;cursor:default;}
 .tb:disabled:hover{background:transparent;color:#9aa3b8;}
 .tb svg{width:18px;height:18px;pointer-events:none;}
+/* Pista fija: cuando el sistema no gira la pantalla (bloqueo de rotación o app
+   instalada en vertical), los iconos giran según cómo se sostiene el móvil. */
+:root{--ui-rot:0deg;}
+.tb svg,.seqb svg{transform:rotate(var(--ui-rot));transition:transform .3s ease;}
 .tb .lbl{display:none;}
 /* Foco visible solo con teclado. */
 .tb:focus-visible,.csw:focus-visible,.swb:focus-visible,.seqb:focus-visible,
@@ -198,6 +202,9 @@ html{background:#181818;}
   padding:6px 14px;border-radius:18px;font-size:11px;pointer-events:none;
   opacity:0;transition:opacity .25s,transform .25s;z-index:200;}
 #board-toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+/* Con el móvil en horizontal y la pantalla fija, el aviso se lee girado y centrado. */
+body.ui-rot #board-toast{top:50%;transform:translate(-50%,-50%) rotate(var(--ui-rot)) scale(.96);}
+body.ui-rot #board-toast.on{transform:translate(-50%,-50%) rotate(var(--ui-rot));}
 
 /* ── GENERADOR DE PISTA ── */
 #gen-screen{background:var(--bg);}
@@ -238,6 +245,7 @@ html{background:#181818;}
 .seqb{display:flex;align-items:center;justify-content:center;width:30px;height:34px;
   border-radius:8px;border:1px solid var(--border);background:#0c0f15;color:#e6edf3;cursor:pointer;flex-shrink:0;}
 .seqb svg{width:16px;height:16px;}
+#seq-panel .seq-count,#seq-panel .seq-loop{display:inline-block;transform:rotate(var(--ui-rot));transition:transform .3s ease;}
 .seqb:active{background:#161b24;}
 .seqb.seq-play{background:var(--accent);color:#000;border-color:var(--accent);}
 .seq-play .ic-pause{display:none;}
@@ -930,6 +938,7 @@ function goHome(){
   refreshAutoSaveBanner();
 }
 function openBoard(){
+  startMotion();                               // en Android arranca ya; en iOS, tras el permiso
   showScreen('board-screen');
   if(!boardReady){ boardReady=true; initBoard(); }
 }
@@ -1057,6 +1066,42 @@ function vpSize(){
   return {w:Math.round(w), h:Math.round(h)};
 }
 var CVW=0, CVH=0, DPR=1;                       // tamaño del lienzo en px CSS y densidad
+
+// ── Orientación física con la pantalla fija.
+// Si el sistema NO gira la pantalla (bloqueo de rotación del iPhone, o la app
+// instalada en vertical en Android), la pista queda quieta y llena la pantalla
+// igual; solo giran las letras de las fichas, los iconos y los avisos según
+// cómo se sostenga el móvil (sensor de gravedad).
+// UI_ROT: 0 = vertical; -90 = móvil girado a la derecha; 90 = a la izquierda.
+var UI_ROT=0;
+var IS_IOS=/iP(hone|ad|od)/.test(navigator.platform)||(navigator.userAgent.indexOf('Mac')>=0&&'ontouchend' in document);
+function setUiRot(r){
+  if(r===UI_ROT) return;
+  UI_ROT=r;
+  document.documentElement.style.setProperty('--ui-rot', r+'deg');
+  document.body.classList.toggle('ui-rot', r!==0);
+  if(typeof cv!=='undefined' && cv && currentScreen==='board-screen') draw();
+}
+function onMotion(e){
+  var g=e.accelerationIncludingGravity; if(!g || g.x==null) return;
+  // Con la pantalla ya girada por el sistema, no hace falta contragirar nada.
+  if(deviceLandscape()){ setUiRot(0); return; }
+  var x=g.x, y=g.y;
+  if(IS_IOS){ x=-x*9.81; y=-y*9.81; }          // iOS da g e invierte el signo respecto a Android
+  var ax=Math.abs(x), ay=Math.abs(y);
+  // Histéresis: solo cambia con una inclinación clara (evita parpadeos).
+  if(ax>5.5 && ax>ay*1.3) setUiRot(x<0 ? -90 : 90);   // borde derecho abajo = girado a la derecha
+  else if(ay>5.5 && ay>ax*1.3) setUiRot(0);
+}
+var _motionOn=false;
+function startMotion(){
+  if(_motionOn || !('DeviceMotionEvent' in window)) return;
+  var go=function(){ _motionOn=true; window.addEventListener('devicemotion', onMotion); };
+  // iOS pide permiso, y solo se puede pedir tras un toque del usuario.
+  if(typeof DeviceMotionEvent.requestPermission==='function'){
+    DeviceMotionEvent.requestPermission().then(function(st){ if(st==='granted') go(); }).catch(function(){});
+  } else go();
+}
 
 // Alto real de la barra (una fila + safe-area del notch). Se mide en resizeBoard()
 // y se cachea: tbH() se llama en cada pointermove y no debe forzar reflows.
@@ -1287,7 +1332,7 @@ function drawCourt(){
 function drawChips(land){
   // Con la pista tumbada (land) el lienzo está girado -90°: las letras se
   // contragiran para leerse siempre derechas.
-  var rotL=land ? (landDir()>0 ? Math.PI/2 : -Math.PI/2) : 0;
+  var rotL=land ? (landDir()>0 ? Math.PI/2 : -Math.PI/2) : UI_ROT*Math.PI/180;
   PLAYERS.forEach(function(p){
     ctx.beginPath(); ctx.arc(p.cx,p.cy,CHIP_R,0,Math.PI*2);
     ctx.fillStyle=p.color; ctx.fill();
@@ -1483,6 +1528,7 @@ function chipHit(cx,cy){
 // Events
 function boardEvents(){
   cv.addEventListener('pointerdown',function(e){
+    startMotion();
     e.preventDefault();
     // Escritorio: botón derecho del ratón = borrador ancho (como 3 dedos en táctil).
     if(e.pointerType==='mouse' && e.button===2){
