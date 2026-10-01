@@ -118,14 +118,16 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 }
 
 /* ── BOARD 2D ── */
-#board-screen{background:#181818;}
+#board-screen{background:#181818;container-type:inline-size;container-name:board;}
+/* La barra se adapta al ancho de la pizarra (no al de la pantalla): con el
+   contragiro en horizontal, la pizarra sigue siendo estrecha. */
 html{background:#181818;}
 /* Barra de la pizarra: SIEMPRE una sola fila, para que la pista ocupe el máximo
    de pantalla. En móvil las herramientas de dibujo y las acciones se pliegan en
    desplegables; con más ancho se despliegan en línea (ver media queries abajo). */
 #board-tb{position:absolute;top:0;left:0;right:0;z-index:100;
   background:#10131a;border-bottom:1px solid #1e222c;
-  padding-top:env(safe-area-inset-top,0px);}
+  padding-top:var(--sat,env(safe-area-inset-top,0px));}
 .trow{display:flex;align-items:center;flex-wrap:nowrap;gap:2px;height:44px;
   padding:0 max(4px,env(safe-area-inset-right,0px)) 0 max(4px,env(safe-area-inset-left,0px));}
 .tgrow{flex:1 1 auto;min-width:0;}
@@ -137,7 +139,7 @@ html{background:#181818;}
   /* WCAG AA: #9aa3b8 sobre #10131a ≈ 6:1. */
   color:#9aa3b8;cursor:pointer;transition:background .12s,color .12s;
   font-family:'DM Sans',sans-serif;}
-@media (max-width:340px){ .tb{width:35px;height:36px;} .trow{gap:0;} .sep{margin:0 1px;} }
+@container board (max-width:340px){ .tb{width:35px;height:36px;} .trow{gap:0;} .sep{margin:0 1px;} }
 .tb:hover,.tb:active{background:rgba(255,255,255,.06);color:#e6edf3;}
 .tb.active{background:#3d8bff;color:#000;border-color:#3d8bff;}
 .tb:disabled{opacity:.35;cursor:default;}
@@ -146,7 +148,18 @@ html{background:#181818;}
 /* Pista fija: cuando el sistema no gira la pantalla (bloqueo de rotación o app
    instalada en vertical), los iconos giran según cómo se sostiene el móvil. */
 :root{--ui-rot:0deg;}
-.tb svg,.seqb svg{transform:rotate(var(--ui-rot));transition:transform .3s ease;}
+/* Misma curva y duración que el giro de las letras de las fichas (ver ROT_MS). */
+.tb svg,.seqb svg{transform:rotate(var(--ui-rot));transition:transform .32s cubic-bezier(.42,0,.58,1);}
+/* Con el móvil en horizontal, el menú «Más» se queda solo con iconos (los textos irían de lado). */
+html.ui-rotated #dd-more-menu{min-width:0;}
+html.ui-rotated #dd-more-menu .tb{width:40px;padding:0;justify-content:center;}
+html.ui-rotated #dd-more-menu .tb .lbl{display:none;}
+/* Pizarra fija respecto al móvil: si el sistema gira la pantalla, la app
+   contragira la pizarra entera para que no se mueva (sin tocar ajustes del móvil). */
+#board-screen.counter{top:50%;left:50%;right:auto;transform:translate(-50%,-50%) rotate(var(--counter-rot,0deg));}
+#board-screen.counter.active{animation:none;}
+#board-screen.cr-l{--sat:env(safe-area-inset-left,0px);}
+#board-screen.cr-r{--sat:env(safe-area-inset-right,0px);}
 .tb .lbl{display:none;}
 /* Foco visible solo con teclado. */
 .tb:focus-visible,.csw:focus-visible,.swb:focus-visible,.seqb:focus-visible,
@@ -182,12 +195,12 @@ html{background:#181818;}
 #dd-more-menu .tb{width:auto;justify-content:flex-start;gap:12px;padding:0 12px;font-size:14px;color:#e6edf3;}
 #dd-more-menu .tb .lbl{display:inline;}
 /* Con ancho suficiente, las herramientas de dibujo van en línea (sin desplegable). */
-@media (min-width:640px){
+@container board (min-width:640px){
   #dd-tool > .dd-btn{display:none;}
   #dd-tool > .dd-menu{display:flex;position:static;padding:0;gap:2px;background:none;border:0;box-shadow:none;}
 }
 /* Y con más ancho todavía, también las acciones del menú «Más». */
-@media (min-width:800px){
+@container board (min-width:800px){
   #dd-more > .dd-btn{display:none;}
   #dd-more > #dd-more-menu{display:flex;flex-direction:row;align-items:center;position:static;
     min-width:0;padding:0;gap:2px;background:none;border:0;box-shadow:none;}
@@ -245,7 +258,7 @@ body.ui-rot #board-toast.on{transform:translate(-50%,-50%) rotate(var(--ui-rot))
 .seqb{display:flex;align-items:center;justify-content:center;width:30px;height:34px;
   border-radius:8px;border:1px solid var(--border);background:#0c0f15;color:#e6edf3;cursor:pointer;flex-shrink:0;}
 .seqb svg{width:16px;height:16px;}
-#seq-panel .seq-count,#seq-panel .seq-loop{display:inline-block;transform:rotate(var(--ui-rot));transition:transform .3s ease;}
+#seq-panel .seq-count,#seq-panel .seq-loop{display:inline-block;transform:rotate(var(--ui-rot));transition:transform .32s cubic-bezier(.42,0,.58,1);}
 .seqb:active{background:#161b24;}
 .seqb.seq-play{background:var(--accent);color:#000;border-color:var(--accent);}
 .seq-play .ic-pause{display:none;}
@@ -260,7 +273,7 @@ body.ui-rot #board-toast.on{transform:translate(-50%,-50%) rotate(var(--ui-rot))
 .seq-loop input{accent-color:var(--accent);}
 /* Barra de secuencias también en una sola fila en móvil. */
 #seq-panel{padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));}
-@media (max-width:480px){
+@container board (max-width:480px){
   .seq-row{gap:3px;}
   .seqb{width:32px;}
   #seq-panel .sep{display:none;}
@@ -1062,8 +1075,43 @@ function viewKey(){ return courtLand() ? (landDir()>0?'L':'R') : 'P'; }
 // porque en iOS en modo app window.innerHeight puede venir corto.
 function vpSize(){
   var el=document.getElementById('board-screen'), w=window.innerWidth, h=window.innerHeight;
-  if(el && el.classList.contains('active')){ var r=el.getBoundingClientRect(); if(r.width>0) w=r.width; if(r.height>h) h=r.height; }
+  if(el && el.classList.contains('active') && el.offsetWidth>0){
+    // offsetWidth/Height: tamaño sin transformar (con contragiro, el de la pizarra en vertical).
+    w=el.offsetWidth;
+    h=COUNTER ? el.offsetHeight : Math.max(el.offsetHeight, h);
+  }
   return {w:Math.round(w), h:Math.round(h)};
+}
+
+// ── Contragiro: en táctil la pizarra se queda fija respecto al móvil.
+// Si el sistema gira la pantalla a horizontal, #board-screen se gira al revés y
+// se dimensiona en vertical; así la pista, las marcas y la barra (pegada al lado
+// de la cámara) no se mueven. Solo giran letras e iconos para leerse derechos.
+var COUNTER=0, COUNTER_PREV=0;                 // grados aplicados a #board-screen: 0, -90 o 90
+function boardFixed(){ return isTouch(); }    // en escritorio, la pista se tumba como antes
+function applyCounter(){
+  var el=document.getElementById('board-screen'); if(!el) return;
+  var de=document.documentElement;
+  var W=Math.max(window.innerWidth, de.clientWidth), H=Math.max(window.innerHeight, de.clientHeight);
+  var rot=0;
+  if(boardFixed() && W>H) rot = landDir()>0 ? -90 : 90;   // girado a la izquierda → -90
+  COUNTER=rot;
+  el.classList.toggle('counter', rot!==0);
+  el.classList.toggle('cr-l', rot===-90);      // la cámara queda a la izquierda de la pantalla
+  el.classList.toggle('cr-r', rot===90);
+  if(rot){ el.style.width=H+'px'; el.style.height=W+'px'; el.style.setProperty('--counter-rot', rot+'deg'); }
+  else { el.style.width=''; el.style.height=''; }
+  var was=COUNTER_PREV; COUNTER_PREV=rot;
+  if(rot) setUiRot(-rot);                      // móvil a la izquierda → letras e iconos +90
+  else if(was || !_motionOn) setUiRot(0);      // de vuelta a vertical (el sensor reajusta si hace falta)
+}
+// Coordenadas del puntero en el sistema de la pizarra (deshace el contragiro).
+function evXY(e){
+  if(!COUNTER) return {x:e.clientX, y:e.clientY};
+  var el=document.getElementById('board-screen'), W=el.offsetWidth, H=el.offsetHeight;
+  var dx=e.clientX-window.innerWidth/2, dy=e.clientY-window.innerHeight/2;
+  var a=-COUNTER*Math.PI/180, c=Math.cos(a), sn=Math.sin(a);
+  return {x:dx*c-dy*sn+W/2, y:dx*sn+dy*c+H/2};
 }
 var CVW=0, CVH=0, DPR=1;                       // tamaño del lienzo en px CSS y densidad
 
@@ -1075,17 +1123,33 @@ var CVW=0, CVH=0, DPR=1;                       // tamaño del lienzo en px CSS y
 // UI_ROT: 0 = vertical; -90 = móvil girado a la derecha; 90 = a la izquierda.
 var UI_ROT=0;
 var IS_IOS=/iP(hone|ad|od)/.test(navigator.platform)||(navigator.userAgent.indexOf('Mac')>=0&&'ontouchend' in document);
+var ROT_SHOWN=0, ROT_MS=320, _rotAnim=null;   // ángulo que se dibuja ahora en las letras
+// Curva cubic-bezier(.42,0,.58,1) (la misma que el CSS de los iconos).
+function easeIO(t){
+  var lo=0, hi=1, x, u;
+  for(var i=0;i<20;i++){ u=(lo+hi)/2; x=3*u*(1-u)*(1-u)*.42+3*u*u*(1-u)*.58+u*u*u; if(x<t) lo=u; else hi=u; }
+  u=(lo+hi)/2; return 3*u*u*(1-u)+u*u*u;
+}
 function setUiRot(r){
   if(r===UI_ROT) return;
   UI_ROT=r;
   document.documentElement.style.setProperty('--ui-rot', r+'deg');
-  document.body.classList.toggle('ui-rot', r!==0);
-  if(typeof cv!=='undefined' && cv && currentScreen==='board-screen') draw();
+  document.documentElement.classList.toggle('ui-rotated', r!==0);
+  // El aviso solo se gira a mano si la pantalla no la gira nadie (modo sensor).
+  document.body.classList.toggle('ui-rot', r!==0 && COUNTER===0);
+  var from=ROT_SHOWN, t0=performance.now();
+  if(_rotAnim) cancelAnimationFrame(_rotAnim);
+  (function step(now){
+    var k=Math.min(1,(now-t0)/ROT_MS);
+    ROT_SHOWN=from+(r-from)*easeIO(k);
+    if(typeof cv!=='undefined' && cv && currentScreen==='board-screen') draw();
+    _rotAnim = k<1 ? requestAnimationFrame(step) : null;
+  })(t0);
 }
 function onMotion(e){
   var g=e.accelerationIncludingGravity; if(!g || g.x==null) return;
-  // Con la pantalla ya girada por el sistema, no hace falta contragirar nada.
-  if(deviceLandscape()){ setUiRot(0); return; }
+  // Si el sistema ha girado la pantalla, manda el contragiro, no el sensor.
+  if(COUNTER || window.innerWidth>window.innerHeight) return;
   var x=g.x, y=g.y;
   if(IS_IOS){ x=-x*9.81; y=-y*9.81; }          // iOS da g e invierte el signo respecto a Android
   var ax=Math.abs(x), ay=Math.abs(y);
@@ -1095,7 +1159,8 @@ function onMotion(e){
 }
 var _motionOn=false;
 function startMotion(){
-  if(_motionOn || !('DeviceMotionEvent' in window)) return;
+  // En iOS la pantalla siempre gira y el contragiro ya sabe hacia dónde: sin sensor ni permisos.
+  if(_motionOn || IS_IOS || !('DeviceMotionEvent' in window)) return;
   var go=function(){ _motionOn=true; window.addEventListener('devicemotion', onMotion); };
   // iOS pide permiso, y solo se puede pedir tras un toque del usuario.
   if(typeof DeviceMotionEvent.requestPermission==='function'){
@@ -1110,7 +1175,7 @@ var _tbCache=45;
 function tbH(){ return immersive ? 0 : _tbCache; }
 function tbMeasure(){
   var el=document.getElementById('board-tb');
-  var h=el?Math.round(el.getBoundingClientRect().height):0;
+  var h=el?el.offsetHeight:0;                 // sin transformar (con contragiro, el rect vendría girado)
   _tbCache=h>0?h:45;
 }
 // Alto reservado por la barra inferior de secuencias (para no tapar la pista).
@@ -1148,6 +1213,7 @@ function initBoard(){
 // keepZoom: al girar el dispositivo se conserva el zoom y solo se reencuadra.
 function resizeBoard(keepZoom){
   if(!cv)return;
+  applyCounter();
   tbMeasure();
   var v=vpSize(), th=tbH(), vw=v.w, vh=v.h-th-bottomH();
   if(vh<0) vh=0;
@@ -1217,7 +1283,7 @@ function toCourt(px,py){
 }
 function ptr(e){
   var th=tbH();
-  var r=toCourt(e.clientX, e.clientY-th);
+  var q=evXY(e), r=toCourt(q.x, q.y-th);
   return{x:Math.max(0,Math.min(CW,r.x)),y:Math.max(0,Math.min(CH,r.y))};
 }
 
@@ -1332,7 +1398,7 @@ function drawCourt(){
 function drawChips(land){
   // Con la pista tumbada (land) el lienzo está girado -90°: las letras se
   // contragiran para leerse siempre derechas.
-  var rotL=land ? (landDir()>0 ? Math.PI/2 : -Math.PI/2) : UI_ROT*Math.PI/180;
+  var rotL=land ? (landDir()>0 ? Math.PI/2 : -Math.PI/2) : ROT_SHOWN*Math.PI/180;
   PLAYERS.forEach(function(p){
     ctx.beginPath(); ctx.arc(p.cx,p.cy,CHIP_R,0,Math.PI*2);
     ctx.fillStyle=p.color; ctx.fill();
@@ -1533,11 +1599,11 @@ function boardEvents(){
     // Escritorio: botón derecho del ratón = borrador ancho (como 3 dedos en táctil).
     if(e.pointerType==='mouse' && e.button===2){
       S.rightErase=true; S.wipe=true; S.drawing=false; live=null; S.sel=null; S.pinchD=null; _eraseDirty=false;
-      wipeFingers([{x:e.clientX,y:e.clientY}]); draw();
+      wipeFingers([evXY(e)]); draw();
       try{ cv.setPointerCapture(e.pointerId); }catch(_){}
       return;
     }
-    S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+    S.ptrs[e.pointerId]=evXY(e);
     var plist=Object.values(S.ptrs);
     // 3+ dedos: borrador ancho (estilo borrador de pizarra)
     if(plist.length>=3){
@@ -1567,11 +1633,11 @@ function boardEvents(){
   cv.addEventListener('pointermove',function(e){
     // Arrastre con botón derecho pulsado: seguir borrando (borrador ancho).
     if(S.rightErase){
-      if(e.buttons & 2){ wipeFingers([{x:e.clientX,y:e.clientY}]); draw(); }
+      if(e.buttons & 2){ wipeFingers([evXY(e)]); draw(); }
       else { S.rightErase=false; S.wipe=false; S.wipePts=null; draw(); }
       return;
     }
-    if(e.pointerId in S.ptrs) S.ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+    if(e.pointerId in S.ptrs) S.ptrs[e.pointerId]=evXY(e);
     var plist=Object.values(S.ptrs);
     // Solo se bloquea el gesto del navegador cuando de verdad se interactúa con la pista.
     if(S.drawing||S.wipe||S.sel||plist.length>=2) e.preventDefault();
