@@ -310,6 +310,7 @@ body:not(.on-board) #board-toast{top:auto;bottom:calc(28px + env(safe-area-inset
 .tb.locked::after,.csw.locked::after,.swb.locked::after{content:"\1F512";position:absolute;
   top:1px;right:1px;font-size:9px;line-height:1;filter:none;}
 .feat-card.locked{opacity:.55;}
+body.on-board #dev-pro{display:none!important;}
 #dev-pro{position:fixed;left:10px;bottom:10px;z-index:600;display:none;
   padding:7px 11px;border-radius:10px;border:1px solid var(--border);
   background:rgba(16,19,26,.92);color:var(--text);font-size:12px;cursor:pointer;
@@ -534,7 +535,7 @@ body:not(.on-board) #board-toast{top:auto;bottom:calc(28px + env(safe-area-inset
 
 <div id="board-toast" role="status" aria-live="polite"></div>
 
-<button id="dev-pro" onclick="setPro(!IS_PRO)">DEV &middot; Pro: OFF</button>
+<button id="dev-pro" onclick="setPro(!IS_PRO)" aria-label="Modo pruebas: alternar Gratis y Pro">PRUEBAS &middot; Pro: OFF</button>
 
 <!-- HOME -->
 <div id="home" class="screen active">
@@ -694,20 +695,20 @@ body:not(.on-board) #board-toast{top:auto;bottom:calc(28px + env(safe-area-inset
       <div class="dd" id="dd-color">
         <button class="tb dd-btn" onclick="toggleDD('color')" title="Color" aria-label="Color" aria-haspopup="true"><span class="cur-dot" id="cur-color-dot"></span></button>
         <div class="dd-menu" id="dd-color-menu">
-          <div class="csw active" style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')"></div>
-          <div class="csw" style="background:#fff"    data-c="#ffffff" onclick="setColor('#ffffff')"></div>
-          <div class="csw" style="background:#facc15" data-c="#facc15" onclick="setColor('#facc15')"></div>
-          <div class="csw" style="background:#22c55e" data-c="#22c55e" onclick="setColor('#22c55e')"></div>
-          <div class="csw" style="background:#ef4444" data-c="#ef4444" onclick="setColor('#ef4444')"></div>
-          <div class="csw" style="background:#f97316" data-c="#f97316" onclick="setColor('#f97316')"></div>
+          <button type="button" class="csw active" style="background:#111;outline:1px solid #555" data-c="#111111" onclick="setColor('#111111')" aria-label="Negro" title="Negro"></button>
+          <button type="button" class="csw" style="background:#fff"    data-c="#ffffff" onclick="setColor('#ffffff')" aria-label="Blanco" title="Blanco"></button>
+          <button type="button" class="csw" style="background:#facc15" data-c="#facc15" onclick="setColor('#facc15')" aria-label="Amarillo" title="Amarillo"></button>
+          <button type="button" class="csw" style="background:#22c55e" data-c="#22c55e" onclick="setColor('#22c55e')" aria-label="Verde" title="Verde"></button>
+          <button type="button" class="csw" style="background:#ef4444" data-c="#ef4444" onclick="setColor('#ef4444')" aria-label="Rojo" title="Rojo"></button>
+          <button type="button" class="csw" style="background:#f97316" data-c="#f97316" onclick="setColor('#f97316')" aria-label="Naranja" title="Naranja"></button>
         </div>
       </div>
       <div class="dd" id="dd-stroke">
         <button class="tb dd-btn" onclick="toggleDD('stroke')" title="Grosor" aria-label="Grosor" aria-haspopup="true"><span class="cur-sdot" id="cur-stroke-dot"></span></button>
         <div class="dd-menu" id="dd-stroke-menu">
-          <button class="swb" id="sw0" onclick="setStroke(2)"><div class="sdot" style="width:3px;height:3px"></div></button>
-          <button class="swb active" id="sw1" onclick="setStroke(3.5)"><div class="sdot" style="width:5px;height:5px"></div></button>
-          <button class="swb" id="sw2" onclick="setStroke(6)"><div class="sdot" style="width:8px;height:8px"></div></button>
+          <button class="swb" id="sw0" onclick="setStroke(2)" aria-label="Trazo fino" title="Fino"><div class="sdot" style="width:3px;height:3px"></div></button>
+          <button class="swb active" id="sw1" onclick="setStroke(3.5)" aria-label="Trazo medio" title="Medio"><div class="sdot" style="width:5px;height:5px"></div></button>
+          <button class="swb" id="sw2" onclick="setStroke(6)" aria-label="Trazo grueso" title="Grueso"><div class="sdot" style="width:8px;height:8px"></div></button>
         </div>
       </div>
       <button class="tb" id="btn-eraser" onclick="setTool('eraser')" title="Goma" aria-label="Goma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l11-11 6 6-4 4"/><path d="M6.5 17.5l4-4"/></svg></button>
@@ -890,6 +891,21 @@ body:not(.on-board) #board-toast{top:auto;bottom:calc(28px + env(safe-area-inset
 
 <script>
 // ==================================================
+// MODO PRUEBAS: la copia de /beta/ (y el servidor local) muestran el interruptor
+// de Pro y, en /beta/, guardan sus datos aparte para no tocar los de la app real
+// (localStorage es común a todo el dominio).
+// ==================================================
+var TEST_MODE = /^\/beta\//.test(location.pathname) || location.hostname==='127.0.0.1' || location.hostname==='localhost';
+if(/^\/beta\//.test(location.pathname)){
+  (function(){
+    var P=Storage.prototype, g=P.getItem, st=P.setItem, rm=P.removeItem;
+    function k(key){ return (typeof key==='string' && key.indexOf('padel.')===0) ? 'padelbeta.'+key.slice(6) : key; }
+    P.getItem=function(key){ return g.call(this,k(key)); };
+    P.setItem=function(key,v){ return st.call(this,k(key),v); };
+    P.removeItem=function(key){ return rm.call(this,k(key)); };
+  })();
+}
+// ==================================================
 // NAVIGATION
 // ==================================================
 var currentScreen='home';
@@ -924,7 +940,7 @@ function applyProGating(){
     if(PRO_TOOL_NAMES.indexOf(S.tool)>=0) setTool('pen');
     setColor('#111111'); setStroke(3.5);
   }
-  var dev=document.getElementById('dev-pro'); if(dev) dev.innerHTML='DEV · Pro: <b>'+(pro?'ON':'OFF')+'</b>';
+  var dev=document.getElementById('dev-pro'); if(dev) dev.innerHTML='PRUEBAS · Pro: <b>'+(pro?'ON':'OFF')+'</b>';
   var goPro=document.getElementById('go-pro'); if(goPro) goPro.style.display=pro?'none':'block';
   if(currentScreen==='config-screen') refreshConfig();
 }
@@ -1790,8 +1806,18 @@ var DD_IDS=['tool','color','stroke','more'];
 function toggleDD(which){
   DD_IDS.forEach(function(k){
     var el=document.getElementById('dd-'+k); if(!el) return;
-    if(k===which) el.classList.toggle('open'); else el.classList.remove('open');
+    if(k===which){ el.classList.toggle('open'); if(el.classList.contains('open')) fitMenu(el); }
+    else el.classList.remove('open');
   });
+}
+// Desplaza el menú abierto lo justo para que quepa entero en la barra.
+function fitMenu(dd){
+  var m=dd.querySelector('.dd-menu'), tb=document.getElementById('board-tb'); if(!m||!tb) return;
+  m.style.transform='';
+  if(getComputedStyle(m).position==='static' || tb.classList.contains('tb-l') || tb.classList.contains('tb-r')) return;
+  var r=m.getBoundingClientRect(), t=tb.getBoundingClientRect(), pad=6, dx=0;
+  if(r.left<t.left+pad) dx=t.left+pad-r.left; else if(r.right>t.right-pad) dx=t.right-pad-r.right;
+  if(dx) m.style.transform='translateX('+Math.round(dx)+'px)';
 }
 function closeDD(){ DD_IDS.forEach(function(k){ var el=document.getElementById('dd-'+k); if(el) el.classList.remove('open'); }); }
 document.addEventListener('click',function(e){ if(!(e.target.closest && e.target.closest('.dd'))) closeDD(); });
@@ -1897,7 +1923,7 @@ function initGenerator(){
 }
 function genLabel(k){
   var el=document.getElementById('g-'+k+'-v'); if(!el)return;
-  el.textContent=(courtConfig[k]/100).toFixed(2).replace(/0$/,'').replace(/\.$/,'')+' m';
+  el.textContent=(courtConfig[k]/100).toLocaleString('es-ES',{maximumFractionDigits:2})+' m';
 }
 function genSyncInputs(){
   ['courtColor','glassColor','meshColor','lineColor','netColor'].forEach(function(k){
@@ -2324,7 +2350,14 @@ function accountSubmit(){
       if(r.status===200) return r;
       return pbFetch('/collections/users/records',{method:'POST',body:JSON.stringify({email:email,password:pass,passwordConfirm:pass})})
         .then(function(reg){
-          if(reg.status>=400) throw new Error((reg.body&&reg.body.message)||'No se pudo crear la cuenta');
+          if(reg.status>=400){
+            // PocketBase responde en inglés; se traduce a lo que le pasa al usuario.
+            var d=(reg.body&&reg.body.data)||{};
+            if(d.email && d.email.code==='validation_not_unique') throw new Error('Ese email ya tiene cuenta y la contraseña no coincide.');
+            if(d.email) throw new Error('Revisa el email: no parece válido.');
+            if(d.password) throw new Error('La contraseña no es válida (mínimo 8 caracteres).');
+            throw new Error('No se pudo crear la cuenta. Inténtalo de nuevo.');
+          }
           return pbFetch('/collections/users/auth-with-password',{method:'POST',body:JSON.stringify({identity:email,password:pass})});
         });
     })
@@ -2342,7 +2375,7 @@ function accountLogout(){ try{ localStorage.removeItem('padel.token'); localStor
 
 // Consulta al servidor si esta cuenta es Pro y ajusta el gating.
 function refreshPro(){
-  if(!isLogged()){ if(!isLocalDev()){ IS_PRO=false; applyProGating(); if(typeof cv!=='undefined'&&cv) draw(); } return Promise.resolve(false); }
+  if(!isLogged()){ if(!TEST_MODE){ IS_PRO=false; applyProGating(); if(typeof cv!=='undefined'&&cv) draw(); } return Promise.resolve(false); }
   return pbFetch('/collections/entitlements/records?filter='+encodeURIComponent("user='"+accUid()+"'"))
     .then(function(r){
       var pro=false;
@@ -2656,8 +2689,8 @@ window.addEventListener('load',function(){
   if(typeof S!=='undefined'){ setColor(S.color); setStroke(S.stroke); }
   applyProGating();
   refreshAutoSaveBanner();
-  // Interruptor de desarrollo (solo en local) para alternar Free/Pro.
-  if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
+  // Modo pruebas: interruptor visible para alternar Gratis/Pro sin pagar.
+  if(TEST_MODE){
     var d=document.getElementById('dev-pro'); if(d) d.style.display='block';
   }
   // Sesión y Pro real desde el servidor; al volver de Stripe, re-consulta.

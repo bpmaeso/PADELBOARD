@@ -10,7 +10,11 @@
 // v26 (2026-09-30): los iconos pasan a ser el logo de la app (el mismo de la
 // portada). icon-180 para «Añadir a pantalla de inicio» de iOS y un maskable
 // aparte para Android, que recorta a círculo.
-const CACHE = 'padelboard-v31';
+// v32 (2026-10-16): la copia de pruebas (/beta/) usa su propia familia de cachés
+// y cada SW borra solo las suyas: antes la app real borraba las de pruebas y al revés.
+const BETA = /\/beta\/$/.test(new URL(self.registration.scope).pathname);
+const PREFIX = BETA ? 'padelboard-beta-v' : 'padelboard-v';
+const CACHE = PREFIX + '33';
 const FONT_CACHE = 'pizarra-padel-fonts-v3';
 
 // App shell local.
@@ -42,7 +46,7 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys.filter(k => k !== CACHE && k !== FONT_CACHE).map(k => caches.delete(k))
+        keys.filter(k => k !== CACHE && (k.indexOf(PREFIX) === 0 || (!BETA && /^pizarra-padel-(beta-)?v/.test(k)))).map(k => caches.delete(k))
       )
     ).then(() => self.clients.claim())
   );

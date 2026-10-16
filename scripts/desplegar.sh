@@ -38,7 +38,7 @@ sudo git -C $APP merge --ff-only FETCH_HEAD
 # (así se publicó /.git/ desde mayo hasta el 30-09-2026). Ver docs/desarrollo.md.
 sudo rsync -a --delete --delete-excluded \
   --exclude='.git' --exclude='.gitignore' --exclude='.claude' --exclude='docs' --exclude='CLAUDE.md' \
-  --exclude='_archive' --exclude='backend' --exclude='README.md' --exclude='scripts' \
+  --exclude='_archive' --exclude='backend' --exclude='README.md' --exclude='scripts' --exclude='tests' \
   $APP/ $WEB/
 rm -f /tmp/padelboard-deploy.bundle
 "

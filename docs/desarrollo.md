@@ -86,3 +86,13 @@ Para una auditoría, abrir la app en preview y verificar (manual o con `preview_
 
 - ECOSYSTEM_STATE (VPS): `/opt/stacks/jdlq-agent/inbox/ECOSYSTEM_STATE.md` — leer al empezar, actualizar al cerrar.
 - Canal Claude↔Claude: `notify_claude_target("torre"/"laptop", texto)` y `read_claude_inbox_for(...)`.
+
+## Modo pruebas y batería e2e (2026-10-16)
+
+- **Copia de pruebas**: `bash scripts/desplegar-pruebas.sh [ref]` publica en
+  https://padel-jdlq10.mywire.org/beta/ sin tocar la app real. Allí la app entra sola en
+  modo pruebas: interruptor «PRUEBAS · Pro» en inicio y configuración (no sobre la pizarra),
+  datos en `padelbeta.*` y cachés `padelboard-beta-v*`. Cuentas y `/api/` son las reales.
+- **Batería e2e**: `cd tests && npm install && node e2e.js [filtro]`. Abre la app en el
+  Chrome del sistema, pulsa los botones de verdad y dibuja con eventos táctiles; la API va
+  simulada. Capturas de los fallos en `tests/out/`. Pasarla entera antes de cada despliegue.

@@ -1,0 +1,7 @@
+{
+  "name": "padelboard-tests",
+  "private": true,
+  "description": "Batería e2e de PADELBOARD (Chrome del sistema vía playwright-core)",
+  "scripts": { "test": "node e2e.js" },
+  "devDependencies": { "playwright-core": "1.63.0" }
+}
