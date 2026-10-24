@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PADELBOARD - letra P outline con pelota">
+  <!-- Fondo cuadrado redondeado -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="#1E3A8A"/>
+
+  <!-- Letra P outline geométrica (dentro del safe-zone)
+       Trazo vertical + semicírculo superior, todo stroke -->
+  <!-- Asta vertical de la P -->
+  <line x1="170" y1="100" x2="170" y2="412"
+        stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Arco superior de la P (semicírculo a la derecha) -->
+  <path d="M 170 100 H 260 a 90 90 0 0 1 0 180 H 170"
+        fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Pelota amarilla dentro del hueco de la P -->
+  <circle cx="244" cy="190" r="34" fill="#FFD600"/>
+</svg>
