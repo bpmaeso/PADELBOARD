@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PADELBOARD - p minuscula con mango de raqueta">
+  <defs>
+    <linearGradient id="bg5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B2E5C"/>
+      <stop offset="1" stop-color="#1A5FB4"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg5)"/>
+
+  <!-- "p" minuscula redonda. El bucle es la cabeza de la raqueta;
+       la barra inferior se alarga como mango con grip. -->
+
+  <!-- Bucle redondo de la p -->
+  <g>
+    <!-- Cabeza circular blanca -->
+    <circle cx="232" cy="216" r="100" fill="#FFFFFF"/>
+    <!-- Hueco interior (forma de o, dejando una "p") -->
+    <circle cx="232" cy="216" r="56" fill="url(#bg5)"/>
+    <!-- Patrón de cuerdas sutil en la cabeza (lineas finas) -->
+    <g stroke="#0B2E5C" stroke-width="2" opacity="0.45">
+      <line x1="160" y1="216" x2="304" y2="216"/>
+      <line x1="232" y1="144" x2="232" y2="288"/>
+    </g>
+  </g>
+
+  <!-- Tronco vertical de la p (lateral izquierdo del bucle) -->
+  <rect x="132" y="156" width="44" height="280" rx="8" fill="#FFFFFF"/>
+
+  <!-- Mango alargado: prolongación de la barra inferior
+       hacia la derecha, terminada con grip amarillo. -->
+  <g>
+    <!-- Mango blanco -->
+    <rect x="176" y="392" width="200" height="44" rx="20" fill="#FFFFFF"/>
+    <!-- Grip amarillo en la punta -->
+    <rect x="332" y="384" width="68" height="60" rx="14" fill="#F2C94C"/>
+    <!-- Vueltas del grip -->
+    <g stroke="#0B2E5C" stroke-width="2" opacity="0.55">
+      <line x1="346" y1="384" x2="346" y2="444"/>
+      <line x1="362" y1="384" x2="362" y2="444"/>
+      <line x1="378" y1="384" x2="378" y2="444"/>
+    </g>
+  </g>
+</svg>

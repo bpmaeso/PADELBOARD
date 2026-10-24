@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PADELBOARD - P con pelota como punto">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#103D2A"/>
+      <stop offset="1" stop-color="#1F7A4E"/>
+    </linearGradient>
+    <radialGradient id="ball3" cx="0.35" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#FFFCA8"/>
+      <stop offset="1" stop-color="#D8E03A"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg3)"/>
+
+  <!-- "P." una P bold seguida de un punto que es la pelota.
+       Tipografía geométrica condensada, centrada en safe zone. -->
+
+  <!-- Letra P -->
+  <g fill="#FFFFFF">
+    <!-- tronco vertical -->
+    <rect x="118" y="96" width="72" height="320" rx="12"/>
+    <!-- bucle superior, generoso -->
+    <path d="M 190 96
+             H 286
+             A 92 92 0 0 1 286 280
+             H 190
+             Z"/>
+  </g>
+
+  <!-- Hueco interior del bucle (forma de D negativa) -->
+  <path d="M 190 144
+           H 280
+           A 48 48 0 0 1 280 232
+           H 190
+           Z" fill="url(#bg3)"/>
+
+  <!-- Punto = pelota amarilla, junto a la base de la P -->
+  <g>
+    <circle cx="356" cy="378" r="48" fill="url(#ball3)"/>
+    <!-- Costura curva de pelota de pádel -->
+    <path d="M 313 360 Q 356 340 399 360" stroke="#FFFFFF" stroke-width="3" fill="none" opacity="0.9"/>
+    <path d="M 313 396 Q 356 416 399 396" stroke="#FFFFFF" stroke-width="3" fill="none" opacity="0.9"/>
+  </g>
+</svg>

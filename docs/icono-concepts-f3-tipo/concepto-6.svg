@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PADELBOARD - PB en negativo con bolita">
+  <defs>
+    <linearGradient id="bg6" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1453A8"/>
+      <stop offset="1" stop-color="#0A2E66"/>
+    </linearGradient>
+    <radialGradient id="ball6" cx="0.4" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#FFFCA8"/>
+      <stop offset="1" stop-color="#D8E03A"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg6)"/>
+
+  <!-- Tipografía gruesa "PB" en negativo (letras en blanco),
+       ocupando casi todo el safe zone, con una bolita amarilla
+       como signo de puntuación / apoyo. -->
+
+  <g fill="#FFFFFF">
+    <!-- P (gruesa, lado izquierdo) -->
+    <!-- tronco -->
+    <rect x="96" y="112" width="68" height="304" rx="10"/>
+    <!-- bucle superior -->
+    <path d="M 164 112
+             H 232
+             A 76 76 0 0 1 232 264
+             H 164
+             Z"/>
+  </g>
+  <!-- Hueco P -->
+  <path d="M 164 152
+           H 224
+           A 40 40 0 0 1 224 224
+           H 164
+           Z" fill="url(#bg6)"/>
+
+  <g fill="#FFFFFF">
+    <!-- B (gruesa, lado derecho) -->
+    <!-- tronco -->
+    <rect x="278" y="112" width="68" height="304" rx="10"/>
+    <!-- bucle superior B -->
+    <path d="M 346 112
+             H 408
+             A 64 64 0 0 1 408 240
+             H 346
+             Z"/>
+    <!-- bucle inferior B (mayor) -->
+    <path d="M 346 240
+             H 416
+             A 72 72 0 0 1 416 384
+             H 346
+             Z"/>
+  </g>
+  <!-- Huecos B -->
+  <path d="M 346 152
+           H 400
+           A 32 32 0 0 1 400 200
+           H 346
+           Z" fill="url(#bg6)"/>
+  <path d="M 346 280
+           H 408
+           A 40 40 0 0 1 408 344
+           H 346
+           Z" fill="url(#bg6)"/>
+
+  <!-- Bolita amarilla a pie de la B, como apoyo -->
+  <circle cx="408" cy="416" r="22" fill="url(#ball6)"/>
+  <path d="M 388 408 Q 408 398 428 408" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.9"/>
+  <path d="M 388 424 Q 408 434 428 424" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.9"/>
+</svg>
