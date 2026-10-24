@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Concepto 3 - Pala estilizada con bola.
+  Viewport 512x512. Silueta plana de pala de padel (forma redonda con mango), bola amarilla al lado.
+  Safe-zone maskable: pala+bola inscritos en circulo radio 205.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Pizarra Pádel - icono concepto 3">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1463d6"/>
+      <stop offset="100%" stop-color="#0a2a66"/>
+    </linearGradient>
+    <pattern id="holes3" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+      <rect width="32" height="32" fill="#f3f6fb"/>
+      <circle cx="16" cy="16" r="5" fill="#1463d6"/>
+    </pattern>
+    <radialGradient id="ball3" cx="0.35" cy="0.35" r="0.7">
+      <stop offset="0%" stop-color="#fffae3"/>
+      <stop offset="60%" stop-color="#f7d83a"/>
+      <stop offset="100%" stop-color="#c9a300"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="url(#bg3)"/>
+
+  <!-- Pala: rotada 25 grados a la izquierda. Cabeza redonda (oval) + cuello + grip cuadrado. -->
+  <g transform="rotate(-22 256 256)">
+    <!-- Grip (mango con tape) -->
+    <rect x="230" y="338" width="52" height="100" rx="8" fill="#1c1f28"/>
+    <!-- Tape rayado -->
+    <g stroke="#3d8bff" stroke-width="3" opacity="0.85">
+      <line x1="230" y1="354" x2="282" y2="354"/>
+      <line x1="230" y1="370" x2="282" y2="370"/>
+      <line x1="230" y1="386" x2="282" y2="386"/>
+      <line x1="230" y1="402" x2="282" y2="402"/>
+      <line x1="230" y1="418" x2="282" y2="418"/>
+    </g>
+    <!-- Cuello -->
+    <rect x="240" y="318" width="32" height="32" fill="#0f1218"/>
+    <!-- Cabeza redondeada con marco -->
+    <ellipse cx="256" cy="208" rx="118" ry="130" fill="#0f1218"/>
+    <!-- Plano de golpeo con agujeros -->
+    <ellipse cx="256" cy="200" rx="98" ry="110" fill="url(#holes3)"/>
+    <!-- Borde superior color acento -->
+    <ellipse cx="256" cy="200" rx="98" ry="110" fill="none" stroke="#3d8bff" stroke-width="6"/>
+  </g>
+
+  <!-- Bola amarilla (no rotada) -->
+  <circle cx="372" cy="380" r="44" fill="url(#ball3)" stroke="#7a6300" stroke-width="3"/>
+  <path d="M 332 365 Q 372 350 412 372" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.8"/>
+  <path d="M 336 396 Q 372 410 408 392" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.8"/>
+</svg>

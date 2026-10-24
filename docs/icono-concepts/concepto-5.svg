@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Concepto 5 - Monograma "PB" geometrico minimal.
+  Viewport 512x512. Tipografia geometrica, P y B integradas compartiendo el trazo vertical.
+  Safe-zone maskable: glifo dentro de circulo radio 205.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Pizarra Pádel - icono concepto 5">
+  <defs>
+    <linearGradient id="bg5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1463d6"/>
+      <stop offset="100%" stop-color="#062055"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="url(#bg5)"/>
+
+  <!-- Glifo PB compartiendo trazo vertical. Centrado horizontal aprox. -->
+  <g fill="#ffffff">
+    <!-- Trazo vertical compartido -->
+    <rect x="138" y="110" width="50" height="292" rx="8"/>
+
+    <!-- "P": cabeza superior - rectangulo redondeado conectado al trazo -->
+    <path d="M 188 110
+             L 268 110
+             A 70 70 0 0 1 268 250
+             L 188 250
+             Z"/>
+    <!-- Hueco interior de la P -->
+    <path d="M 188 134
+             L 266 134
+             A 46 46 0 0 1 266 226
+             L 188 226
+             Z" fill="#1463d6"/>
+
+    <!-- "B": cabeza inferior. Reutilizando el trazo vertical, hace un bucle. -->
+    <path d="M 188 262
+             L 260 262
+             A 62 62 0 0 1 260 386
+             L 188 386
+             Z"/>
+    <!-- Hueco interior de la B -->
+    <path d="M 188 286
+             L 258 286
+             A 38 38 0 0 1 258 362
+             L 188 362
+             Z" fill="#1463d6"/>
+  </g>
+
+  <!-- Punto amarillo: bola en el corner inferior derecho, como acento de marca -->
+  <circle cx="388" cy="380" r="22" fill="#f7d83a" stroke="#7a6300" stroke-width="2"/>
+  <ellipse cx="381" cy="373" rx="6" ry="4" fill="#ffffff" opacity="0.55"/>
+</svg>

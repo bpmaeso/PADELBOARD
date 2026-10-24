@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Concepto 1 - Pista cenital + bola
+  Viewport: 512x512. Safe-zone maskable: contenido importante dentro del círculo de 80% (radio 205, centro 256,256).
+  Fondo redondeado azul. Pista vista desde arriba, líneas blancas, bolita amarilla en cuadrante de servicio.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Pizarra Pádel - icono concepto 1">
+  <defs>
+    <linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e63d6"/>
+      <stop offset="100%" stop-color="#0d3b8c"/>
+    </linearGradient>
+    <radialGradient id="ball1" cx="0.35" cy="0.35" r="0.7">
+      <stop offset="0%" stop-color="#fffae3"/>
+      <stop offset="60%" stop-color="#f7d83a"/>
+      <stop offset="100%" stop-color="#c9a300"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Fondo cuadrado completo (purpose any usa todo, maskable recortara) -->
+  <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="url(#bg1)"/>
+
+  <!-- Pista de padel cenital (proporcion real 10:20 -> aqui 200x288 dentro safe zone) -->
+  <!-- centrada en 256,256. Pista: ancho 200 (x 156..356), alto 288 (y 112..400) -->
+  <g stroke="#ffffff" stroke-width="10" fill="none" stroke-linejoin="miter" stroke-linecap="square">
+    <!-- Marco exterior pista -->
+    <rect x="156" y="112" width="200" height="288" rx="4"/>
+    <!-- Linea de red central -->
+    <line x1="156" y1="256" x2="356" y2="256" stroke-width="12"/>
+    <!-- Lineas de servicio (a 1/4 desde la red, simulando 7m desde fondo en pista 20m) -->
+    <line x1="156" y1="184" x2="356" y2="184"/>
+    <line x1="156" y1="328" x2="356" y2="328"/>
+    <!-- Linea central de saque (mitad de la zona de saque) -->
+    <line x1="256" y1="112" x2="256" y2="184"/>
+    <line x1="256" y1="328" x2="256" y2="400"/>
+  </g>
+
+  <!-- Bolita en cuadrante de servicio superior izquierdo -->
+  <circle cx="206" cy="148" r="22" fill="url(#ball1)" stroke="#7a6300" stroke-width="2"/>
+  <!-- Brillo de bola -->
+  <ellipse cx="197" cy="139" rx="7" ry="5" fill="#ffffff" opacity="0.55"/>
+</svg>

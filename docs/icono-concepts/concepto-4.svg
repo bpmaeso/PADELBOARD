@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Concepto 4 - Flecha tactica sobre pista (la idea "pizarra de jugadas").
+  Viewport 512x512. Fondo oscuro, pista esquematica al fondo (baja opacidad),
+  flecha curva amarilla/azul protagonista.
+  Safe-zone maskable: flecha+pista inscritas en circulo radio 205.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Pizarra Pádel - icono concepto 4">
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0b0e"/>
+      <stop offset="100%" stop-color="#14213d"/>
+    </linearGradient>
+    <linearGradient id="arrow4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3d8bff"/>
+      <stop offset="100%" stop-color="#f7d83a"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="url(#bg4)"/>
+
+  <!-- Pista esquematica al fondo (baja opacidad) -->
+  <g stroke="#5fa0ff" stroke-width="6" fill="none" opacity="0.32">
+    <rect x="124" y="100" width="264" height="312" rx="6"/>
+    <line x1="124" y1="256" x2="388" y2="256" stroke-width="8"/>
+    <line x1="124" y1="180" x2="388" y2="180"/>
+    <line x1="124" y1="332" x2="388" y2="332"/>
+    <line x1="256" y1="100" x2="256" y2="180"/>
+    <line x1="256" y1="332" x2="256" y2="412"/>
+  </g>
+
+  <!-- Flecha curva tactica: nace abajo-izquierda, sube, gira y apunta arriba-derecha. -->
+  <!-- Trazo grueso con flecha al final. -->
+  <g>
+    <path d="M 152 376
+             C 180 320 200 240 240 220
+             S 340 200 360 140"
+          stroke="url(#arrow4)" stroke-width="32" fill="none" stroke-linecap="round"/>
+    <!-- Punta de flecha -->
+    <polygon points="360,140 322,152 348,182 386,170 390,118" fill="#f7d83a"/>
+    <!-- Pequena bola en el origen de la jugada -->
+    <circle cx="152" cy="376" r="22" fill="#f7d83a" stroke="#7a6300" stroke-width="3"/>
+    <ellipse cx="146" cy="370" rx="6" ry="4" fill="#ffffff" opacity="0.55"/>
+  </g>
+</svg>
