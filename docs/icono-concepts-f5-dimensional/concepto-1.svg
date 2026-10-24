@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Pala de padel dimensional en angulo 3/4">
+  <defs>
+    <linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2840"/>
+      <stop offset="0.55" stop-color="#0f1a2e"/>
+      <stop offset="1" stop-color="#070d1c"/>
+    </linearGradient>
+    <radialGradient id="bgGlow1" cx="0.3" cy="0.25" r="0.8">
+      <stop offset="0" stop-color="#3b5a8a" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#0a1322" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="paddleFace" x1="0.2" y1="0.05" x2="0.85" y2="0.95">
+      <stop offset="0" stop-color="#ff7a3c"/>
+      <stop offset="0.5" stop-color="#e94d18"/>
+      <stop offset="1" stop-color="#7a1f04"/>
+    </linearGradient>
+    <radialGradient id="paddleHi" cx="0.35" cy="0.28" r="0.45">
+      <stop offset="0" stop-color="#ffd9a8" stop-opacity="0.9"/>
+      <stop offset="0.6" stop-color="#ff7a3c" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#ff7a3c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="paddleHole" cx="0.5" cy="0.4" r="0.6">
+      <stop offset="0" stop-color="#1a0a04"/>
+      <stop offset="1" stop-color="#3a1408"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff1d4"/>
+      <stop offset="0.5" stop-color="#cf6428"/>
+      <stop offset="1" stop-color="#4a1a06"/>
+    </linearGradient>
+    <linearGradient id="grip" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#101418"/>
+      <stop offset="0.5" stop-color="#2a3038"/>
+      <stop offset="1" stop-color="#0a0d10"/>
+    </linearGradient>
+    <linearGradient id="shaft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4350"/>
+      <stop offset="1" stop-color="#0d1219"/>
+    </linearGradient>
+    <radialGradient id="shadow1" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="url(#bg1)"/>
+  <rect width="512" height="512" rx="96" fill="url(#bgGlow1)"/>
+
+  <!-- Sombra proyectada en el suelo -->
+  <ellipse cx="280" cy="430" rx="170" ry="22" fill="url(#shadow1)"/>
+
+  <!-- Mango: grip -->
+  <g transform="rotate(-22 256 256)">
+    <rect x="232" y="300" width="48" height="120" rx="14" fill="url(#shaft)"/>
+    <rect x="226" y="330" width="60" height="100" rx="16" fill="url(#grip)"/>
+    <!-- texturas grip -->
+    <g stroke="#000" stroke-opacity="0.45" stroke-width="2">
+      <line x1="232" y1="345" x2="280" y2="350"/>
+      <line x1="232" y1="362" x2="280" y2="367"/>
+      <line x1="232" y1="379" x2="280" y2="384"/>
+      <line x1="232" y1="396" x2="280" y2="401"/>
+      <line x1="232" y1="413" x2="280" y2="418"/>
+    </g>
+    <g stroke="#6a727b" stroke-opacity="0.6" stroke-width="1">
+      <line x1="232" y1="348" x2="280" y2="353"/>
+      <line x1="232" y1="365" x2="280" y2="370"/>
+      <line x1="232" y1="382" x2="280" y2="387"/>
+      <line x1="232" y1="399" x2="280" y2="404"/>
+    </g>
+    <!-- pomo -->
+    <ellipse cx="256" cy="425" rx="34" ry="10" fill="#1a1f25"/>
+    <ellipse cx="256" cy="423" rx="30" ry="6" fill="#3a434c"/>
+
+    <!-- Cabeza de pala (ovalada) -->
+    <ellipse cx="256" cy="200" rx="135" ry="155" fill="url(#rim)"/>
+    <ellipse cx="256" cy="200" rx="120" ry="140" fill="url(#paddleFace)"/>
+    <ellipse cx="256" cy="200" rx="120" ry="140" fill="url(#paddleHi)"/>
+
+    <!-- Patron de agujeros con profundidad -->
+    <g>
+      <g fill="url(#paddleHole)">
+        <circle cx="256" cy="120" r="9"/>
+        <circle cx="220" cy="135" r="9"/>
+        <circle cx="292" cy="135" r="9"/>
+        <circle cx="190" cy="170" r="9"/>
+        <circle cx="256" cy="170" r="9"/>
+        <circle cx="322" cy="170" r="9"/>
+        <circle cx="160" cy="210" r="9"/>
+        <circle cx="220" cy="210" r="9"/>
+        <circle cx="292" cy="210" r="9"/>
+        <circle cx="352" cy="210" r="9"/>
+        <circle cx="190" cy="250" r="9"/>
+        <circle cx="256" cy="250" r="9"/>
+        <circle cx="322" cy="250" r="9"/>
+        <circle cx="220" cy="290" r="9"/>
+        <circle cx="292" cy="290" r="9"/>
+        <circle cx="256" cy="320" r="9"/>
+      </g>
+      <!-- Highlight superior en cada agujero -->
+      <g fill="#ffd9a8" fill-opacity="0.5">
+        <circle cx="254" cy="117" r="3"/>
+        <circle cx="218" cy="132" r="3"/>
+        <circle cx="290" cy="132" r="3"/>
+        <circle cx="188" cy="167" r="3"/>
+        <circle cx="254" cy="167" r="3"/>
+        <circle cx="320" cy="167" r="3"/>
+        <circle cx="158" cy="207" r="3"/>
+        <circle cx="218" cy="207" r="3"/>
+        <circle cx="290" cy="207" r="3"/>
+        <circle cx="350" cy="207" r="3"/>
+        <circle cx="188" cy="247" r="3"/>
+        <circle cx="254" cy="247" r="3"/>
+        <circle cx="320" cy="247" r="3"/>
+        <circle cx="218" cy="287" r="3"/>
+        <circle cx="290" cy="287" r="3"/>
+        <circle cx="254" cy="317" r="3"/>
+      </g>
+    </g>
+
+    <!-- Brillo lateral curvo de la cabeza -->
+    <path d="M 138 200 Q 150 90 256 60" stroke="#fff1d4" stroke-opacity="0.55" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M 374 200 Q 360 310 256 340" stroke="#000" stroke-opacity="0.35" stroke-width="8" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
