@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Pala de pádel frontal">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2D1B69"/>
+      <stop offset="1" stop-color="#160C3A"/>
+    </linearGradient>
+    <linearGradient id="paddle3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF6B9D"/>
+      <stop offset="0.55" stop-color="#E63976"/>
+      <stop offset="1" stop-color="#A6155A"/>
+    </linearGradient>
+    <linearGradient id="grip3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1F2937"/>
+      <stop offset="0.5" stop-color="#374151"/>
+      <stop offset="1" stop-color="#1F2937"/>
+    </linearGradient>
+    <linearGradient id="paddleShine3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.30"/>
+      <stop offset="0.6" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg3)"/>
+
+  <!-- Sombra pala -->
+  <ellipse cx="256" cy="440" rx="120" ry="16" fill="#000" opacity="0.35"/>
+
+  <!-- Mango / corazón pala -->
+  <rect x="240" y="320" width="32" height="60" rx="6" fill="#2A2541"/>
+  <!-- Grip -->
+  <g>
+    <rect x="232" y="370" width="48" height="80" rx="14" fill="url(#grip3)" stroke="#0B0F19" stroke-width="3"/>
+    <!-- Estrías grip -->
+    <line x1="240" y1="385" x2="272" y2="385" stroke="#FFFFFF" stroke-width="2" opacity="0.25"/>
+    <line x1="240" y1="400" x2="272" y2="400" stroke="#FFFFFF" stroke-width="2" opacity="0.25"/>
+    <line x1="240" y1="415" x2="272" y2="415" stroke="#FFFFFF" stroke-width="2" opacity="0.25"/>
+    <line x1="240" y1="430" x2="272" y2="430" stroke="#FFFFFF" stroke-width="2" opacity="0.25"/>
+    <!-- Capuchón inferior -->
+    <rect x="226" y="440" width="60" height="14" rx="6" fill="#FFCB3D"/>
+  </g>
+
+  <!-- Cabeza pala (gota redondeada) -->
+  <g>
+    <path d="M 256 80
+             C 358 80, 410 168, 410 220
+             C 410 290, 350 330, 256 330
+             C 162 330, 102 290, 102 220
+             C 102 168, 154 80, 256 80 Z"
+          fill="url(#paddle3)" stroke="#7A0E40" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Brillo superior -->
+    <path d="M 256 95
+             C 340 95, 388 165, 388 215
+             L 388 215
+             C 360 175, 320 155, 256 155
+             C 192 155, 152 175, 124 215
+             C 124 165, 172 95, 256 95 Z"
+          fill="url(#paddleShine3)"/>
+
+    <!-- Agujeros (patrón) -->
+    <g fill="#2D1B69" opacity="0.85">
+      <circle cx="200" cy="190" r="9"/>
+      <circle cx="232" cy="180" r="9"/>
+      <circle cx="264" cy="176" r="9"/>
+      <circle cx="296" cy="180" r="9"/>
+      <circle cx="328" cy="190" r="9"/>
+
+      <circle cx="184" cy="225" r="9"/>
+      <circle cx="216" cy="218" r="9"/>
+      <circle cx="248" cy="214" r="9"/>
+      <circle cx="280" cy="214" r="9"/>
+      <circle cx="312" cy="218" r="9"/>
+      <circle cx="344" cy="225" r="9"/>
+
+      <circle cx="200" cy="262" r="9"/>
+      <circle cx="232" cy="256" r="9"/>
+      <circle cx="264" cy="254" r="9"/>
+      <circle cx="296" cy="256" r="9"/>
+      <circle cx="328" cy="262" r="9"/>
+    </g>
+  </g>
+</svg>

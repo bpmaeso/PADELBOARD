@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bola de pádel con líneas de movimiento">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0EA5A4"/>
+      <stop offset="1" stop-color="#0B6E6D"/>
+    </linearGradient>
+    <radialGradient id="ball2" cx="0.35" cy="0.32" r="0.85">
+      <stop offset="0" stop-color="#F7FF7A"/>
+      <stop offset="0.55" stop-color="#D9F23A"/>
+      <stop offset="1" stop-color="#9CC51A"/>
+    </radialGradient>
+    <linearGradient id="motion2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="topShine2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg2)"/>
+  <rect x="0" y="0" width="512" height="220" rx="96" fill="url(#topShine2)"/>
+
+  <!-- Líneas de movimiento (3) -->
+  <g stroke-linecap="round" fill="none" stroke-width="16">
+    <line x1="70"  y1="240" x2="200" y2="240" stroke="url(#motion2)" opacity="0.85"/>
+    <line x1="50"  y1="290" x2="190" y2="290" stroke="url(#motion2)" opacity="0.70"/>
+    <line x1="80"  y1="340" x2="200" y2="340" stroke="url(#motion2)" opacity="0.55"/>
+  </g>
+
+  <!-- Sombra bajo bola -->
+  <ellipse cx="330" cy="400" rx="100" ry="16" fill="#000" opacity="0.25"/>
+
+  <!-- Bola -->
+  <g transform="translate(330 280)">
+    <circle r="120" fill="url(#ball2)" stroke="#7AA01C" stroke-width="4"/>
+    <!-- Costuras curvas tipo pelota -->
+    <path d="M -110 -30 Q -40 -110 100 -100" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <path d="M -100 60 Q -10 130 110 70" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <!-- Highlight -->
+    <ellipse cx="-42" cy="-50" rx="34" ry="20" fill="#FFFFFF" opacity="0.55"/>
+    <circle cx="-52" cy="-60" r="8" fill="#FFFFFF" opacity="0.85"/>
+  </g>
+</svg>

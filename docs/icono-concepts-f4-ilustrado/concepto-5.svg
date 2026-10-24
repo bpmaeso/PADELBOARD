@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Trofeo con bola de pádel">
+  <defs>
+    <linearGradient id="bg5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7C2D12"/>
+      <stop offset="1" stop-color="#3F1207"/>
+    </linearGradient>
+    <linearGradient id="cup5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FDE68A"/>
+      <stop offset="0.45" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#B45309"/>
+    </linearGradient>
+    <linearGradient id="base5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D97706"/>
+      <stop offset="1" stop-color="#7C2D12"/>
+    </linearGradient>
+    <radialGradient id="ball5" cx="0.35" cy="0.32" r="0.85">
+      <stop offset="0" stop-color="#F7FF7A"/>
+      <stop offset="0.55" stop-color="#D9F23A"/>
+      <stop offset="1" stop-color="#9CC51A"/>
+    </radialGradient>
+    <linearGradient id="topShine5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg5)"/>
+  <rect x="0" y="0" width="512" height="220" rx="96" fill="url(#topShine5)"/>
+
+  <!-- Sombra del conjunto -->
+  <ellipse cx="256" cy="450" rx="150" ry="14" fill="#000" opacity="0.35"/>
+
+  <!-- Base trofeo -->
+  <rect x="186" y="410" width="140" height="30" rx="8" fill="url(#base5)" stroke="#5C1F08" stroke-width="3"/>
+  <rect x="206" y="378" width="100" height="34" rx="6" fill="url(#cup5)" stroke="#7A4109" stroke-width="3"/>
+
+  <!-- Tallo -->
+  <rect x="240" y="346" width="32" height="38" rx="4" fill="url(#cup5)" stroke="#7A4109" stroke-width="3"/>
+
+  <!-- Asas -->
+  <path d="M 180 230 Q 130 240 130 290 Q 130 330 178 332" fill="none" stroke="url(#cup5)" stroke-width="22" stroke-linecap="round"/>
+  <path d="M 332 230 Q 382 240 382 290 Q 382 330 334 332" fill="none" stroke="url(#cup5)" stroke-width="22" stroke-linecap="round"/>
+
+  <!-- Copa -->
+  <path d="M 168 150
+           L 344 150
+           L 332 300
+           Q 256 360 180 300 Z"
+        fill="url(#cup5)" stroke="#7A4109" stroke-width="5" stroke-linejoin="round"/>
+
+  <!-- Brillo copa -->
+  <path d="M 188 170 L 220 170 L 212 290 Q 198 280 196 270 Z" fill="#FFFFFF" opacity="0.35"/>
+
+  <!-- Estrella central -->
+  <g transform="translate(256 230)">
+    <path d="M 0 -34 L 10 -10 L 36 -10 L 14 6 L 22 32 L 0 16 L -22 32 L -14 6 L -36 -10 L -10 -10 Z"
+          fill="#FFFFFF" opacity="0.92"/>
+  </g>
+
+  <!-- Bola de pádel sobre la base, delante -->
+  <ellipse cx="380" cy="430" rx="36" ry="6" fill="#000" opacity="0.30"/>
+  <g transform="translate(380 400)">
+    <circle r="40" fill="url(#ball5)" stroke="#7AA01C" stroke-width="3"/>
+    <path d="M -36 -8 Q -10 -36 36 -32" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+    <ellipse cx="-13" cy="-18" rx="10" ry="6" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+</svg>
